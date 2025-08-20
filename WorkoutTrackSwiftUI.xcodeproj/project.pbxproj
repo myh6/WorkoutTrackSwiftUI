@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		0F5436192E55B13E0008F071 /* WorkoutTrack in Frameworks */ = {isa = PBXBuildFile; productRef = 0F5436182E55B13E0008F071 /* WorkoutTrack */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		0F5435F82E55AE790008F071 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		0F5435EA2E55AE770008F071 /* WorkoutTrackSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutTrackSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5435F72E55AE790008F071 /* WorkoutTrackSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutTrackSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5436012E55AE790008F071 /* WorkoutTrackSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutTrackSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0F5436162E55B0650008F071 /* WorkoutTrack */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WorkoutTrack; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -52,6 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0F5436192E55B13E0008F071 /* WorkoutTrack in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,9 +81,11 @@
 		0F5435E12E55AE770008F071 = {
 			isa = PBXGroup;
 			children = (
+				0F5436162E55B0650008F071 /* WorkoutTrack */,
 				0F5435EC2E55AE770008F071 /* WorkoutTrackSwiftUI */,
 				0F5435FA2E55AE790008F071 /* WorkoutTrackSwiftUITests */,
 				0F5436042E55AE790008F071 /* WorkoutTrackSwiftUIUITests */,
+				0F5436172E55B13E0008F071 /* Frameworks */,
 				0F5435EB2E55AE770008F071 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -90,6 +98,13 @@
 				0F5436012E55AE790008F071 /* WorkoutTrackSwiftUIUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		0F5436172E55B13E0008F071 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -112,6 +127,7 @@
 			);
 			name = WorkoutTrackSwiftUI;
 			packageProductDependencies = (
+				0F5436182E55B13E0008F071 /* WorkoutTrack */,
 			);
 			productName = WorkoutTrackSwiftUI;
 			productReference = 0F5435EA2E55AE770008F071 /* WorkoutTrackSwiftUI.app */;
@@ -558,6 +574,13 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		0F5436182E55B13E0008F071 /* WorkoutTrack */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = WorkoutTrack;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 0F5435E22E55AE770008F071 /* Project object */;
 }
