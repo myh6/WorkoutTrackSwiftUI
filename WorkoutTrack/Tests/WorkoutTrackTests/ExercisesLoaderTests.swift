@@ -24,8 +24,16 @@ struct PresavedExercisesLoader {
     }
 }
 
+protocol UserExerciseRepository {
+    func fetchExercises() -> [Exercise]
+}
+
 struct CustomSavedExercisesLoader {
+    let repository: UserExerciseRepository
     
+    func getAllExercises() -> [Exercise] {
+        return repository.fetchExercises()
+    }
 }
 
 final class ExercisesLoaderTests: XCTestCase {
@@ -39,5 +47,26 @@ final class ExercisesLoaderTests: XCTestCase {
         XCTAssertEqual(exercises.count, 1)
     }
     
+    //MARK: Custom Saved
+    
+    func test_customLoader_callsRepositoryToFetchExercises() {
+        let mock = MockExercisesRepo()
+        let loader = CustomSavedExercisesLoader(repository: mock)
+        
+        _ = loader.getAllExercises()
+        
+        XCTAssertEqual(mock.fetchExercisesCallCount, 1)
+    }
+    
+    //MARK: - Helpers
+    private class MockExercisesRepo: UserExerciseRepository {
+        private(set) var fetchExercisesCallCount = 0
+        
+        func fetchExercises() -> [Exercise] {
+            fetchExercisesCallCount += 1
+            return []
+        }
+    }
+
 
 }
