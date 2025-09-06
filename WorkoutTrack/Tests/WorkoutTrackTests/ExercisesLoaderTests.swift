@@ -7,7 +7,7 @@
 
 import XCTest
 
-struct Exercise {
+struct Exercise: Equatable {
     let nameKey: String
     let categoryKey: String
 }
@@ -58,15 +58,35 @@ final class ExercisesLoaderTests: XCTestCase {
         XCTAssertEqual(mock.fetchExercisesCallCount, 1)
     }
     
+    func test_customLoader_returnsExercisesFetchedFromRepository() {
+        let anyExercise = [anyExercise()]
+        let mock = MockExercisesRepo(stubbed: anyExercise)
+        let loader = CustomSavedExercisesLoader(repository: mock)
+        
+        XCTAssertEqual(loader.getAllExercises(), anyExercise)
+    }
+    
     //MARK: - Helpers
     private class MockExercisesRepo: UserExerciseRepository {
+        private var stubbed: [Exercise]
         private(set) var fetchExercisesCallCount = 0
+        
+        init(stubbed: [Exercise] = []) {
+            self.stubbed = stubbed
+        }
+        
+        func stub(_ exercises: [Exercise]) {
+            self.stubbed = exercises
+        }
         
         func fetchExercises() -> [Exercise] {
             fetchExercisesCallCount += 1
-            return []
+            return stubbed
         }
     }
-
+    
+    private func anyExercise() -> Exercise {
+        return Exercise(nameKey: "any name key", categoryKey: "any category key")
+    }
 
 }
