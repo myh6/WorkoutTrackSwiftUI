@@ -6,11 +6,7 @@
 //
 
 import XCTest
-
-struct Exercise: Equatable {
-    let nameKey: String
-    let categoryKey: String
-}
+import WorkoutTrack
 
 protocol ExercisesLoader {
     func getAllExercises() -> [Exercise]
@@ -22,10 +18,6 @@ struct PresavedExercisesLoader {
             Exercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs"),
         ]
     }
-}
-
-protocol UserExerciseRepository {
-    func fetchExercises() -> [Exercise]
 }
 
 class CustomSavedExercisesLoader {
