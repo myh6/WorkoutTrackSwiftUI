@@ -28,8 +28,12 @@ protocol UserExerciseRepository {
     func fetchExercises() -> [Exercise]
 }
 
-struct CustomSavedExercisesLoader {
-    let repository: UserExerciseRepository
+class CustomSavedExercisesLoader {
+    private let repository: UserExerciseRepository
+    
+    init(repository: UserExerciseRepository) {
+        self.repository = repository
+    }
     
     func getAllExercises() -> [Exercise] {
         return repository.fetchExercises()
@@ -50,8 +54,7 @@ final class ExercisesLoaderTests: XCTestCase {
     //MARK: Custom Saved
     
     func test_customLoader_callsRepositoryToFetchExercises() {
-        let mock = MockExercisesRepo()
-        let loader = CustomSavedExercisesLoader(repository: mock)
+        let (loader, mock) = makeLoader()
         
         _ = loader.getAllExercises()
         
@@ -60,8 +63,7 @@ final class ExercisesLoaderTests: XCTestCase {
     
     func test_customLoader_returnsExercisesFetchedFromRepository() {
         let anyExercise = [anyExercise()]
-        let mock = MockExercisesRepo(stubbed: anyExercise)
-        let loader = CustomSavedExercisesLoader(repository: mock)
+        let (loader, _) = makeLoader(with: anyExercise)
         
         XCTAssertEqual(loader.getAllExercises(), anyExercise)
     }
@@ -83,6 +85,14 @@ final class ExercisesLoaderTests: XCTestCase {
             fetchExercisesCallCount += 1
             return stubbed
         }
+    }
+    
+    private func makeLoader(with stubbedExercises: [Exercise] = [], file: StaticString = #file, line: UInt = #line) -> (loader: CustomSavedExercisesLoader, repo: MockExercisesRepo) {
+        let mock = MockExercisesRepo(stubbed: stubbedExercises)
+        let loader = CustomSavedExercisesLoader(repository: mock)
+        trackForMemoryLeaks(loader, file: file, line: line)
+        trackForMemoryLeaks(mock, file: file, line: line)
+        return (loader, mock)
     }
     
     private func anyExercise() -> Exercise {
