@@ -20,18 +20,6 @@ struct PresavedExercisesLoader {
     }
 }
 
-class CustomSavedExercisesLoader {
-    private let repository: ExerciseLoader
-    
-    init(repository: ExerciseLoader) {
-        self.repository = repository
-    }
-    
-    func getAllExercises() -> [Exercise] {
-        return repository.fetchExercises()
-    }
-}
-
 final class ExercisesLoaderTests: XCTestCase {
     
     //MARK: Pre-saved
