@@ -21,9 +21,9 @@ struct PresavedExercisesLoader {
 }
 
 class CustomSavedExercisesLoader {
-    private let repository: UserExerciseRepository
+    private let repository: ExerciseLoader
     
-    init(repository: UserExerciseRepository) {
+    init(repository: ExerciseLoader) {
         self.repository = repository
     }
     
@@ -61,7 +61,7 @@ final class ExercisesLoaderTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private class MockExercisesRepo: UserExerciseRepository {
+    private class MockExercisesRepo: ExerciseLoader {
         private var stubbed: [Exercise]
         private(set) var fetchExercisesCallCount = 0
         
