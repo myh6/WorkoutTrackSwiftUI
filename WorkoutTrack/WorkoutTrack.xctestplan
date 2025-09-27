@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "D22CDD6A-81B6-412D-A5A2-9D0606AA42CF",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:",
+          "identifier" : "WorkoutTrack",
+          "name" : "WorkoutTrack"
+        }
+      ]
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "WorkoutTrackTests",
+        "name" : "WorkoutTrackTests"
+      }
+    }
+  ],
+  "version" : 1
+}

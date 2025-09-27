@@ -1,0 +1,37 @@
+{
+  "configurations" : [
+    {
+      "id" : "68B9971B-6AF2-4CD3-9811-484DAAED02C5",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:WorkoutTrackSwiftUI.xcodeproj",
+      "identifier" : "0F5435E92E55AE770008F071",
+      "name" : "WorkoutTrackSwiftUI"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:WorkoutTrackSwiftUI.xcodeproj",
+        "identifier" : "0F5435F62E55AE790008F071",
+        "name" : "WorkoutTrackSwiftUITests"
+      }
+    },
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:WorkoutTrackSwiftUI.xcodeproj",
+        "identifier" : "0F5436002E55AE790008F071",
+        "name" : "WorkoutTrackSwiftUIUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

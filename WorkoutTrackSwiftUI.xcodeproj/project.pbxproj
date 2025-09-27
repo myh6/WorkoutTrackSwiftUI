@@ -28,10 +28,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		0F08789A2E55FE2300F664F4 /* WorkoutTrack.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = WorkoutTrack.xctestplan; path = WorkoutTrack/WorkoutTrack.xctestplan; sourceTree = "<group>"; };
 		0F5435EA2E55AE770008F071 /* WorkoutTrackSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutTrackSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5435F72E55AE790008F071 /* WorkoutTrackSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutTrackSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5436012E55AE790008F071 /* WorkoutTrackSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutTrackSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5436162E55B0650008F071 /* WorkoutTrack */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WorkoutTrack; sourceTree = "<group>"; };
+		0F87FEFC2E55FE0800790E8B /* WorkoutTrackSwiftUI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = WorkoutTrackSwiftUI.xctestplan; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -81,6 +83,8 @@
 		0F5435E12E55AE770008F071 = {
 			isa = PBXGroup;
 			children = (
+				0F08789A2E55FE2300F664F4 /* WorkoutTrack.xctestplan */,
+				0F87FEFC2E55FE0800790E8B /* WorkoutTrackSwiftUI.xctestplan */,
 				0F5436162E55B0650008F071 /* WorkoutTrack */,
 				0F5435EC2E55AE770008F071 /* WorkoutTrackSwiftUI */,
 				0F5435FA2E55AE790008F071 /* WorkoutTrackSwiftUITests */,
@@ -421,6 +425,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -449,6 +454,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -470,7 +476,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5599LYD4Y;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minyanghuang.WorkoutTrackSwiftUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -489,7 +495,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5599LYD4Y;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minyanghuang.WorkoutTrackSwiftUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -507,6 +513,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5599LYD4Y;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minyanghuang.WorkoutTrackSwiftUIUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -524,6 +531,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = R5599LYD4Y;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.minyanghuang.WorkoutTrackSwiftUIUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
