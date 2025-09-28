@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol ExerciseLoader {
-    func fetchExercises() -> [Exercise]
+    func loadExercises() -> [Exercise]
 }

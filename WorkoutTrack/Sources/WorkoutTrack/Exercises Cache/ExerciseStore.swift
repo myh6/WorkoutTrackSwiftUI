@@ -8,6 +8,5 @@
 import Foundation
 
 public protocol ExerciseStore {
-    typealias RetrievalCompletion = () -> [Exercise]
-    func retrieve(completion: @escaping RetrievalCompletion)
+    func retrieve() -> [Exercise]
 }

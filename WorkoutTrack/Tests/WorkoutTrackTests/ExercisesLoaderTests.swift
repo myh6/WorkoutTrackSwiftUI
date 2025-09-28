@@ -38,10 +38,10 @@ final class ExercisesLoaderTests: XCTestCase {
         
         _ = loader.getAllExercises()
         
-        XCTAssertEqual(mock.fetchExercisesCallCount, 1)
+        XCTAssertEqual(mock.retrieveCallCount, 1)
     }
     
-    func test_customLoader_returnsExercisesFetchedFromRepository() {
+    func test_customLoader_returnsExercisesFetchedFromStore() {
         let anyExercise = [anyExercise()]
         let (loader, _) = makeLoader(with: anyExercise)
         
@@ -49,27 +49,23 @@ final class ExercisesLoaderTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private class MockExercisesRepo: ExerciseLoader {
+    private class MockExercisesStore: ExerciseStore {
+        private(set) var retrieveCallCount: Int = 0
         private var stubbed: [Exercise]
-        private(set) var fetchExercisesCallCount = 0
         
-        init(stubbed: [Exercise] = []) {
+        init(stubbed: [Exercise]) {
             self.stubbed = stubbed
         }
         
-        func stub(_ exercises: [Exercise]) {
-            self.stubbed = exercises
-        }
-        
-        func fetchExercises() -> [Exercise] {
-            fetchExercisesCallCount += 1
+        func retrieve() -> [Exercise] {
+            retrieveCallCount += 1
             return stubbed
         }
     }
     
-    private func makeLoader(with stubbedExercises: [Exercise] = [], file: StaticString = #file, line: UInt = #line) -> (loader: CustomSavedExercisesLoader, repo: MockExercisesRepo) {
-        let mock = MockExercisesRepo(stubbed: stubbedExercises)
-        let loader = CustomSavedExercisesLoader(repository: mock)
+    private func makeLoader(with stubbedExercises: [Exercise] = [], file: StaticString = #file, line: UInt = #line) -> (loader: CustomSavedExercisesLoader, repo: MockExercisesStore) {
+        let mock = MockExercisesStore(stubbed: stubbedExercises)
+        let loader = CustomSavedExercisesLoader(store: mock)
         trackForMemoryLeaks(loader, file: file, line: line)
         trackForMemoryLeaks(mock, file: file, line: line)
         return (loader, mock)

@@ -8,13 +8,13 @@
 import Foundation
 
 public class CustomSavedExercisesLoader {
-    private let repository: ExerciseLoader
+    private let store: ExerciseStore
     
-    public init(repository: ExerciseLoader) {
-        self.repository = repository
+    public init(store: ExerciseStore) {
+        self.store = store
     }
     
     public func getAllExercises() -> [Exercise] {
-        return repository.fetchExercises()
+        return store.retrieve()
     }
 }
