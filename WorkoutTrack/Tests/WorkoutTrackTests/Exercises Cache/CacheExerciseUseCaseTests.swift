@@ -69,6 +69,16 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
+    func test_load_hasNoSideEffectsOnEmptyStore() throws {
+        let (sut, store) = makeSUT()
+        store.completeRetrievalWithEmptyCache()
+        
+        _ = try? sut.loadExercises()
+        _ = try? sut.loadExercises()
+        
+        XCTAssertEqual(store.receivedMessage, [.retrieve, .retrieve])
+    }
+    
     func test_load_deliversRetrievedExercises() throws {
         let (sut, store) = makeSUT()
         let retrievedExercises: [CustomExercise] = [anyExercise(id: UUID()), anyExercise(id: UUID())]
@@ -76,6 +86,15 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         expect(sut, toCompleteLoadWith: .success(retrievedExercises)) {
             store.completeRetrievalSuccessfully(with: retrievedExercises)
         }
+    }
+    
+    func test_load_hasNoSideEffectsOnNonEmptyStore() throws {
+        let (sut, store) = makeSUT()
+        let savedExercises = [anyExercise(), anyExercise()]
+        store.completeRetrievalSuccessfully(with: savedExercises)
+        
+        expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
+        expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
     }
     
     //MARK: - Remove
@@ -118,6 +137,10 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         
         func completeRetrieval(with error: Error) {
             retrievalResult = .failure(error)
+        }
+        
+        func completeRetrievalWithEmptyCache() {
+            retrievalResult = .success([])
         }
         
         func completeRetrievalSuccessfully(with exercises: [CustomExercise]) {
