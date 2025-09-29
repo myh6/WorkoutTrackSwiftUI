@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct CustomExercise {
+public struct CustomExercise: Equatable {
     public let id: UUID
     public let name: String
     public var category: String
