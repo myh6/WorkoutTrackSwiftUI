@@ -82,6 +82,17 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         XCTAssertEqual(loadedExercises, retrievedExercises)
     }
     
+    //MARK: - Remove
+    func test_remove_requestsDeletionOfSpecifiedExercise() {
+        let (sut, store) = makeSUT()
+        let exerciseToDelete = anyExercise()
+        
+        try? sut.remove(exerciseToDelete)
+        
+        XCTAssertEqual(store.receivedMessage, [.delete(exerciseToDelete)])
+    }
+    
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: CustomSavedExercisesLoader, store: ExerciseStoreSpy) {
         let store = ExerciseStoreSpy()

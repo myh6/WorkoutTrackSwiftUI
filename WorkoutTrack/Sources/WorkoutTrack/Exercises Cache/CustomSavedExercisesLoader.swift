@@ -28,3 +28,10 @@ extension CustomSavedExercisesLoader {
         try store.insert(exercise)
     }
 }
+
+//MARK: - Remove
+extension CustomSavedExercisesLoader {
+    public func remove(_ exercise: CustomExercise) throws {
+        store.delete(exercise)
+    }
+}
