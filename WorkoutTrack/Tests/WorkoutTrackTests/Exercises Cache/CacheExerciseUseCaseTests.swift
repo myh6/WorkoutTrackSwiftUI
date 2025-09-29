@@ -110,24 +110,17 @@ final class CacheExerciseUseCaseTests: XCTestCase {
     func test_remove_failsOnDeletionError() {
         let (sut, store) = makeSUT()
         let deletionError = anyNSError()
-        store.completeDeletion(with: deletionError)
         
-        do {
-            try sut.remove(anyExercise())
-            XCTFail("Expected to fail")
-        } catch {
-            XCTAssertEqual(error as NSError, deletionError)
+        expect(sut, toCompleteRemoveWith: .failure(deletionError)) {
+            store.completeDeletion(with: deletionError)
         }
     }
     
     func test_remove_succeedsOnSuccessfulDeletion() throws {
         let (sut, store) = makeSUT()
-        store.completeDeletionSuccessfully()
         
-        do {
-            try sut.remove(anyExercise())
-        } catch {
-            XCTFail("Expected to succeed, but fail instead.")
+        expect(sut, toCompleteRemoveWith: .success(())) {
+            store.completeDeletionSuccessfully()
         }
     }
     
@@ -225,6 +218,22 @@ final class CacheExerciseUseCaseTests: XCTestCase {
             XCTFail("Expected to get \(expectedResult), but got \(receivedResult) instead", file: file, line: line)
         }
     }
+    
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteRemoveWith expectedResult: Result<Void, Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        
+        action()
+        
+        let receivedResult = Result { try sut.remove(anyExercise()) }
+        switch (expectedResult, receivedResult) {
+        case (.success, .success):
+            break
+        case (.failure(let expectedError), .failure(let receivedError)):
+            XCTAssertEqual(expectedError as NSError, receivedError as NSError)
+        default:
+            XCTFail("Expected to get \(expectedResult), but got \(receivedResult) instead", file: file, line: line)
+        }
+    }
+    
     
     func anyNSError() -> NSError {
         return NSError(domain: "any error", code: 0)
