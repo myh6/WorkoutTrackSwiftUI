@@ -65,6 +65,14 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
+    func test_load_deliversNoExerciseOnEmptyStore() throws {
+        let (sut, store) = makeSUT()
+        store.completeRetrievalSuccessfully(with: [])
+        
+        let loadedExercises = try sut.loadExercises()
+        XCTAssertTrue(loadedExercises.isEmpty)
+    }
+    
     func test_load_deliversRetrievedExercises() throws {
         let (sut, store) = makeSUT()
         let retrievedExercises: [CustomExercise] = [anyExercise(id: UUID()), anyExercise(id: UUID())]
