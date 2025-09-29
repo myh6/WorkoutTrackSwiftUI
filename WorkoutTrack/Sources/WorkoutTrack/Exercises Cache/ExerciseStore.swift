@@ -9,6 +9,6 @@ import Foundation
 
 public protocol ExerciseStore {
     func insert(_ exercise: CustomExercise) throws
-    func retrieve() -> [CustomExercise]
+    func retrieve() throws -> [CustomExercise]
     func delete(_ exercise: CustomExercise)
 }

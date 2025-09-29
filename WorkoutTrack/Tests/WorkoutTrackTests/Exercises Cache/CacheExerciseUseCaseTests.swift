@@ -16,6 +16,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         XCTAssertEqual(store.receivedMessage, [])
     }
     
+    //MARK: - Save
     func test_save_requestsInsertionOfExercise() {
         let (sut, store) = makeSUT()
         let insertedExercise = anyExercise(id: UUID())
@@ -42,6 +43,21 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
+    //MARK: - Load
+    func test_load_failsOnRetrievalError() {
+        let (sut, store) = makeSUT()
+        let retrievalError = anyNSError()
+        store.completeRetrieval(with: retrievalError)
+        
+        do {
+            _ = try sut.loadExercises()
+            XCTFail("Expected to throw an error")
+        } catch {
+            XCTAssertEqual(error as NSError, retrievalError)
+        }
+        
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: CustomSavedExercisesLoader, store: ExerciseStoreSpy) {
         let store = ExerciseStoreSpy()
@@ -61,12 +77,19 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         private(set) var receivedMessage = [Message]()
         
         private var insertionResult: Result<Void, Error>?
+        private var retrievalResult: Result<[CustomExercise], Error>?
         
-        func retrieve() -> [CustomExercise] {
+        // retriev
+        func retrieve() throws -> [CustomExercise] {
             receivedMessage.append(.retrieve)
-            return []
+            return try retrievalResult?.get() ?? []
         }
         
+        func completeRetrieval(with error: Error) {
+            retrievalResult = .failure(error)
+        }
+        
+        // insert
         func insert(_ exercise: CustomExercise) throws {
             receivedMessage.append(.insert(exercise))
             try insertionResult?.get()
@@ -80,6 +103,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
             insertionResult = .success(())
         }
         
+        // delete
         func delete(_ exercise: CustomExercise) {
             receivedMessage.append(.delete(exercise))
         }
