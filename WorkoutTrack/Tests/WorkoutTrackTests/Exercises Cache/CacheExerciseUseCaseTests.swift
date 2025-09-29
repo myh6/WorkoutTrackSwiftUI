@@ -55,7 +55,15 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         } catch {
             XCTAssertEqual(error as NSError, retrievalError)
         }
+    }
+    
+    func test_load_deliversRetrievedExercises() throws {
+        let (sut, store) = makeSUT()
+        let retrievedExercises: [CustomExercise] = [anyExercise(id: UUID()), anyExercise(id: UUID())]
+        store.completeRetrievalSuccessfully(with: retrievedExercises)
         
+        let loadedExercises = try sut.loadExercises()
+        XCTAssertEqual(loadedExercises, retrievedExercises)
     }
     
     //MARK: - Helpers
@@ -87,6 +95,10 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         
         func completeRetrieval(with error: Error) {
             retrievalResult = .failure(error)
+        }
+        
+        func completeRetrievalSuccessfully(with exercises: [CustomExercise]) {
+            retrievalResult = .success(exercises)
         }
         
         // insert
