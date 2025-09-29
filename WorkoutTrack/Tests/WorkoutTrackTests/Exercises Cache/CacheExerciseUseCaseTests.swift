@@ -8,7 +8,7 @@
 import XCTest
 import WorkoutTrack
 
-final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
+final class CacheExerciseUseCaseTests: XCTestCase {
 
     func test_init_doesNotMessageStoreUponCreation() {
         let (_, store) = makeSUT()
