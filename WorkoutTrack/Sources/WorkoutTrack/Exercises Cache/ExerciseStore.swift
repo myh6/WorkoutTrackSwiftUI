@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol ExerciseStore {
-    func retrieve() -> [LocalizedExercise]
+    func retrieve() -> [CustomExercise]
 }

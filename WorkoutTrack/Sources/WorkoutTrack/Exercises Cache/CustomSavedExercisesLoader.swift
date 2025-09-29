@@ -14,7 +14,7 @@ public class CustomSavedExercisesLoader {
         self.store = store
     }
     
-    public func getAllExercises() -> [LocalizedExercise] {
+    public func getAllExercises() -> [CustomExercise] {
         return store.retrieve()
     }
 }
