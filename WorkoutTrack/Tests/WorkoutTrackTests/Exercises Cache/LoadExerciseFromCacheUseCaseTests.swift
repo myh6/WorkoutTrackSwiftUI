@@ -28,13 +28,9 @@ final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
     func test_save_failsOnInsertionError() {
         let (sut, store) = makeSUT()
         let insertionError = anyNSError()
-        store.completeInsertion(with: insertionError)
         
-        do {
-            try sut.save(anyExercise())
-            XCTFail("Expected to fail with insertion error, but it succeeded instead.")
-        } catch {
-            XCTAssertEqual(error as NSError, insertionError)
+        expect(sut, toCompleteWithError: insertionError) {
+            store.completeInsertion(with: insertionError)
         }
     }
     
@@ -74,6 +70,18 @@ final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
         
         func delete(_ exercise: CustomExercise) {
             receivedMessage.append(.delete(exercise))
+        }
+    }
+    
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteWithError expectedError: NSError?, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        
+        action()
+        
+        do {
+            try sut.save(anyExercise())
+            XCTFail("Expected to fail with insertion error, but it succeeded instead.", file: file, line: line)
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError, file: file, line: line)
         }
     }
     
