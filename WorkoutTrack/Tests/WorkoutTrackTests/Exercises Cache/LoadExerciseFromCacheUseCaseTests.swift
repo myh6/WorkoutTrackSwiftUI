@@ -11,15 +11,13 @@ import WorkoutTrack
 final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
 
     func test_init_doesNotMessageStoreUponCreation() {
-        let store = ExerciseStoreSpy()
-        let _ = CustomSavedExercisesLoader(store: store)
+        let (_, store) = makeSUT()
         
         XCTAssertEqual(store.receivedMessage, [])
     }
     
     func test_save_requestsInsertionOfExercise() {
-        let store = ExerciseStoreSpy()
-        let sut = CustomSavedExercisesLoader(store: store)
+        let (sut, store) = makeSUT()
         let insertedExercise = anyExercise(id: UUID())
         
         try? sut.save(insertedExercise)
@@ -28,6 +26,14 @@ final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
     }
     
     //MARK: - Helpers
+    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: CustomSavedExercisesLoader, store: ExerciseStoreSpy) {
+        let store = ExerciseStoreSpy()
+        let sut = CustomSavedExercisesLoader(store: store)
+        trackForMemoryLeaks(store, file: file, line: line)
+        trackForMemoryLeaks(sut, file: file, line: line)
+        return (sut, store)
+    }
+    
     private class ExerciseStoreSpy: ExerciseStore {
         enum Message: Equatable {
             case retrieve
