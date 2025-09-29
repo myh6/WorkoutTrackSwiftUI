@@ -55,31 +55,27 @@ final class CacheExerciseUseCaseTests: XCTestCase {
     func test_load_failsOnRetrievalError() {
         let (sut, store) = makeSUT()
         let retrievalError = anyNSError()
-        store.completeRetrieval(with: retrievalError)
         
-        do {
-            _ = try sut.loadExercises()
-            XCTFail("Expected to throw an error")
-        } catch {
-            XCTAssertEqual(error as NSError, retrievalError)
+        expect(sut, toCompleteLoadWith: .failure(retrievalError)) {
+            store.completeRetrieval(with: retrievalError)
         }
     }
     
     func test_load_deliversNoExerciseOnEmptyStore() throws {
         let (sut, store) = makeSUT()
-        store.completeRetrievalSuccessfully(with: [])
         
-        let loadedExercises = try sut.loadExercises()
-        XCTAssertTrue(loadedExercises.isEmpty)
+        expect(sut, toCompleteLoadWith: .success([])) {
+            store.completeRetrievalSuccessfully(with: [])
+        }
     }
     
     func test_load_deliversRetrievedExercises() throws {
         let (sut, store) = makeSUT()
         let retrievedExercises: [CustomExercise] = [anyExercise(id: UUID()), anyExercise(id: UUID())]
-        store.completeRetrievalSuccessfully(with: retrievedExercises)
         
-        let loadedExercises = try sut.loadExercises()
-        XCTAssertEqual(loadedExercises, retrievedExercises)
+        expect(sut, toCompleteLoadWith: .success(retrievedExercises)) {
+            store.completeRetrievalSuccessfully(with: retrievedExercises)
+        }
     }
     
     //MARK: - Remove
@@ -156,6 +152,21 @@ final class CacheExerciseUseCaseTests: XCTestCase {
             try sut.save(anyExercise())
         } catch {
             XCTAssertEqual(error as NSError, expectedError, file: file, line: line)
+        }
+    }
+    
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteLoadWith expectedResult: Result<[CustomExercise], Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+        
+        action()
+        
+        let receivedResult = Result { try sut.loadExercises() }
+        switch (expectedResult, receivedResult) {
+        case (.success(let expectedValue), .success(let receivedValue)):
+            XCTAssertEqual(expectedValue, receivedValue, file: file, line: line)
+        case (.failure(let expectedError), .failure(let receivedError)):
+            XCTAssertEqual(expectedError as NSError, receivedError as NSError)
+        default:
+            XCTFail("Expected to get \(expectedResult), but got \(receivedResult) instead", file: file, line: line)
         }
     }
     
