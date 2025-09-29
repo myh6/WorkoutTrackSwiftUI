@@ -107,6 +107,19 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         XCTAssertEqual(store.receivedMessage, [.delete(exerciseToDelete)])
     }
     
+    func test_remove_failsOnDeletionError() {
+        let (sut, store) = makeSUT()
+        let deletionError = anyNSError()
+        store.completeDeletion(with: deletionError)
+        
+        do {
+            try sut.remove(anyExercise())
+            XCTFail("Expected to fail")
+        } catch {
+            XCTAssertEqual(error as NSError, deletionError)
+        }
+    }
+    
     
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: CustomSavedExercisesLoader, store: ExerciseStoreSpy) {
@@ -128,6 +141,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         
         private var insertionResult: Result<Void, Error>?
         private var retrievalResult: Result<[CustomExercise], Error>?
+        private var deletionResult: Result<Void, Error>?
         
         // retriev
         func retrieve() throws -> [CustomExercise] {
@@ -162,8 +176,13 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
         
         // delete
-        func delete(_ exercise: CustomExercise) {
+        func delete(_ exercise: CustomExercise) throws {
             receivedMessage.append(.delete(exercise))
+            try deletionResult?.get()
+        }
+        
+        func completeDeletion(with error: Error) {
+            deletionResult = .failure(error)
         }
     }
     
