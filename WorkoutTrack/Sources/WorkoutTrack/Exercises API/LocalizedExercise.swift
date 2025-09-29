@@ -8,7 +8,7 @@
 import Foundation
 import CryptoKit
 
-public struct LocalizedExercise: Equatable, DisplayableExercise {
+public struct LocalizedExercise: Equatable {
     public let nameKey: String
     public let categoryKey: String
     
@@ -16,10 +16,11 @@ public struct LocalizedExercise: Equatable, DisplayableExercise {
         self.nameKey = nameKey
         self.categoryKey = categoryKey
     }
+}
 
-    // MARK: - DisplayableExercise
+//MARK: - DisplayableExercise
+extension LocalizedExercise: DisplayableExercise {
     public var id: UUID {
-        // Deterministic UUID derived from keys to provide stable identity
         let input = nameKey + "|" + categoryKey
         let digest = SHA256.hash(data: Data(input.utf8))
         let bytes = Array(digest)
