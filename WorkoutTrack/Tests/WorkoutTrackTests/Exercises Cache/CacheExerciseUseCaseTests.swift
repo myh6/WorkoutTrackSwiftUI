@@ -30,7 +30,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         let (sut, store) = makeSUT()
         let insertionError = anyNSError()
         
-        expect(sut, toCompleteWithError: insertionError) {
+        expect(sut, toCompleteSaveWithError: insertionError) {
             store.completeInsertion(with: insertionError)
         }
     }
@@ -38,7 +38,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
     func test_save_succeedsOnSuccessfulInsertion() {
         let (sut, store) = makeSUT()
         
-        expect(sut, toCompleteWithError: nil) {
+        expect(sut, toCompleteSaveWithError: nil) {
             store.completeInsertionSuccessfully()
         }
     }
@@ -148,7 +148,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
-    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteWithError expectedError: NSError?, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteSaveWithError expectedError: NSError?, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
         
         action()
         
