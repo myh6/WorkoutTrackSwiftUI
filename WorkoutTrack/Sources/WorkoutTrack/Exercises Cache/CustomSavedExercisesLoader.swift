@@ -21,6 +21,6 @@ public class CustomSavedExercisesLoader {
 
 extension CustomSavedExercisesLoader {
     public func save(_ exercise: CustomExercise) throws {
-        store.insert(exercise)
+        try store.insert(exercise)
     }
 }
