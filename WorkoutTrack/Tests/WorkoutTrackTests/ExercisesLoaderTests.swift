@@ -9,9 +9,9 @@ import XCTest
 import WorkoutTrack
 
 struct PresavedExercisesLoader {
-    func getAllExercises() -> [Exercise] {
+    func getAllExercises() -> [LocalizedExercise] {
         return [
-            Exercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs"),
+            LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs"),
         ]
     }
 }

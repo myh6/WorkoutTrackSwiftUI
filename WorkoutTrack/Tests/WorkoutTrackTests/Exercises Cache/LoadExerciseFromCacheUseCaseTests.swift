@@ -25,7 +25,7 @@ final class LoadExerciseFromCacheUseCaseTests: XCTestCase {
         
         private(set) var receivedMessage = [Message]()
         
-        func retrieve() -> [WorkoutTrack.Exercise] {
+        func retrieve() -> [WorkoutTrack.LocalizedExercise] {
             receivedMessage.append(.retrieve)
             return []
         }

@@ -7,6 +7,12 @@
 
 import Foundation
 
+public protocol DisplayableExercise {
+    var id: UUID { get }
+    var name: String { get }
+    var category: String { get }
+}
+
 public protocol ExerciseLoader {
-    func loadExercises() -> [Exercise]
+    func loadExercises() -> [DisplayableExercise]
 }
