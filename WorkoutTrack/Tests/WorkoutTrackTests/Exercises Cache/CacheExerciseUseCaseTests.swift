@@ -44,6 +44,14 @@ final class CacheExerciseUseCaseTests: XCTestCase {
     }
     
     //MARK: - Load
+    func test_load_requestsRetrievalOfExercises() {
+        let (sut, store) = makeSUT()
+        
+        _ = try? sut.loadExercises()
+        
+        XCTAssertEqual(store.receivedMessage, [.retrieve])
+    }
+    
     func test_load_failsOnRetrievalError() {
         let (sut, store) = makeSUT()
         let retrievalError = anyNSError()
