@@ -120,6 +120,16 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
+    func test_remove_succeedsOnSuccessfulDeletion() throws {
+        let (sut, store) = makeSUT()
+        store.completeDeletionSuccessfully()
+        
+        do {
+            try sut.remove(anyExercise())
+        } catch {
+            XCTFail("Expected to succeed, but fail instead.")
+        }
+    }
     
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> (sut: CustomSavedExercisesLoader, store: ExerciseStoreSpy) {
@@ -183,6 +193,10 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         
         func completeDeletion(with error: Error) {
             deletionResult = .failure(error)
+        }
+        
+        func completeDeletionSuccessfully() {
+            deletionResult = .success(())
         }
     }
     
