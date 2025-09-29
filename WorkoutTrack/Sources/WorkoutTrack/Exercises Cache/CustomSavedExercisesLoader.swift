@@ -18,3 +18,9 @@ public class CustomSavedExercisesLoader {
         return store.retrieve()
     }
 }
+
+extension CustomSavedExercisesLoader {
+    public func save(_ exercise: CustomExercise) throws {
+        store.insert(exercise)
+    }
+}

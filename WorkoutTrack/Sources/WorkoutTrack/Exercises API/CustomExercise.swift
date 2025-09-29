@@ -11,4 +11,10 @@ public struct CustomExercise: Equatable {
     public let id: UUID
     public let name: String
     public var category: String
+    
+    public init(id: UUID, name: String, category: String) {
+        self.id = id
+        self.name = name
+        self.category = category
+    }
 }
