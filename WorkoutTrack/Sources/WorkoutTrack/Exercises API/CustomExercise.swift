@@ -7,6 +7,7 @@
 
 import Foundation
 
+// DTO (Data Transfer Object) for SwiftData's ExerciseEntity
 public struct CustomExercise: Equatable {
     public let id: UUID
     public let name: String
