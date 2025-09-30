@@ -17,21 +17,21 @@ public class CustomSavedExercisesLoader {
 
 //MARK: - Load
 extension CustomSavedExercisesLoader {
-    public func loadExercises() throws -> [CustomExercise] {
-        return try store.retrieve()
+    public func loadExercises() async throws -> [CustomExercise] {
+        return try await store.retrieve()
     }
 }
 
 //MARK: - Save
 extension CustomSavedExercisesLoader {
-    public func save(_ exercise: CustomExercise) throws {
-        try store.insert(exercise)
+    public func save(_ exercise: CustomExercise) async throws {
+        try await store.insert(exercise)
     }
 }
 
 //MARK: - Remove
 extension CustomSavedExercisesLoader {
-    public func remove(_ exercise: CustomExercise) throws {
-        try store.delete(exercise)
+    public func remove(_ exercise: CustomExercise) async throws {
+        try await store.delete(exercise)
     }
 }

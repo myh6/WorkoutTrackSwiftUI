@@ -17,109 +17,109 @@ final class CacheExerciseUseCaseTests: XCTestCase {
     }
     
     //MARK: - Save
-    func test_save_requestsInsertionOfExercise() {
+    func test_save_requestsInsertionOfExercise() async throws {
         let (sut, store) = makeSUT()
         let insertedExercise = anyExercise(id: UUID())
         
-        try? sut.save(insertedExercise)
+        try await sut.save(insertedExercise)
         
         XCTAssertEqual(store.receivedMessage, [.insert(insertedExercise)])
     }
     
-    func test_save_failsOnInsertionError() {
+    func test_save_failsOnInsertionError() async {
         let (sut, store) = makeSUT()
         let insertionError = anyNSError()
         
-        expect(sut, toCompleteSaveWithError: insertionError) {
+        await expect(sut, toCompleteSaveWithError: insertionError) {
             store.completeInsertion(with: insertionError)
         }
     }
     
-    func test_save_succeedsOnSuccessfulInsertion() {
+    func test_save_succeedsOnSuccessfulInsertion() async {
         let (sut, store) = makeSUT()
         
-        expect(sut, toCompleteSaveWithError: nil) {
+        await expect(sut, toCompleteSaveWithError: nil) {
             store.completeInsertionSuccessfully()
         }
     }
     
     //MARK: - Load
-    func test_load_requestsRetrievalOfExercises() {
+    func test_load_requestsRetrievalOfExercises() async throws {
         let (sut, store) = makeSUT()
         
-        _ = try? sut.loadExercises()
+        _ = try await sut.loadExercises()
         
         XCTAssertEqual(store.receivedMessage, [.retrieve])
     }
     
-    func test_load_failsOnRetrievalError() {
+    func test_load_failsOnRetrievalError() async {
         let (sut, store) = makeSUT()
         let retrievalError = anyNSError()
         
-        expect(sut, toCompleteLoadWith: .failure(retrievalError)) {
+        await expect(sut, toCompleteLoadWith: .failure(retrievalError)) {
             store.completeRetrieval(with: retrievalError)
         }
     }
     
-    func test_load_deliversNoExerciseOnEmptyStore() throws {
+    func test_load_deliversNoExerciseOnEmptyStore() async throws {
         let (sut, store) = makeSUT()
         
-        expect(sut, toCompleteLoadWith: .success([])) {
+        await expect(sut, toCompleteLoadWith: .success([])) {
             store.completeRetrievalSuccessfully(with: [])
         }
     }
     
-    func test_load_hasNoSideEffectsOnEmptyStore() throws {
+    func test_load_hasNoSideEffectsOnEmptyStore() async throws {
         let (sut, store) = makeSUT()
         store.completeRetrievalWithEmptyCache()
         
-        _ = try? sut.loadExercises()
-        _ = try? sut.loadExercises()
+        _ = try await sut.loadExercises()
+        _ = try await sut.loadExercises()
         
         XCTAssertEqual(store.receivedMessage, [.retrieve, .retrieve])
     }
     
-    func test_load_deliversRetrievedExercises() throws {
+    func test_load_deliversRetrievedExercises() async throws {
         let (sut, store) = makeSUT()
         let retrievedExercises: [CustomExercise] = [anyExercise(id: UUID()), anyExercise(id: UUID())]
         
-        expect(sut, toCompleteLoadWith: .success(retrievedExercises)) {
+        await expect(sut, toCompleteLoadWith: .success(retrievedExercises)) {
             store.completeRetrievalSuccessfully(with: retrievedExercises)
         }
     }
     
-    func test_load_hasNoSideEffectsOnNonEmptyStore() throws {
+    func test_load_hasNoSideEffectsOnNonEmptyStore() async throws {
         let (sut, store) = makeSUT()
         let savedExercises = [anyExercise(), anyExercise()]
         store.completeRetrievalSuccessfully(with: savedExercises)
         
-        expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
-        expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
+        await expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
+        await expect(sut, toCompleteLoadWith: .success(savedExercises), when: {})
     }
     
     //MARK: - Remove
-    func test_remove_requestsDeletionOfSpecifiedExercise() {
+    func test_remove_requestsDeletionOfSpecifiedExercise() async throws {
         let (sut, store) = makeSUT()
         let exerciseToDelete = anyExercise()
         
-        try? sut.remove(exerciseToDelete)
+        try await sut.remove(exerciseToDelete)
         
         XCTAssertEqual(store.receivedMessage, [.delete(exerciseToDelete)])
     }
     
-    func test_remove_failsOnDeletionError() {
+    func test_remove_failsOnDeletionError() async {
         let (sut, store) = makeSUT()
         let deletionError = anyNSError()
         
-        expect(sut, toCompleteRemoveWith: .failure(deletionError)) {
+        await expect(sut, toCompleteRemoveWith: .failure(deletionError)) {
             store.completeDeletion(with: deletionError)
         }
     }
     
-    func test_remove_succeedsOnSuccessfulDeletion() throws {
+    func test_remove_succeedsOnSuccessfulDeletion() async throws {
         let (sut, store) = makeSUT()
         
-        expect(sut, toCompleteRemoveWith: .success(())) {
+        await expect(sut, toCompleteRemoveWith: .success(())) {
             store.completeDeletionSuccessfully()
         }
     }
@@ -147,7 +147,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         private var deletionResult: Result<Void, Error>?
         
         // retriev
-        func retrieve() throws -> [CustomExercise] {
+        func retrieve() async throws -> [CustomExercise] {
             receivedMessage.append(.retrieve)
             return try retrievalResult?.get() ?? []
         }
@@ -165,7 +165,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
         
         // insert
-        func insert(_ exercise: CustomExercise) throws {
+        func insert(_ exercise: CustomExercise) async throws {
             receivedMessage.append(.insert(exercise))
             try insertionResult?.get()
         }
@@ -179,7 +179,7 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
         
         // delete
-        func delete(_ exercise: CustomExercise) throws {
+        func delete(_ exercise: CustomExercise) async throws {
             receivedMessage.append(.delete(exercise))
             try deletionResult?.get()
         }
@@ -193,22 +193,29 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
-    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteSaveWithError expectedError: NSError?, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteSaveWithError expectedError: NSError?, when action: () -> Void, file: StaticString = #file, line: UInt = #line) async {
         
         action()
         
         do {
-            try sut.save(anyExercise())
+            try await sut.save(anyExercise())
         } catch {
             XCTAssertEqual(error as NSError, expectedError, file: file, line: line)
         }
     }
     
-    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteLoadWith expectedResult: Result<[CustomExercise], Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteLoadWith expectedResult: Result<[CustomExercise], Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) async {
         
         action()
         
-        let receivedResult = Result { try sut.loadExercises() }
+        let receivedResult: Result<[CustomExercise], Error>
+        do {
+            let value = try await sut.loadExercises()
+            receivedResult = .success(value)
+        } catch {
+            receivedResult = .failure(error)
+        }
+        
         switch (expectedResult, receivedResult) {
         case (.success(let expectedValue), .success(let receivedValue)):
             XCTAssertEqual(expectedValue, receivedValue, file: file, line: line)
@@ -219,11 +226,18 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         }
     }
     
-    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteRemoveWith expectedResult: Result<Void, Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) {
+    private func expect(_ sut: CustomSavedExercisesLoader, toCompleteRemoveWith expectedResult: Result<Void, Error>, when action: () -> Void, file: StaticString = #file, line: UInt = #line) async {
         
         action()
         
-        let receivedResult = Result { try sut.remove(anyExercise()) }
+        let receivedResult: Result<Void, Error>
+        do {
+            try await sut.remove(anyExercise())
+            receivedResult = .success(())
+        } catch {
+            receivedResult = .failure(error)
+        }
+        
         switch (expectedResult, receivedResult) {
         case (.success, .success):
             break
@@ -243,3 +257,4 @@ final class CacheExerciseUseCaseTests: XCTestCase {
         CustomExercise(id: id, name: name, category: category)
     }
 }
+
