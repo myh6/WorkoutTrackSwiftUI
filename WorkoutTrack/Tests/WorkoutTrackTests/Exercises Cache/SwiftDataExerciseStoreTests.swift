@@ -39,6 +39,15 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         XCTAssertEqual(retrieved, [])
     }
     
+    func test_retrieve_hasNoSideEffectsOnEmptyDatabase() async throws {
+        let sut = makeSUT()
+        
+        let firstRetrieved = try await sut.retrieve()
+        let secondRetrieved = try await sut.retrieve()
+        
+        XCTAssertEqual(firstRetrieved, secondRetrieved)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
         let schema = Schema([ExerciseEntity.self])
