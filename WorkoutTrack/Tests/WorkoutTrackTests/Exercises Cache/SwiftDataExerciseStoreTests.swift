@@ -22,10 +22,28 @@ final class ExerciseEntity {
     }
 }
 
+extension ExerciseEntity {
+    var model: CustomExercise {
+        .init(id: id, name: name, category: category)
+    }
+}
+
+extension Array where Element == ExerciseEntity {
+    func toModels() -> [CustomExercise] {
+        map(\.model)
+    }
+}
+
 @ModelActor
 final actor SwiftDataExerciseStore {
     func retrieve() throws -> [CustomExercise] {
-        return []
+        let descriptor = FetchDescriptor<ExerciseEntity>()
+        return try modelContext.fetch(descriptor).toModels()
+    }
+    
+    func insert(_ exercise: CustomExercise) {
+        let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.category)
+        modelContext.insert(entity)
     }
 }
 
@@ -42,6 +60,15 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         
         try await expect(sut, toRetrieveExercisesTwice: [])
+    }
+    
+    func test_retrieve_deliversFoundExercisesOnNonEmptyDatabase() async throws {
+        let sut = makeSUT()
+        let anyExercise = anyExercise()
+        
+        await sut.insert(anyExercise)
+        
+        try await expect(sut, toRetrieveExercises: [anyExercise])
     }
     
     //MARK: - Helpers
@@ -61,5 +88,9 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     private func expect(_ sut: SwiftDataExerciseStore, toRetrieveExercisesTwice expected: [CustomExercise], file: StaticString = #file, line: UInt = #line) async throws {
         try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
         try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
+    }
+    
+    private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: String = "any category") -> CustomExercise {
+        CustomExercise(id: id, name: name, category: category)
     }
 }
