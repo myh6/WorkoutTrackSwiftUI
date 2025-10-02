@@ -34,18 +34,14 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     
     func test_retrieve_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
-        let retrieved = try await sut.retrieve()
         
-        XCTAssertEqual(retrieved, [])
+        try await expect(sut, toRetrieveExercises: [])
     }
     
     func test_retrieve_hasNoSideEffectsOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        let firstRetrieved = try await sut.retrieve()
-        let secondRetrieved = try await sut.retrieve()
-        
-        XCTAssertEqual(firstRetrieved, secondRetrieved)
+        try await expect(sut, toRetrieveExercisesTwice: [])
     }
     
     //MARK: - Helpers
@@ -54,5 +50,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = try! SwiftDataExerciseStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
         trackForMemoryLeaks(sut)
         return sut
+    }
+    
+    private func expect(_ sut: SwiftDataExerciseStore, toRetrieveExercises expected: [CustomExercise], file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.retrieve()
+        
+        XCTAssertEqual(expected, retrieved, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataExerciseStore, toRetrieveExercisesTwice expected: [CustomExercise], file: StaticString = #file, line: UInt = #line) async throws {
+        try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
+        try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
     }
 }
