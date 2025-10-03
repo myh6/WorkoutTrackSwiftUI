@@ -153,6 +153,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
     
+    func test_delete_deletesPreviouslyInsertedExerciseInStore() async throws {
+        let sut = makeSUT()
+        let exercise = anyExercise()
+        
+        await sut.insert(exercise)
+        await sut.delete(exercise)
+        
+        try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
         let schema = Schema([ExerciseEntity.self])

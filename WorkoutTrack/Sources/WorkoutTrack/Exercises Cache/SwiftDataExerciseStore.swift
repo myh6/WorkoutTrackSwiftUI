@@ -32,6 +32,10 @@ final actor SwiftDataExerciseStore {
     }
     
     func delete(_ exercise: CustomExercise) {
-        
+        let targetId = exercise.id
+        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == targetId })
+        if let entity = try? modelContext.fetch(descriptor).first {
+            modelContext.delete(entity)
+        }
     }
 }
