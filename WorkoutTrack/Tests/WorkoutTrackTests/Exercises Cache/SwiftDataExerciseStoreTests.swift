@@ -6,68 +6,8 @@
 //
 
 import XCTest
-import WorkoutTrack
+@testable import WorkoutTrack
 import SwiftData
-
-@Model
-final class ExerciseEntity {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var category: String
-    
-    init(id: UUID, name: String, category: String) {
-        self.id = id
-        self.name = name
-        self.category = category
-    }
-}
-
-extension ExerciseEntity {
-    var model: CustomExercise {
-        .init(id: id, name: name, category: category)
-    }
-}
-
-extension Array where Element == ExerciseEntity {
-    func toModels() -> [CustomExercise] {
-        map(\.model)
-    }
-}
-
-extension ExerciseQuery {
-    private var sort: ExerciseSort? {
-        switch self {
-        case .all(let sort): return sort
-        case .byID(_, let sort): return sort
-        case .byName(_, let sort): return sort
-        case .byCategory(_, let sort): return sort
-        }
-    }
-    
-    var sortDescriptor: SortDescriptor<ExerciseEntity>? {
-        switch self.sort {
-        case .name(let ascending):
-            return SortDescriptor(\.name, order: ascending ? .forward : .reverse)
-        case .category(let ascending):
-            return SortDescriptor(\.category, order: ascending ? .forward : .reverse)
-        case .none:
-            return nil
-        }
-    }
-    
-    var predicate: Predicate<ExerciseEntity>? {
-        switch self {
-        case .all:
-            return #Predicate { _ in true }
-        case .byID(let id, _):
-            return #Predicate { $0.id == id }
-        case .byName(let name, _):
-            return #Predicate { $0.name == name }
-        case .byCategory(let category, _):
-            return #Predicate { $0.category == category }
-        }
-    }
-}
 
 @ModelActor
 final actor SwiftDataExerciseStore {
