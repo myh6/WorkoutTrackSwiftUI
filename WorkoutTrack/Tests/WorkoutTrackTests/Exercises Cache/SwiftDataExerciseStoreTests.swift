@@ -129,6 +129,22 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [correctCategoryExercise], with: .byCategory(category, sort: .none))
     }
     
+    func test_insert_wouldNotOverrideExistingValueInStore() async throws {
+        let sut = makeSUT()
+        let randomExercises = makeExercises(count: 5)
+        
+        await batchInsert(randomExercises, to: sut)
+        
+        let newExercise = anyExercise(id: UUID())
+        
+        await sut.insert(newExercise)
+        
+        let retrieved = try await sut.retrieve(by: .all(sort: .none))
+        
+        XCTAssertEqual(retrieved.count, 6)
+        XCTAssertTrue(retrieved.contains(newExercise))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
         let schema = Schema([ExerciseEntity.self])
