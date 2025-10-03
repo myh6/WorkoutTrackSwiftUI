@@ -48,7 +48,7 @@ extension ExerciseQuery {
         switch self.sort {
         case .name(let ascending):
             return SortDescriptor(\.name, order: ascending ? .forward : .reverse)
-        case .category, .custom, .none:
+        case .category, .none:
             return nil
         }
     }
@@ -76,11 +76,18 @@ final actor SwiftDataExerciseStore {
     }
     
     func retrieve(by query: ExerciseQuery) throws -> [CustomExercise] {
-        if let predicate = query.predicate, let sort = query.sortDescriptor {
-            let descriptor = FetchDescriptor(predicate: predicate, sortBy: [sort])
-            return try modelContext.fetch(descriptor).toModels()
+        var descriptor = FetchDescriptor<ExerciseEntity>()
+        if let predicate = query.predicate {
+            descriptor.predicate = predicate
         }
-        return []
+        
+        if let sort = query.sortDescriptor {
+            descriptor.sortBy = [sort]
+        } else {
+            descriptor.sortBy = [SortDescriptor(\.name, order: .forward)]
+        }
+        
+        return try modelContext.fetch(descriptor).toModels()
     }
 }
 
@@ -108,6 +115,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrieveExercises: [anyExercise])
     }
     
+    func test_retrieve_all_noSorting_deliversAllExercisesSortedByNameInDefault() async throws {
+        let sut = makeSUT()
+        let exercisesInRandom = makeExercises(count: 5).shuffled()
+
+        await batchInsert(exercisesInRandom, to: sut)
+
+        let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
+        
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: nil))
+    }
+    
     func test_retrieve_all_sortedByName_deliversAllExercisesSortedByName() async throws {
         let sut = makeSUT()
         let exercisesInRandom = makeExercises(count: 5).shuffled()
@@ -129,6 +147,8 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         
         try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .name(ascending: false)))
     }
+    
+    
     
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
@@ -164,7 +184,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         }
     }
     
-    func makeExercises(count: Int, category: String = "any category") -> [CustomExercise] {
+    private func makeExercises(count: Int, category: String = "any category") -> [CustomExercise] {
         (0..<count).map { index in
             CustomExercise(
                 id: UUID(),

@@ -23,5 +23,4 @@ public enum ExerciseQuery {
 public enum ExerciseSort {
     case name(ascending: Bool)
     case category(ascending: Bool)
-    case custom((CustomExercise, CustomExercise) -> Bool)
 }
