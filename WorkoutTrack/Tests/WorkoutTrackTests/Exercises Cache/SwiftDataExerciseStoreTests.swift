@@ -203,21 +203,3 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         ]
     }
 }
-
-private extension Array where Element == CustomExercise {
-    func sortedByNameInAscendingOrder() -> [CustomExercise] {
-        sorted { $0.name < $1.name }
-    }
-    
-    func sortedByNameInDescendingOrder() -> [CustomExercise] {
-        sorted { $0.name > $1.name }
-    }
-    
-    func sortedByCategoryInAscendingOrder() -> [CustomExercise] {
-        sorted { $0.category < $1.category }
-    }
-    
-    func sortedByCategoryInDescendingOrder() -> [CustomExercise] {
-        sorted { $0.category > $1.category }
-    }
-}
