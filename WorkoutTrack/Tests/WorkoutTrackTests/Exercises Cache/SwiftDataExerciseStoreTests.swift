@@ -129,7 +129,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
 
         let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
         
-        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: nil))
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .none))
     }
     
     func test_retrieve_all_sortedByName_deliversAllExercisesSortedByName() async throws {
