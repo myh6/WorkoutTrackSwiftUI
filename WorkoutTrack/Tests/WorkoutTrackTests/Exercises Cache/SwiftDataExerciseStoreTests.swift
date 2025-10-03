@@ -61,6 +61,8 @@ extension ExerciseQuery {
             return #Predicate { _ in true }
         case .byID(let id, _):
             return #Predicate { $0.id == id }
+        case .byName(let name, _):
+            return #Predicate { $0.name == name }
         default:
             return nil
         }
@@ -182,7 +184,18 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         
         await batchInsert(allExercises, to: sut)
         
-        try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id, sort: nil))
+        try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id, sort: .none))
+    }
+    
+    func test_retrieve_byName_deliversTheCorrectExercise() async throws {
+        let sut = makeSUT()
+        let name = "any name"
+        let correctNameExercise = anyExercise(name: name)
+        let allExercises = (makeExercises(count: 5) + [correctNameExercise]).shuffled()
+        
+        await batchInsert(allExercises, to: sut)
+        
+        try await expect(sut, toRetrievedWith: [correctNameExercise], with: .byName(name, sort: .none))
     }
     
     //MARK: - Helpers
