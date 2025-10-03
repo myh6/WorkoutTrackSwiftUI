@@ -48,7 +48,9 @@ extension ExerciseQuery {
         switch self.sort {
         case .name(let ascending):
             return SortDescriptor(\.name, order: ascending ? .forward : .reverse)
-        case .category, .none:
+        case .category(let ascending):
+            return SortDescriptor(\.category, order: ascending ? .forward : .reverse)
+        case .none:
             return nil
         }
     }
@@ -148,7 +150,27 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .name(ascending: false)))
     }
     
+    func test_retrieve_all_sortedByCategory_deliversAllExercisesSortedByCategory() async throws {
+        let sut = makeSUT()
+        let exercisesInRandom = makeMixedCategoryExercises().shuffled()
+        
+        await batchInsert(exercisesInRandom, to: sut)
+        
+        let exercisesInOrder = exercisesInRandom.sortedByCategoryInAscendingOrder()
+        
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .category(ascending: true)))
+    }
     
+    func test_retrieve_all_sortedByCategory_deliversAllExercisesSortedByCategoryDescending() async throws {
+        let sut = makeSUT()
+        let exercisesInRandom = makeMixedCategoryExercises().shuffled()
+        
+        await batchInsert(exercisesInRandom, to: sut)
+        
+        let exercisesInOrder = exercisesInRandom.sortedByCategoryInDescendingOrder()
+        
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .category(ascending: false)))
+    }
     
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
@@ -193,6 +215,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
             )
         }
     }
+    
+    private func makeMixedCategoryExercises() -> [CustomExercise] {
+        [
+            CustomExercise(id: UUID(), name: "Bench Press", category: "Chest"),
+            CustomExercise(id: UUID(), name: "Deadlift", category: "Back"),
+            CustomExercise(id: UUID(), name: "Squat", category: "Legs"),
+            CustomExercise(id: UUID(), name: "Curls", category: "Arms"),
+            CustomExercise(id: UUID(), name: "Overhead Press", category: "Shoulders")
+        ]
+    }
 }
 
 private extension Array where Element == CustomExercise {
@@ -202,5 +234,13 @@ private extension Array where Element == CustomExercise {
     
     func sortedByNameInDescendingOrder() -> [CustomExercise] {
         sorted { $0.name > $1.name }
+    }
+    
+    func sortedByCategoryInAscendingOrder() -> [CustomExercise] {
+        sorted { $0.category < $1.category }
+    }
+    
+    func sortedByCategoryInDescendingOrder() -> [CustomExercise] {
+        sorted { $0.category > $1.category }
     }
 }
