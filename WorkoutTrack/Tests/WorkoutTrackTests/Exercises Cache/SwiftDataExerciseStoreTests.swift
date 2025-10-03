@@ -110,14 +110,13 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     
     func test_retrieve_all_sortedByName_deliversAllExercisesSortedByName() async throws {
         let sut = makeSUT()
-        let multipleExercises = makeExercises(count: 5).shuffled() // insert in random order
+        let exercisesInRandom = makeExercises(count: 5).shuffled()
 
-        await batchInsert(multipleExercises, to: sut)
+        await batchInsert(exercisesInRandom, to: sut)
 
-        let expected = multipleExercises.sorted(by: { $0.name < $1.name })
-        let retrieved = try await sut.retrieve(by: .all(sort: .name(ascending: true)))
-
-        XCTAssertEqual(retrieved, expected)
+        let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
+        
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .name(ascending: true)))
     }
     
     //MARK: - Helpers
@@ -139,6 +138,11 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
     }
     
+    private func expect(_ sut: SwiftDataExerciseStore, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.retrieve(by: query)
+        XCTAssertEqual(expected, retrieved, file: file, line: line)
+    }
+    
     private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: String = "any category") -> CustomExercise {
         CustomExercise(id: id, name: name, category: category)
     }
@@ -157,5 +161,11 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
                 category: category
             )
         }
+    }
+}
+
+private extension Array where Element == CustomExercise {
+    func sortedByNameInAscendingOrder() -> [CustomExercise] {
+        sorted { $0.name < $1.name }
     }
 }
