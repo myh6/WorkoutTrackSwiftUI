@@ -119,6 +119,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .name(ascending: true)))
     }
     
+    func test_retrieve_all_sortedByName_deliversAllExercisesSortedByNameDescending() async throws {
+        let sut = makeSUT()
+        let exercisesInRandom = makeExercises(count: 5).shuffled()
+        
+        await batchInsert(exercisesInRandom, to: sut)
+        
+        let exercisesInOrder = exercisesInRandom.sortedByNameInDescendingOrder()
+        
+        try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .name(ascending: false)))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
         let schema = Schema([ExerciseEntity.self])
@@ -167,5 +178,9 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
 private extension Array where Element == CustomExercise {
     func sortedByNameInAscendingOrder() -> [CustomExercise] {
         sorted { $0.name < $1.name }
+    }
+    
+    func sortedByNameInDescendingOrder() -> [CustomExercise] {
+        sorted { $0.name > $1.name }
     }
 }
