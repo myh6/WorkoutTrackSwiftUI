@@ -30,4 +30,8 @@ final actor SwiftDataExerciseStore {
         
         return try modelContext.fetch(descriptor).toModels()
     }
+    
+    func delete(_ exercise: CustomExercise) {
+        
+    }
 }
