@@ -11,10 +11,6 @@ import SwiftData
 
 @ModelActor
 final actor SwiftDataExerciseStore {
-    func retrieve() throws -> [CustomExercise] {
-        let descriptor = FetchDescriptor<ExerciseEntity>()
-        return try modelContext.fetch(descriptor).toModels()
-    }
     
     func insert(_ exercise: CustomExercise) {
         let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.category)
@@ -40,25 +36,25 @@ final actor SwiftDataExerciseStore {
 
 final class SwiftDataExerciseStoreTests: XCTestCase {
     
-    func test_retrieve_deliversEmptyOnEmptyDatabase() async throws {
+    func test_retrieve_all_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await expect(sut, toRetrieveExercises: [])
+        try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
     
-    func test_retrieve_hasNoSideEffectsOnEmptyDatabase() async throws {
+    func test_retrieve_all_hasNoSideEffectsOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await expect(sut, toRetrieveExercisesTwice: [])
+        try await expect(sut, toRetrievedTwiceWith: [], with: .all(sort: .none))
     }
     
-    func test_retrieve_deliversFoundExercisesOnNonEmptyDatabase() async throws {
+    func test_retrieve_all_deliversFoundExercisesOnNonEmptyDatabase() async throws {
         let sut = makeSUT()
         let anyExercise = anyExercise()
         
         await sut.insert(anyExercise)
         
-        try await expect(sut, toRetrieveExercises: [anyExercise])
+        try await expect(sut, toRetrievedWith: [anyExercise], with: .all(sort: .none))
     }
     
     func test_retrieve_all_noSorting_deliversAllExercisesSortedByNameInDefault() async throws {
@@ -70,6 +66,15 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
         
         try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .none))
+    }
+    
+    func test_retrieve_all_noSorting_hasNoSideEffects() async throws {
+        let sut = makeSUT()
+        let exercises = makeExercises(count: 5)
+        
+        await batchInsert(exercises, to: sut)
+        
+        try await expect(sut, toRetrievedTwiceWith: exercises, with: .all(sort: .none))
     }
     
     func test_retrieve_all_sortedByName_deliversAllExercisesSortedByName() async throws {
@@ -157,20 +162,14 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         return sut
     }
     
-    private func expect(_ sut: SwiftDataExerciseStore, toRetrieveExercises expected: [CustomExercise], file: StaticString = #file, line: UInt = #line) async throws {
-        let retrieved = try await sut.retrieve()
-        
-        XCTAssertEqual(expected, retrieved, file: file, line: line)
-    }
-    
-    private func expect(_ sut: SwiftDataExerciseStore, toRetrieveExercisesTwice expected: [CustomExercise], file: StaticString = #file, line: UInt = #line) async throws {
-        try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
-        try await expect(sut, toRetrieveExercises: expected, file: file, line: line)
-    }
-    
     private func expect(_ sut: SwiftDataExerciseStore, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieve(by: query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataExerciseStore, toRetrievedTwiceWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+        try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
+        try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
     }
     
     private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: String = "any category") -> CustomExercise {
