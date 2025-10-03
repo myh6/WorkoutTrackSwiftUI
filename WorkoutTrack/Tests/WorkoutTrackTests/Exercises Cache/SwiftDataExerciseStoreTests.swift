@@ -63,8 +63,8 @@ extension ExerciseQuery {
             return #Predicate { $0.id == id }
         case .byName(let name, _):
             return #Predicate { $0.name == name }
-        default:
-            return nil
+        case .byCategory(let category, _):
+            return #Predicate { $0.category == category }
         }
     }
 }
@@ -196,6 +196,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         await batchInsert(allExercises, to: sut)
         
         try await expect(sut, toRetrievedWith: [correctNameExercise], with: .byName(name, sort: .none))
+    }
+    
+    func test_retrieve_byCategory_deliversTheCorrectExercise() async throws {
+        let sut = makeSUT()
+        let category = "certain category"
+        let correctCategoryExercise = anyExercise(category: category)
+        let allExercises = (makeExercises(count: 5) + [correctCategoryExercise]).shuffled()
+        
+        await batchInsert(allExercises, to: sut)
+        
+        try await expect(sut, toRetrievedWith: [correctCategoryExercise], with: .byCategory(category, sort: .none))
     }
     
     //MARK: - Helpers
