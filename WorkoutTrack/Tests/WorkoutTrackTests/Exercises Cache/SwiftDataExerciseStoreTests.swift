@@ -59,6 +59,8 @@ extension ExerciseQuery {
         switch self {
         case .all:
             return #Predicate { _ in true }
+        case .byID(let id, _):
+            return #Predicate { $0.id == id }
         default:
             return nil
         }
@@ -170,6 +172,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let exercisesInOrder = exercisesInRandom.sortedByCategoryInDescendingOrder()
         
         try await expect(sut, toRetrievedWith: exercisesInOrder, with: .all(sort: .category(ascending: false)))
+    }
+    
+    func test_retrieve_byId_deliversTheCorrectExercise() async throws {
+        let sut = makeSUT()
+        let id = UUID()
+        let correctIdExercise = anyExercise(id: id)
+        let allExercises = (makeExercises(count: 5) + [correctIdExercise]).shuffled()
+        
+        await batchInsert(allExercises, to: sut)
+        
+        try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id, sort: nil))
     }
     
     //MARK: - Helpers
