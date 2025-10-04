@@ -9,7 +9,7 @@ import Foundation
 
 public protocol ExerciseStore {
     func insert(_ exercise: CustomExercise) async throws
-    func retrieve() async throws -> [CustomExercise]
+    func retrieve(by query: ExerciseQuery) async throws -> [CustomExercise]
     func delete(_ exercise: CustomExercise) async throws
 }
 
