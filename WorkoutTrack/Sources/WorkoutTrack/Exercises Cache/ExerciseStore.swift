@@ -8,9 +8,9 @@
 import Foundation
 
 public protocol ExerciseStore {
-    func insert(_ exercise: CustomExercise) async throws
+    func insert(_ exercise: CustomExercise) async
     func retrieve(by query: ExerciseQuery) async throws -> [CustomExercise]
-    func delete(_ exercise: CustomExercise) async throws
+    func delete(_ exercise: CustomExercise) async
 }
 
 public enum ExerciseQuery {

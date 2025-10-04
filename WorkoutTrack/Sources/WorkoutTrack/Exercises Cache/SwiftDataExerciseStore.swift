@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @ModelActor
-final actor SwiftDataExerciseStore {
+final actor SwiftDataExerciseStore: ExerciseStore {
     
     func insert(_ exercise: CustomExercise) {
         let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.category)

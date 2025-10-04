@@ -164,19 +164,19 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataExerciseStore {
+    private func makeSUT(file: StaticString = #file, line: UInt = #line) -> ExerciseStore {
         let schema = Schema([ExerciseEntity.self])
         let sut = try! SwiftDataExerciseStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
         trackForMemoryLeaks(sut)
         return sut
     }
     
-    private func expect(_ sut: SwiftDataExerciseStore, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: ExerciseStore, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieve(by: query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataExerciseStore, toRetrievedTwiceWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: ExerciseStore, toRetrievedTwiceWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
     }
@@ -185,7 +185,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         CustomExercise(id: id, name: name, category: category)
     }
     
-    private func batchInsert(_ exercises: [CustomExercise], to store: SwiftDataExerciseStore) async {
+    private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseStore) async {
         for exercise in exercises {
             await store.insert(exercise)
         }
