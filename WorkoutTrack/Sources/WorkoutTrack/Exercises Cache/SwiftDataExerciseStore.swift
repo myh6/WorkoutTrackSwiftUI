@@ -11,9 +11,10 @@ import SwiftData
 @ModelActor
 final actor SwiftDataExerciseStore: ExerciseStore {
     
-    func insert(_ exercise: CustomExercise) {
+    func insert(_ exercise: CustomExercise) throws {
         let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.category)
         modelContext.insert(entity)
+        try modelContext.save()
     }
     
     func retrieve(by query: ExerciseQuery) throws -> [CustomExercise] {
@@ -31,11 +32,12 @@ final actor SwiftDataExerciseStore: ExerciseStore {
         return try modelContext.fetch(descriptor).toModels()
     }
     
-    func delete(_ exercise: CustomExercise) {
+    func delete(_ exercise: CustomExercise) throws {
         let targetId = exercise.id
         let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == targetId })
-        if let entity = try? modelContext.fetch(descriptor).first {
+        if let entity = try modelContext.fetch(descriptor).first {
             modelContext.delete(entity)
+            try modelContext.save()
         }
     }
 }

@@ -27,7 +27,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let anyExercise = anyExercise()
         
-        await sut.insert(anyExercise)
+        try await sut.insert(anyExercise)
         
         try await expect(sut, toRetrievedWith: [anyExercise], with: .all(sort: .none))
     }
@@ -36,7 +36,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercisesInRandom = makeExercises(count: 5).shuffled()
 
-        await batchInsert(exercisesInRandom, to: sut)
+        try await batchInsert(exercisesInRandom, to: sut)
 
         let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
         
@@ -47,7 +47,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercises = makeExercises(count: 5)
         
-        await batchInsert(exercises, to: sut)
+        try await batchInsert(exercises, to: sut)
         
         try await expect(sut, toRetrievedTwiceWith: exercises, with: .all(sort: .none))
     }
@@ -56,7 +56,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercisesInRandom = makeExercises(count: 5).shuffled()
 
-        await batchInsert(exercisesInRandom, to: sut)
+        try await batchInsert(exercisesInRandom, to: sut)
 
         let exercisesInOrder = exercisesInRandom.sortedByNameInAscendingOrder()
         
@@ -67,7 +67,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercisesInRandom = makeExercises(count: 5).shuffled()
         
-        await batchInsert(exercisesInRandom, to: sut)
+        try await batchInsert(exercisesInRandom, to: sut)
         
         let exercisesInOrder = exercisesInRandom.sortedByNameInDescendingOrder()
         
@@ -78,7 +78,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercisesInRandom = makeMixedCategoryExercises().shuffled()
         
-        await batchInsert(exercisesInRandom, to: sut)
+        try await batchInsert(exercisesInRandom, to: sut)
         
         let exercisesInOrder = exercisesInRandom.sortedByCategoryInAscendingOrder()
         
@@ -89,7 +89,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercisesInRandom = makeMixedCategoryExercises().shuffled()
         
-        await batchInsert(exercisesInRandom, to: sut)
+        try await batchInsert(exercisesInRandom, to: sut)
         
         let exercisesInOrder = exercisesInRandom.sortedByCategoryInDescendingOrder()
         
@@ -102,7 +102,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let correctIdExercise = anyExercise(id: id)
         let allExercises = (makeExercises(count: 5) + [correctIdExercise]).shuffled()
         
-        await batchInsert(allExercises, to: sut)
+        try await batchInsert(allExercises, to: sut)
         
         try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id, sort: .none))
     }
@@ -113,7 +113,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let correctNameExercise = anyExercise(name: name)
         let allExercises = (makeExercises(count: 5) + [correctNameExercise]).shuffled()
         
-        await batchInsert(allExercises, to: sut)
+        try await batchInsert(allExercises, to: sut)
         
         try await expect(sut, toRetrievedWith: [correctNameExercise], with: .byName(name, sort: .none))
     }
@@ -124,7 +124,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let correctCategoryExercise = anyExercise(category: category)
         let allExercises = (makeExercises(count: 5) + [correctCategoryExercise]).shuffled()
         
-        await batchInsert(allExercises, to: sut)
+        try await batchInsert(allExercises, to: sut)
         
         try await expect(sut, toRetrievedWith: [correctCategoryExercise], with: .byCategory(category, sort: .none))
     }
@@ -133,11 +133,11 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let randomExercises = makeExercises(count: 5)
         
-        await batchInsert(randomExercises, to: sut)
+        try await batchInsert(randomExercises, to: sut)
         
         let newExercise = anyExercise(id: UUID())
         
-        await sut.insert(newExercise)
+        try await sut.insert(newExercise)
         
         let retrieved = try await sut.retrieve(by: .all(sort: .none))
         
@@ -148,7 +148,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     func test_delete_hasNoSideEffectsInEmptyStore() async throws {
         let sut = makeSUT()
         
-        await sut.delete(anyExercise())
+        try await sut.delete(anyExercise())
         
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
@@ -157,8 +157,8 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         let sut = makeSUT()
         let exercise = anyExercise()
         
-        await sut.insert(exercise)
-        await sut.delete(exercise)
+        try await sut.insert(exercise)
+        try await sut.delete(exercise)
         
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
@@ -185,9 +185,9 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         CustomExercise(id: id, name: name, category: category)
     }
     
-    private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseStore) async {
+    private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseStore) async throws {
         for exercise in exercises {
-            await store.insert(exercise)
+            try await store.insert(exercise)
         }
     }
     
