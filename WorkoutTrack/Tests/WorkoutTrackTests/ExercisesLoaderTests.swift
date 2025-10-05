@@ -6,25 +6,14 @@
 //
 
 import XCTest
-import WorkoutTrack
+@testable import WorkoutTrack
 
-struct PresavedExercisesLoader {
-    func getAllExercises() -> [LocalizedExercise] {
-        return [
-            LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs"),
-        ]
-    }
-}
-
-final class ExercisesLoaderTests: XCTestCase {
+final class PresavedExercisesLoaderTests: XCTestCase {
     
-    //MARK: Pre-saved
-    
-    func test_presavedLoader_returnsKnownPresavedExercises() {
+    func test_loader_returnsAllExercises() throws {
         let loader = PresavedExercisesLoader()
-        let exercises = loader.getAllExercises()
-        
-        XCTAssertEqual(exercises.count, 1)
+        let all = try loader.getAllExercises()
+        XCTAssertEqual(all.count, 111)
     }
 
 }
