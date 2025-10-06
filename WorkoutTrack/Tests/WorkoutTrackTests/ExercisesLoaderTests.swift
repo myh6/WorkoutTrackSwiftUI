@@ -36,6 +36,16 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
+    func test_load_allWithNameDescending_returnsAllExercisesSortedByNameInDescendingOrder() {
+        let loader = PresavedExercisesLoader()
+        let retrieved = loader.loadExercises(by: .all(sort: .name(ascending: false)))
+        let baseline = retrieved.sorted {
+            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
+        }
+        
+        assertSameIDs(inOrder: baseline, retrieved)
+    }
+    
     //MARK: - Helpers
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)
