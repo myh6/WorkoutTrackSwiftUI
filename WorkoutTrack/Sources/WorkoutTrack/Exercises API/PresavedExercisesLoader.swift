@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct PresavedExercisesLoader {
+struct PresavedExercisesLoader: ExerciseLoader {
     
-    func getAllExercises() throws -> [LocalizedExercise] {
+    func loadExercises() -> [DisplayableExercise] {
         return PresavedExercises.all
     }
 }

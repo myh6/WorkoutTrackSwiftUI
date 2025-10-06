@@ -10,9 +10,9 @@ import XCTest
 
 final class PresavedExercisesLoaderTests: XCTestCase {
     
-    func test_loader_returnsAllExercises() throws {
+    func test_loader_returnsAllExercises() {
         let loader = PresavedExercisesLoader()
-        let all = try loader.getAllExercises()
+        let all = loader.loadExercises()
         XCTAssertEqual(all.count, 110)
     }
 
