@@ -19,9 +19,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     func test_load_allWithoutSorting_returnsAllExercisesSortedByNameInDefault() {
         let loader = PresavedExercisesLoader()
         let retrieved = loader.loadExercises(by: .all(sort: .none))
-        let baseline = retrieved.sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-            }
+        let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
@@ -29,9 +27,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     func test_load_allWithNameAscending_returnsAllExercisesSortedByNameInAscendingOrder() {
         let loader = PresavedExercisesLoader()
         let retrieved = loader.loadExercises(by: .all(sort: .name(ascending: true)))
-        let baseline = retrieved.sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-        }
+        let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
@@ -39,9 +35,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     func test_load_allWithNameDescending_returnsAllExercisesSortedByNameInDescendingOrder() {
         let loader = PresavedExercisesLoader()
         let retrieved = loader.loadExercises(by: .all(sort: .name(ascending: false)))
-        let baseline = retrieved.sorted {
-            $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending
-        }
+        let baseline = retrieved.sortedInNameDescendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
@@ -51,4 +45,14 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)
     }
 
+}
+
+extension Array where Element == DisplayableExercise {
+    func sortedInNameAscendingOrder() -> [DisplayableExercise] {
+        sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+    
+    func sortedInNameDescendingOrder() -> [DisplayableExercise] {
+        sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+    }
 }
