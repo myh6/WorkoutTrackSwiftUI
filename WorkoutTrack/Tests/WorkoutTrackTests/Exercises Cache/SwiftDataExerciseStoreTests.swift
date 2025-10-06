@@ -104,7 +104,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         
         try await batchInsert(allExercises, to: sut)
         
-        try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id, sort: .none))
+        try await expect(sut, toRetrievedWith: [correctIdExercise], with: .byID(id))
     }
     
     func test_retrieve_byName_deliversTheCorrectExercise() async throws {

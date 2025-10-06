@@ -9,7 +9,7 @@ import Foundation
 
 public enum ExerciseQuery {
     case all(sort: ExerciseSort?)
-    case byID(UUID, sort: ExerciseSort?)
+    case byID(UUID)
     case byName(String, sort: ExerciseSort?)
     case byCategory(String, sort: ExerciseSort?)
 }

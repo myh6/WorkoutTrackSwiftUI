@@ -37,7 +37,7 @@ extension ExerciseQuery {
     private var sort: ExerciseSort? {
         switch self {
         case .all(let sort): return sort
-        case .byID(_, let sort): return sort
+        case .byID(_): return nil
         case .byName(_, let sort): return sort
         case .byCategory(_, let sort): return sort
         }
@@ -58,7 +58,7 @@ extension ExerciseQuery {
         switch self {
         case .all:
             return #Predicate { _ in true }
-        case .byID(let id, _):
+        case .byID(let id):
             return #Predicate { $0.id == id }
         case .byName(let name, _):
             return #Predicate { $0.name == name }
