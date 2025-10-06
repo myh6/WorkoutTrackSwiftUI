@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct PresavedExercisesLoader: ExerciseLoader {
+struct PresavedExercisesLoader {
     
-    func loadExercises() -> [DisplayableExercise] {
+    func loadExercises(by query: ExerciseQuery) -> [DisplayableExercise] {
         return PresavedExercises.all
     }
 }

@@ -12,7 +12,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     
     func test_loader_returnsAllExercises() {
         let loader = PresavedExercisesLoader()
-        let all = loader.loadExercises()
+        let all = loader.loadExercises(by: .all(sort: .none))
         XCTAssertEqual(all.count, 110)
     }
 
