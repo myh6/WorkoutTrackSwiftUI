@@ -40,6 +40,15 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
+    func test_load_byID_returnsTheOnlyOneWithThatID() {
+        let testId = UUID(uuidString: "762D25FA-5659-4C2C-627D-9788B9F89EAF")!
+        let loader = PresavedExercisesLoader()
+        let retrieved = loader.loadExercises(by: .byID(testId, sort: .none))
+        
+        XCTAssertEqual(retrieved.count, 1)
+        XCTAssertEqual(retrieved[0].id, testId)
+    }
+    
     //MARK: - Helpers
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)

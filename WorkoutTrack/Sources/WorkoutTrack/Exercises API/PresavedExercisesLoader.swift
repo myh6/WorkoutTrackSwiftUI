@@ -15,6 +15,9 @@ struct PresavedExercisesLoader {
         switch query {
         case .all(let sorting):
             return all.sorted(by: (sorting?.toComparator() ?? defaultSorting()))
+        case .byID(let id, _):
+            return all
+                .filter { $0.id == id }
         default:
             return all
         }
