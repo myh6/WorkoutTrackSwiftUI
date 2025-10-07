@@ -10,26 +10,22 @@ import Foundation
 struct PresavedExercisesLoader {
     
     func loadExercises(by query: ExerciseQuery) -> [DisplayableExercise] {
-        let all = PresavedExercises.all
+        let all: [DisplayableExercise] = PresavedExercises.all
         switch query {
         case .all(let sorting):
-            return all.sorted(by: (sorting?.toComparator() ?? defaultSorting()))
+            return all.applyCustomSorting(sorting)
         case .byID(let id):
             return all
                 .filter { $0.id == id }
         case .byName(let name, let sorting):
             return all
                 .filter { $0.name.localizedCaseInsensitiveContains(name) }
-                .sorted(by: sorting?.toComparator() ?? defaultSorting())
+                .applyCustomSorting(sorting)
         case .byCategory(let category, let sorting):
             return all
                 .filter { $0.category.localizedCaseInsensitiveContains(category) }
-                .sorted(by: sorting?.toComparator() ?? defaultSorting())
+                .applyCustomSorting(sorting)
         }
-    }
-    
-    private func defaultSorting() -> (DisplayableExercise, DisplayableExercise) -> Bool {
-        return { $0.name < $1.name }
     }
     
 }
