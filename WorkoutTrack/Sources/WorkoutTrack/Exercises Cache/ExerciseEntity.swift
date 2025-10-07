@@ -11,13 +11,19 @@ import SwiftData
 @Model
 final class ExerciseEntity {
     @Attribute(.unique) var id: UUID
-    var name: String
+    var name: String {
+        didSet {
+            lowercasedName = name.lowercased()
+        }
+    }
     var category: String
+    var lowercasedName: String
     
     init(id: UUID, name: String, category: String) {
         self.id = id
         self.name = name
         self.category = category
+        self.lowercasedName = name.lowercased()
     }
 }
 
@@ -61,7 +67,7 @@ extension ExerciseQuery {
         case .byID(let id):
             return #Predicate { $0.id == id }
         case .byName(let name, _):
-            return #Predicate { $0.name.contains(name) }
+            return #Predicate { $0.lowercasedName.contains(name) }
         case .byCategory(let category, _):
             return #Predicate { $0.category == category }
         }

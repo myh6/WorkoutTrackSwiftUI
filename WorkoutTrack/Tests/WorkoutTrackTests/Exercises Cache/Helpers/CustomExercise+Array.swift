@@ -9,7 +9,7 @@
 
 extension Array where Element == CustomExercise {
     func sortedByNameInAscendingOrder() -> [CustomExercise] {
-        sorted { $0.name < $1.name }
+        sorted { $0.name.ignoringCase() < $1.name.ignoringCase() }
     }
     
     func sortedByNameInDescendingOrder() -> [CustomExercise] {
@@ -22,5 +22,11 @@ extension Array where Element == CustomExercise {
     
     func sortedByCategoryInDescendingOrder() -> [CustomExercise] {
         sorted { $0.category > $1.category }
+    }
+}
+
+extension String {
+    func ignoringCase() -> String {
+        return self.lowercased()
     }
 }
