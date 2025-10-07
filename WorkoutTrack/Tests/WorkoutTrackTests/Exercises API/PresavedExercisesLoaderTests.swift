@@ -66,6 +66,20 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertTrue(retrieved.isInDescendingOrder())
     }
     
+    func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInAscendingOrderIgnoringCases() {
+        let testCategory = "chest"
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory.uppercased(), sort: .name(ascending: true)))
+        
+        retrieved.forEach {
+            print($0.name)
+        }
+        XCTAssertEqual(retrieved.count, 16)
+        retrieved.forEach {
+            XCTAssertEqual($0.category.lowercased(), testCategory.lowercased())
+        }
+        XCTAssertTrue(retrieved.isInAscendingOrder())
+    }
+    
     //MARK: - Helpers
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)

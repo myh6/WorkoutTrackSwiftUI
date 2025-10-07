@@ -21,8 +21,10 @@ struct PresavedExercisesLoader {
             return all
                 .filter { $0.name.localizedCaseInsensitiveContains(name) }
                 .sorted(by: sorting?.toComparator() ?? defaultSorting())
-        default:
+        case .byCategory(let category, let sorting):
             return all
+                .filter { $0.category.localizedCaseInsensitiveContains(category) }
+                .sorted(by: sorting?.toComparator() ?? defaultSorting())
         }
     }
     
