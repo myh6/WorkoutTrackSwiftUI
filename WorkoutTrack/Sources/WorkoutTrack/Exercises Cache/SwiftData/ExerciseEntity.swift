@@ -16,14 +16,21 @@ final class ExerciseEntity {
             lowercasedName = name.lowercased()
         }
     }
-    var category: String
+    var category: String {
+        didSet {
+            lowercasedCategory = category.lowercased()
+        }
+    }
+    
     var lowercasedName: String
+    var lowercasedCategory: String
     
     init(id: UUID, name: String, category: String) {
         self.id = id
         self.name = name
         self.category = category
         self.lowercasedName = name.lowercased()
+        self.lowercasedCategory = category.lowercased()
     }
 }
 
@@ -69,7 +76,8 @@ extension ExerciseQuery {
         case .byName(let name, _):
             return #Predicate { $0.lowercasedName.contains(name) }
         case .byCategory(let category, _):
-            return #Predicate { $0.category == category }
+            let lowercasedRetrieved = category.lowercased()
+            return #Predicate { $0.lowercasedCategory == lowercasedRetrieved }
         }
     }
 }

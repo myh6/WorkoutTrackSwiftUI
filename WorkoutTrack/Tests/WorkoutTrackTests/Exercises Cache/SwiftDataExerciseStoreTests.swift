@@ -138,10 +138,10 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: validExercises.sortedByNameInDescendingOrder(), with: .byName(queryName, sort: .name(ascending: false)))
     }
     
-    func test_retrieve_byCategory_deliversTheCorrectExercise() async throws {
+    func test_retrieve_byCategory_deliversTheCorrectExerciseIgnoringCases() async throws {
         let sut = makeSUT()
         let category = "certain category"
-        let correctCategoryExercise = anyExercise(category: category)
+        let correctCategoryExercise = anyExercise(category: category.uppercased())
         let allExercises = (makeExercises(count: 5) + [correctCategoryExercise]).shuffled()
         
         try await batchInsert(allExercises, to: sut)
