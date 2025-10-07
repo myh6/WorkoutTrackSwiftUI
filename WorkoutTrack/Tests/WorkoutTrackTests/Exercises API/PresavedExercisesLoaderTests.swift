@@ -10,9 +10,13 @@ import XCTest
 
 final class PresavedExercisesLoaderTests: XCTestCase {
     
-    func test_loader_returnsAllExercises() {
+    func test_loader_returnsAllPresavedExercises() {
         let all = PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
+        
         XCTAssertEqual(all.count, 110)
+        all.forEach {
+            XCTAssertFalse($0.isCustom)
+        }
     }
     
     func test_load_allWithoutSorting_returnsAllExercisesSortedByNameInDefault() {

@@ -50,4 +50,6 @@ extension LocalizedExercise: DisplayableExercise {
             comment: "Exercise category"
         )
     }
+    
+    public var isCustom: Bool { false }
 }
