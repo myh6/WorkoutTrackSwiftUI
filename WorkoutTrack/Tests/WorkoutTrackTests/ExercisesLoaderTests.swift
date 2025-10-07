@@ -60,6 +60,17 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertTrue(retrieved.isInAscendingOrder())
     }
     
+    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInDescendingOrder() {
+        let testName = "squat"
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byName(testName, sort: .name(ascending: false)))
+        
+        XCTAssertEqual(retrieved.count, 4)
+        retrieved.forEach {
+            XCTAssertTrue($0.name.localizedCaseInsensitiveContains(testName))
+        }
+        XCTAssertTrue(retrieved.isInDescendingOrder())
+    }
+    
     //MARK: - Helpers
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)
@@ -77,8 +88,14 @@ extension Array where Element == DisplayableExercise {
     }
     
     func isInAscendingOrder() -> Bool {
-        let res = self.sortedInNameAscendingOrder().map { $0.id }
-        let retrievedID = self.map { $0.id }
+        let res = self.sortedInNameAscendingOrder().map(\.id)
+        let retrievedID = self.map(\.id)
+        return res == retrievedID
+    }
+    
+    func isInDescendingOrder() -> Bool {
+        let res = self.sortedInNameDescendingOrder().map(\.id)
+        let retrievedID = self.map(\.id)
         return res == retrievedID
     }
 }
