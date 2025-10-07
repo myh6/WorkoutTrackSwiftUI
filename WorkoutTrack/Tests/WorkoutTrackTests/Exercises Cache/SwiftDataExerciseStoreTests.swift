@@ -128,6 +128,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: validExercises.sortedByNameInAscendingOrder(), with: .byName(queryName, sort: .name(ascending: true)))
     }
     
+    func test_retrieve_byName_deliversExercisesWithSimilarValidNameIgnoringCasesInDescendingOrder() async throws {
+        let sut = makeSUT()
+        let queryName = "any"
+        let validExercises = ["\(queryName) test", "\(queryName) someting", "\(queryName) exercise", "\(queryName) name".uppercased()].map { anyExercise(name: $0) }
+        let allExercises = (validExercises + makeExercises(count: 5)).shuffled()
+        
+        try await batchInsert(allExercises, to: sut)
+        try await expect(sut, toRetrievedWith: validExercises.sortedByNameInDescendingOrder(), with: .byName(queryName, sort: .name(ascending: false)))
+    }
+    
     func test_retrieve_byCategory_deliversTheCorrectExercise() async throws {
         let sut = makeSUT()
         let category = "certain category"

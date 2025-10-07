@@ -13,7 +13,7 @@ extension Array where Element == CustomExercise {
     }
     
     func sortedByNameInDescendingOrder() -> [CustomExercise] {
-        sorted { $0.name > $1.name }
+        sorted { $0.name.ignoringCase() > $1.name.ignoringCase() }
     }
     
     func sortedByCategoryInAscendingOrder() -> [CustomExercise] {
