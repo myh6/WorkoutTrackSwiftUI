@@ -40,6 +40,20 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
+    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInAscendingOrder() {
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .category(ascending: true)))
+        let baseline = retrieved.sortedInCategoryAscendingOrder()
+        
+        assertSameIDs(inOrder: baseline, retrieved)
+    }
+    
+    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInDescendingOrder() {
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .category(ascending: false)))
+        let baseline = retrieved.sortedInCategoryDescendingOrder()
+        
+        assertSameIDs(inOrder: baseline, retrieved)
+    }
+    
     func test_load_byID_returnsTheOnlyOneWithThatID() {
         let testId = UUID(uuidString: "762D25FA-5659-4C2C-627D-9788B9F89EAF")!
         let retrieved = PresavedExercisesLoader().loadExercises(by: .byID(testId))

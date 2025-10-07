@@ -16,6 +16,14 @@ extension Array where Element == DisplayableExercise {
         sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
     }
     
+    func sortedInCategoryAscendingOrder() -> [DisplayableExercise] {
+        sorted { $0.category.localizedCaseInsensitiveCompare($1.category) == .orderedAscending }
+    }
+    
+    func sortedInCategoryDescendingOrder() -> [DisplayableExercise] {
+        sorted { $0.category.localizedCaseInsensitiveCompare($1.category) == .orderedDescending }
+    }
+    
     func isInAscendingOrder() -> Bool {
         let res = self.sortedInNameAscendingOrder().map(\.id)
         let retrievedID = self.map(\.id)
