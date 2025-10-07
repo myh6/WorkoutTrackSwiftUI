@@ -49,7 +49,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertEqual(retrieved[0].id, testId)
     }
     
-    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarName() {
+    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInAscedingOrder() {
         let testName = "squat"
         let retrieved = PresavedExercisesLoader().loadExercises(by: .byName(testName, sort: .name(ascending: true)))
         
@@ -57,6 +57,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         retrieved.forEach {
             XCTAssertTrue($0.name.localizedCaseInsensitiveContains(testName))
         }
+        XCTAssertTrue(retrieved.isInAscendingOrder())
     }
     
     //MARK: - Helpers
@@ -73,5 +74,11 @@ extension Array where Element == DisplayableExercise {
     
     func sortedInNameDescendingOrder() -> [DisplayableExercise] {
         sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedDescending }
+    }
+    
+    func isInAscendingOrder() -> Bool {
+        let res = self.sortedInNameAscendingOrder().map { $0.id }
+        let retrievedID = self.map { $0.id }
+        return res == retrievedID
     }
 }
