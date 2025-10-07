@@ -32,6 +32,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [anyExercise], with: .all(sort: .none))
     }
     
+    func test_retrieve_all_deliversAllCustomExercisesOnNonEmptyDatabase() async throws {
+        let sut = makeSUT()
+        
+        try await sut.insert(anyExercise())
+        
+        let retrieved = try await sut.retrieve(by: .all(sort: .none))
+        
+        retrieved.forEach { XCTAssertTrue($0.isCustom) }
+    }
+    
     func test_retrieve_all_noSorting_deliversAllExercisesSortedByNameInDefault() async throws {
         let sut = makeSUT()
         let exercisesInRandom = makeExercises(count: 5).shuffled()

@@ -19,3 +19,7 @@ public struct CustomExercise: Equatable {
         self.category = category
     }
 }
+
+extension CustomExercise: DisplayableExercise {
+    public var isCustom: Bool { true }
+}
