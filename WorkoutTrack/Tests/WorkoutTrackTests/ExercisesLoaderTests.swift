@@ -49,6 +49,16 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertEqual(retrieved[0].id, testId)
     }
     
+    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarName() {
+        let testName = "squat"
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byName(testName, sort: .name(ascending: true)))
+        
+        XCTAssertEqual(retrieved.count, 4)
+        retrieved.forEach {
+            XCTAssertTrue($0.name.localizedCaseInsensitiveContains(testName))
+        }
+    }
+    
     //MARK: - Helpers
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)

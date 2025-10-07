@@ -11,13 +11,16 @@ struct PresavedExercisesLoader {
     
     func loadExercises(by query: ExerciseQuery) -> [DisplayableExercise] {
         let all = PresavedExercises.all
-        
         switch query {
         case .all(let sorting):
             return all.sorted(by: (sorting?.toComparator() ?? defaultSorting()))
         case .byID(let id):
             return all
                 .filter { $0.id == id }
+        case .byName(let name, let sorting):
+            return all
+                .filter { $0.name.localizedCaseInsensitiveContains(name) }
+                .sorted(by: sorting?.toComparator() ?? defaultSorting())
         default:
             return all
         }
