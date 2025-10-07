@@ -61,7 +61,7 @@ extension ExerciseQuery {
         case .byID(let id):
             return #Predicate { $0.id == id }
         case .byName(let name, _):
-            return #Predicate { $0.name == name }
+            return #Predicate { $0.name.contains(name) }
         case .byCategory(let category, _):
             return #Predicate { $0.category == category }
         }
