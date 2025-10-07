@@ -11,30 +11,26 @@ import XCTest
 final class PresavedExercisesLoaderTests: XCTestCase {
     
     func test_loader_returnsAllExercises() {
-        let loader = PresavedExercisesLoader()
-        let all = loader.loadExercises(by: .all(sort: .none))
+        let all = PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
         XCTAssertEqual(all.count, 110)
     }
     
     func test_load_allWithoutSorting_returnsAllExercisesSortedByNameInDefault() {
-        let loader = PresavedExercisesLoader()
-        let retrieved = loader.loadExercises(by: .all(sort: .none))
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
         let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
     func test_load_allWithNameAscending_returnsAllExercisesSortedByNameInAscendingOrder() {
-        let loader = PresavedExercisesLoader()
-        let retrieved = loader.loadExercises(by: .all(sort: .name(ascending: true)))
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .name(ascending: true)))
         let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
     func test_load_allWithNameDescending_returnsAllExercisesSortedByNameInDescendingOrder() {
-        let loader = PresavedExercisesLoader()
-        let retrieved = loader.loadExercises(by: .all(sort: .name(ascending: false)))
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .name(ascending: false)))
         let baseline = retrieved.sortedInNameDescendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
@@ -42,8 +38,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     
     func test_load_byID_returnsTheOnlyOneWithThatID() {
         let testId = UUID(uuidString: "762D25FA-5659-4C2C-627D-9788B9F89EAF")!
-        let loader = PresavedExercisesLoader()
-        let retrieved = loader.loadExercises(by: .byID(testId))
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byID(testId))
         
         XCTAssertEqual(retrieved.count, 1)
         XCTAssertEqual(retrieved[0].id, testId)
