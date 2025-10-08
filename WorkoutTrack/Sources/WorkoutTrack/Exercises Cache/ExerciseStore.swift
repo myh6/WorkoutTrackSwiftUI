@@ -8,6 +8,7 @@
 import Foundation
 
 public protocol ExerciseStore {
-    typealias RetrievalCompletion = () -> [Exercise]
-    func retrieve(completion: @escaping RetrievalCompletion)
+    func insert(_ exercise: CustomExercise) async throws
+    func retrieve(by query: ExerciseQuery) async throws -> [CustomExercise]
+    func delete(_ exercise: CustomExercise) async throws
 }
