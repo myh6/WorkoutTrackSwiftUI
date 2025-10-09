@@ -29,7 +29,7 @@ final class WorkoutSet {
     }
 }
 
-struct WorkoutSetDTO {
+struct WorkoutSetDTO: Equatable {
     let id: UUID
     let reps: Int
     let weight: Double

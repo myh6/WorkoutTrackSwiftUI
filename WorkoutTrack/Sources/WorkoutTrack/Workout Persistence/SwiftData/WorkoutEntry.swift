@@ -31,7 +31,7 @@ final class WorkoutEntry {
     }
 }
 
-struct WorkoutEntryDTO {
+struct WorkoutEntryDTO: Equatable {
     let id: UUID
     let exerciseID: UUID
     let sets: [WorkoutSetDTO]

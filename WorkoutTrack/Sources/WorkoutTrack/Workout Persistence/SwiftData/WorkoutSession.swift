@@ -27,7 +27,7 @@ final class WorkoutSession {
     }
 }
 
-struct WorkoutSessionDTO {
+struct WorkoutSessionDTO: Equatable {
     let id: UUID
     let date: Date
     let entries: [WorkoutEntryDTO]

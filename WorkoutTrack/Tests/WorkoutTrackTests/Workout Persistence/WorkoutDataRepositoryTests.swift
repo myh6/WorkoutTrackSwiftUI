@@ -22,9 +22,13 @@ final class WorkoutDataStoreTests: XCTestCase {
     func test_retrieveSession_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        let retrieved = try await sut.retrieveSession()
+        try await expect(sut, toRetrieveSession: [])
+    }
+    
+    func test_retrieveSession_hasNoSideEffectOnEmptyDatabase() async throws {
+        let sut = makeSUT()
         
-        XCTAssertTrue(retrieved.isEmpty)
+        try await expect(sut, toRetrieveSessionTwice: [])
     }
     
     //MARK: - Helpers
@@ -33,5 +37,17 @@ final class WorkoutDataStoreTests: XCTestCase {
         let sut = try! SwiftDataWorkoutSessionStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], file: StaticString = #file, line: UInt = #line) async throws {
+        
+        let retrieved = try await sut.retrieveSession()
+        XCTAssertEqual(expected, retrieved, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], file: StaticString = #file, line: UInt = #line) async throws {
+        
+        try await expect(sut, toRetrieveSession: expected, file: file, line: line)
+        try await expect(sut, toRetrieveSession: expected, file: file, line: line)
     }
 }
