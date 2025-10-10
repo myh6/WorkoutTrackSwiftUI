@@ -9,11 +9,27 @@ import XCTest
 import SwiftData
 @testable import WorkoutTrack
 
+enum WorkoutQuery {
+    case all
+}
+
+extension WorkoutQuery {
+    var predicate: Predicate<WorkoutSession>? {
+        switch self {
+        case .all:
+            return nil
+        }
+    }
+}
+
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
-    func retrieveSession() throws -> [WorkoutSessionDTO] {
-        let descriptor = FetchDescriptor<WorkoutSession>()
+    func retrieveSession(_ query: WorkoutQuery) throws -> [WorkoutSessionDTO] {
+        var descriptor = FetchDescriptor<WorkoutSession>()
+        if let predicate = query.predicate {
+            descriptor.predicate = predicate
+        }
         return try modelContext.fetch(descriptor).map(\.dto)
     }
     
@@ -54,16 +70,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         return sut
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
         
-        let retrieved = try await sut.retrieveSession()
+        let retrieved = try await sut.retrieveSession(query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
         
-        try await expect(sut, toRetrieveSession: expected, file: file, line: line)
-        try await expect(sut, toRetrieveSession: expected, file: file, line: line)
+        try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
+        try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
     }
     
     private func anySession(id: UUID = UUID(), date: Date = .now, entries: [WorkoutEntryDTO] = []) -> WorkoutSessionDTO {
