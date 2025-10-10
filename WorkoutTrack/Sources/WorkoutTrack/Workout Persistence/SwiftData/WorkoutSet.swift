@@ -39,4 +39,8 @@ extension WorkoutSet {
     convenience init(dto: WorkoutSetDTO) {
         self.init(id: dto.id, reps: dto.reps, weight: dto.weight, entry: nil)
     }
+    
+    var dto: WorkoutSetDTO {
+        WorkoutSetDTO(id: id, reps: reps, weight: weight)
+    }
 }

@@ -46,4 +46,8 @@ extension WorkoutEntry {
             return set
         }
     }
+    
+    var dto: WorkoutEntryDTO {
+        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto))
+    }
 }

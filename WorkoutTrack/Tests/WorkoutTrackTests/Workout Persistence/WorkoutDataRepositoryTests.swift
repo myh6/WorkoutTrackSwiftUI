@@ -23,24 +23,6 @@ final actor SwiftDataWorkoutSessionStore {
     }
 }
 
-extension WorkoutSession {
-    var dto: WorkoutSessionDTO {
-        WorkoutSessionDTO(id: id, date: date, entries: entries.map(\.dto))
-    }
-}
-
-extension WorkoutEntry {
-    var dto: WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto))
-    }
-}
-
-extension WorkoutSet {
-    var dto: WorkoutSetDTO {
-        WorkoutSetDTO(id: id, reps: reps, weight: weight)
-    }
-}
-
 final class WorkoutDataStoreTests: XCTestCase {
     
     func test_retrieveSession_deliversEmptyOnEmptyDatabase() async throws {

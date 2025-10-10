@@ -43,4 +43,8 @@ extension WorkoutSession {
             return entry
         }
     }
+    
+    var dto: WorkoutSessionDTO {
+        WorkoutSessionDTO(id: id, date: date, entries: entries.map(\.dto))
+    }
 }
