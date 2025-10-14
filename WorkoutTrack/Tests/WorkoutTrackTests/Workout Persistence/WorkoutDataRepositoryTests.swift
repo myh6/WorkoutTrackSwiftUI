@@ -37,6 +37,19 @@ final actor SwiftDataWorkoutSessionStore {
         let model = WorkoutSession(dto: session)
         modelContext.insert(model)
     }
+    
+    func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) throws {
+        let targetID = session.id
+        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == targetID })
+        if let session = try modelContext.fetch(descriptor).first {
+            entries.map{ WorkoutEntry(dto: $0) }.forEach {
+                $0.session = session
+                modelContext.insert($0)
+                session.entries.append($0)
+            }
+        }
+        try modelContext.save()
+    }
 }
 
 final class WorkoutDataStoreTests: XCTestCase {
@@ -82,6 +95,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: [session])
     }
     
+    func test_insert_toSameSession_wouldNotOverwriteExistingSessionAndItsEntries() async throws {
+        let sut = makeSUT()
+        let sessionId = UUID()
+        let presavedEntryId = UUID()
+        let session = anySession(id: sessionId, entries: [anyEntry(id: presavedEntryId)])
+        let addedEntries = [anyEntry(), anyEntry()]
+        
+        await sut.insert(session)
+        try await sut.insert(addedEntries, to: session)
+        try await expect(sut, toRetrieveEntriesWithIDs: [presavedEntryId] + addedEntries.map(\.id))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
@@ -100,6 +125,11 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.retrieveSession(query).flatMap(\.entries)
+        XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
     }
     
     private func anySession(id: UUID = UUID(), date: Date = .now, entries: [WorkoutEntryDTO] = []) -> WorkoutSessionDTO {
