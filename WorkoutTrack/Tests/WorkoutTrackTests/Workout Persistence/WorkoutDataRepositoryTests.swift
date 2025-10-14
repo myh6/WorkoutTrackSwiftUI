@@ -11,6 +11,7 @@ import SwiftData
 
 enum SessionQuery {
     case all(sort: SessionSort?)
+    case sessionID(id: UUID)
 }
 
 enum SessionSort {
@@ -23,6 +24,8 @@ extension SessionQuery {
         switch self {
         case .all:
             return nil
+        case .sessionID(id: let id):
+            return #Predicate { $0.id == id }
         }
     }
     
@@ -30,6 +33,8 @@ extension SessionQuery {
         switch self {
         case .all(let sort):
             return sort
+        case .sessionID:
+            return nil
         }
     }
     
@@ -156,6 +161,20 @@ final class WorkoutDataStoreTests: XCTestCase {
         }
         
         try await expect(sut, toRetrieveSession: allSession.sortedByDateInDescendingOrder(), withQuery: .all(sort: .byDate(ascending: false)))
+    }
+    
+    func test_retrieveSession_id_deliversCorrespondingSessionWithExactID() async throws {
+        let sut = makeSUT()
+        let id = UUID()
+        let session = anySession(id: id)
+        
+        let allSession = [anySession(), session, anySession()]
+        
+        for session in allSession {
+            await sut.insert(session)
+        }
+        
+        try await expect(sut, toRetrieveSession: [session], withQuery: .sessionID(id: id))
     }
     
     func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
