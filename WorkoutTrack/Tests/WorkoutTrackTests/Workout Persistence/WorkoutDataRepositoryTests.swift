@@ -9,15 +9,15 @@ import XCTest
 import SwiftData
 @testable import WorkoutTrack
 
-enum WorkoutQuery {
-    case all(sort: WorkoutSort?)
+enum SessionQuery {
+    case all(sort: SessionSort?)
 }
 
-enum WorkoutSort {
+enum SessionSort {
     case bySessionId(ascending: Bool)
 }
 
-extension WorkoutQuery {
+extension SessionQuery {
     var predicate: Predicate<WorkoutSession>? {
         switch self {
         case .all:
@@ -25,7 +25,7 @@ extension WorkoutQuery {
         }
     }
     
-    var sort: WorkoutSort? {
+    var sort: SessionSort? {
         switch self {
         case .all(let sort):
             return sort
@@ -45,7 +45,7 @@ extension WorkoutQuery {
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
-    func retrieveSession(_ query: WorkoutQuery) throws -> [WorkoutSessionDTO] {
+    func retrieveSession(_ query: SessionQuery) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
         if let predicate = query.predicate {
             descriptor.predicate = predicate
@@ -150,19 +150,19 @@ final class WorkoutDataStoreTests: XCTestCase {
         return sut
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
         let retrieved = try await sut.retrieveSession(query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieveSession(query).flatMap(\.entries)
         XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
     }
