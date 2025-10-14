@@ -146,6 +146,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: allSession.sortedByDateInAscendingOrder(), withQuery: .all(sort: .byDate(ascending: true)))
     }
     
+    func test_retrieveSession_allSortedByDateInReverse_deliversFoundSessionsInDescendingOrder() async throws {
+        let sut = makeSUT()
+        let allDates = [Date().advanced(by: -200), Date().advanced(by: -100), Date()]
+        let allSession = allDates.map { anySession(date: $0) }
+        
+        for session in allSession {
+            await sut.insert(session)
+        }
+        
+        try await expect(sut, toRetrieveSession: allSession.sortedByDateInDescendingOrder(), withQuery: .all(sort: .byDate(ascending: false)))
+    }
+    
     func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
@@ -218,5 +230,9 @@ extension Array where Element == WorkoutSessionDTO {
     
     func sortedByDateInAscendingOrder() -> [WorkoutSessionDTO] {
         sorted { $0.date < $1.date }
+    }
+    
+    func sortedByDateInDescendingOrder() -> [WorkoutSessionDTO] {
+        sorted { $0.date > $1.date }
     }
 }
