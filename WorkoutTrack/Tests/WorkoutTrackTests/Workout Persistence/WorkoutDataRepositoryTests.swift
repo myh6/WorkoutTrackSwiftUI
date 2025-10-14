@@ -10,13 +10,33 @@ import SwiftData
 @testable import WorkoutTrack
 
 enum WorkoutQuery {
-    case all
+    case all(sort: WorkoutSort?)
+}
+
+enum WorkoutSort {
+    case bySessionId(ascending: Bool)
 }
 
 extension WorkoutQuery {
     var predicate: Predicate<WorkoutSession>? {
         switch self {
         case .all:
+            return nil
+        }
+    }
+    
+    var sort: WorkoutSort? {
+        switch self {
+        case .all(let sort):
+            return sort
+        }
+    }
+    
+    var sortDescriptor: SortDescriptor<WorkoutSession>? {
+        switch self.sort {
+        case .bySessionId(let ascending):
+            return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
+        case .none:
             return nil
         }
     }
@@ -29,6 +49,9 @@ final actor SwiftDataWorkoutSessionStore {
         var descriptor = FetchDescriptor<WorkoutSession>()
         if let predicate = query.predicate {
             descriptor.predicate = predicate
+        }
+        if let sort = query.sortDescriptor {
+            descriptor.sortBy = [sort]
         }
         return try modelContext.fetch(descriptor).map(\.dto)
     }
@@ -72,16 +95,28 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         await sut.insert(session)
         
-        try await expect(sut, toRetrieveSession: [session], withQuery: .all)
+        try await expect(sut, toRetrieveSession: [session], withQuery: .all(sort: nil))
     }
     
-    func test_retrieveSession_all_hasNoSideEffectOnNonEmptyDatabase() async throws {
+    func test_retrieveSession_hasNoSideEffectOnNonEmptyDatabase() async throws {
         let sut = makeSUT()
         let session = anySession()
         
         await sut.insert(session)
         
-        try await expect(sut, toRetrieveSessionTwice: [session], withQuery: .all)
+        try await expect(sut, toRetrieveSessionTwice: [session])
+    }
+    
+    func test_retrieveSession_allSortedBySessionID_deliversFoundSessionInSortedOrder() async throws {
+        let sut = makeSUT()
+        let allID = [UUID(), UUID(), UUID()]
+        let allSessions = allID.map { anySession(id: $0) }
+        
+        for session in allSessions {
+            await sut.insert(session)
+        }
+        
+        try await expect(sut, toRetrieveSession: allSessions.sortedBySessionInAscendingOrder(), withQuery: .all(sort: .bySessionId(ascending: true)))
     }
     
     func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
@@ -115,19 +150,19 @@ final class WorkoutDataStoreTests: XCTestCase {
         return sut
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
         let retrieved = try await sut.retrieveSession(query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: WorkoutQuery = .all, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: WorkoutQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieveSession(query).flatMap(\.entries)
         XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
     }
@@ -142,5 +177,11 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     private func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0) -> WorkoutSetDTO {
         WorkoutSetDTO(id: id, reps: reps, weight: weight)
+    }
+}
+
+extension Array where Element == WorkoutSessionDTO {
+    func sortedBySessionInAscendingOrder() -> [WorkoutSessionDTO] {
+        sorted { $0.id < $1.id }
     }
 }
