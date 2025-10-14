@@ -71,15 +71,6 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSessionTwice: [session], withQuery: .all)
     }
     
-    func test_insert_deliversFoundSessionOnNonEmptyDatabase() async throws {
-        let sut = makeSUT()
-        let session = anySession()
-        
-        await sut.insert(session)
-        
-        try await expect(sut, toRetrieveSession: [session])
-    }
-    
     func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
