@@ -80,6 +80,17 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: [session])
     }
     
+    func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
+        let sut = makeSUT()
+        let session = anySession(
+            entries: [anyEntry(
+                sets: [anySet()])])
+        
+        await sut.insert(session)
+        
+        try await expect(sut, toRetrieveSession: [session])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
