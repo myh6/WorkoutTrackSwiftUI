@@ -15,6 +15,7 @@ enum SessionQuery {
 
 enum SessionSort {
     case bySessionId(ascending: Bool)
+    case byDate(ascending: Bool)
 }
 
 extension SessionQuery {
@@ -36,6 +37,8 @@ extension SessionQuery {
         switch self.sort {
         case .bySessionId(let ascending):
             return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
+        case .byDate(let ascending):
+            return SortDescriptor(\.date, order: ascending ? .forward : .reverse)
         case .none:
             return nil
         }
@@ -131,6 +134,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: allSessions.sortedBySessionInDescendingOrder(), withQuery: .all(sort: .bySessionId(ascending: false)))
     }
     
+    func test_retrieveSession_allSortedByDate_deliversFoundSessionsInAscendingOrder() async throws {
+        let sut = makeSUT()
+        let allDates = [Date().advanced(by: -200), Date().advanced(by: -100), Date()]
+        let allSession = allDates.map { anySession(date: $0) }
+        
+        for session in allSession {
+            await sut.insert(session)
+        }
+        
+        try await expect(sut, toRetrieveSession: allSession.sortedByDateInAscendingOrder(), withQuery: .all(sort: .byDate(ascending: true)))
+    }
+    
     func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
@@ -199,5 +214,9 @@ extension Array where Element == WorkoutSessionDTO {
     
     func sortedBySessionInDescendingOrder() -> [WorkoutSessionDTO] {
         sorted { $0.id > $1.id }
+    }
+    
+    func sortedByDateInAscendingOrder() -> [WorkoutSessionDTO] {
+        sorted { $0.date < $1.date }
     }
 }
