@@ -65,16 +65,8 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func insert(_ session: WorkoutSessionDTO) throws {
-        let targetId = session.id
-        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == targetId })
-        if let existingSession = try modelContext.fetch(descriptor).first {
-            existingSession.date = session.date
-            existingSession.entries.forEach { modelContext.delete($0) }
-            existingSession.entries = session.entries.map { entryDTO in
-                let entry = WorkoutEntry(dto: entryDTO)
-                entry.session = existingSession
-                return entry
-            }
+        if let existing = try getSessionFromContext(id: session.id) {
+            existing.update(from: session, in: modelContext)
         } else {
             let model = WorkoutSession(dto: session)
             modelContext.insert(model)
@@ -84,16 +76,35 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) throws {
-        let targetID = session.id
-        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == targetID })
-        if let session = try modelContext.fetch(descriptor).first {
-            entries.map{ WorkoutEntry(dto: $0) }.forEach {
-                $0.session = session
-                modelContext.insert($0)
-                session.entries.append($0)
-            }
-        }
+        guard let existing = try getSessionFromContext(id: session.id) else { return }
+        entries.forEach { insert($0, in: existing) }
         try modelContext.save()
+    }
+}
+ 
+extension SwiftDataWorkoutSessionStore {
+    private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {
+        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == id })
+        return try modelContext.fetch(descriptor).first
+    }
+    
+    private func insert(_ entryDTO: WorkoutEntryDTO, in session: WorkoutSession) {
+        let entry = WorkoutEntry(dto: entryDTO)
+        entry.session = session
+        modelContext.insert(entry)
+    }
+}
+
+extension WorkoutSession {
+    func update(from dto: WorkoutSessionDTO, in context: ModelContext) {
+        self.date = dto.date
+        entries.forEach { context.delete($0) }
+        
+        self.entries = dto.entries.map { entryDTO in
+            let entry = WorkoutEntry(dto: entryDTO)
+            entry.session = self
+            return entry
+        }
     }
 }
 
