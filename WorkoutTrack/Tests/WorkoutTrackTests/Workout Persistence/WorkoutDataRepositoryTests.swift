@@ -115,10 +115,10 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: [session])
     }
     
-    func test_insertSessionWithSameID_wouldNotCreateNewSessionButUpdateTheExistingOne() async throws {
+    func test_insertSessionWithSameID_wouldNotCreateNewSessionButOverwirteTheExistingOne() async throws {
         let sut = makeSUT()
         let id = UUID()
-        let firstInsertionSession = anySession(id: id)
+        let firstInsertionSession = anySession(id: id, entries: [anyEntry()])
         let sessionWithSameID = anySession(id: id, entries: [anyEntry()])
         
         try await sut.insert(firstInsertionSession)
