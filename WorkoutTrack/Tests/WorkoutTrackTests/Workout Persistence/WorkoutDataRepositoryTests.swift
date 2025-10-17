@@ -64,9 +64,23 @@ final actor SwiftDataWorkoutSessionStore {
         return try modelContext.fetch(descriptor).map(\.dto)
     }
     
-    func insert(_ session: WorkoutSessionDTO) {
-        let model = WorkoutSession(dto: session)
-        modelContext.insert(model)
+    func insert(_ session: WorkoutSessionDTO) throws {
+        let targetId = session.id
+        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == targetId })
+        if let existingSession = try modelContext.fetch(descriptor).first {
+            existingSession.date = session.date
+            existingSession.entries.forEach { modelContext.delete($0) }
+            existingSession.entries = session.entries.map { entryDTO in
+                let entry = WorkoutEntry(dto: entryDTO)
+                entry.session = existingSession
+                return entry
+            }
+        } else {
+            let model = WorkoutSession(dto: session)
+            modelContext.insert(model)
+        }
+        
+        try modelContext.save()
     }
     
     func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) throws {
@@ -101,7 +115,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let sut = makeSUT()
         let session = anySession()
         
-        await sut.insert(session)
+        try await sut.insert(session)
         
         try await expect(sut, toRetrieveSession: [session], withQuery: .all(sort: nil))
     }
@@ -110,7 +124,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let sut = makeSUT()
         let session = anySession()
         
-        await sut.insert(session)
+        try await sut.insert(session)
         
         try await expect(sut, toRetrieveSessionTwice: [session])
     }
@@ -121,7 +135,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let allSessions = allID.map { anySession(id: $0) }
         
         for session in allSessions {
-            await sut.insert(session)
+            try await sut.insert(session)
         }
         
         try await expect(sut, toRetrieveSession: allSessions.sortedBySessionInAscendingOrder(), withQuery: .all(sort: .bySessionId(ascending: true)))
@@ -133,7 +147,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let allSessions = allID.map { anySession(id: $0) }
         
         for session in allSessions {
-            await sut.insert(session)
+            try await sut.insert(session)
         }
         
         try await expect(sut, toRetrieveSession: allSessions.sortedBySessionInDescendingOrder(), withQuery: .all(sort: .bySessionId(ascending: false)))
@@ -145,7 +159,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let allSession = allDates.map { anySession(date: $0) }
         
         for session in allSession {
-            await sut.insert(session)
+            try await sut.insert(session)
         }
         
         try await expect(sut, toRetrieveSession: allSession.sortedByDateInAscendingOrder(), withQuery: .all(sort: .byDate(ascending: true)))
@@ -157,7 +171,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let allSession = allDates.map { anySession(date: $0) }
         
         for session in allSession {
-            await sut.insert(session)
+            try await sut.insert(session)
         }
         
         try await expect(sut, toRetrieveSession: allSession.sortedByDateInDescendingOrder(), withQuery: .all(sort: .byDate(ascending: false)))
@@ -171,7 +185,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let allSession = [anySession(), session, anySession()]
         
         for session in allSession {
-            await sut.insert(session)
+            try await sut.insert(session)
         }
         
         try await expect(sut, toRetrieveSession: [session], withQuery: .sessionID(id: id))
@@ -183,9 +197,21 @@ final class WorkoutDataStoreTests: XCTestCase {
             entries: [anyEntry(
                 sets: [anySet()])])
         
-        await sut.insert(session)
+        try await sut.insert(session)
         
         try await expect(sut, toRetrieveSession: [session])
+    }
+    
+    func test_insertSessionWithSameID_wouldNotCreateNewSessionButUpdateTheExistingOne() async throws {
+        let sut = makeSUT()
+        let id = UUID()
+        let firstInsertionSession = anySession(id: id)
+        let sessionWithSameID = anySession(id: id, entries: [anyEntry()])
+        
+        try await sut.insert(firstInsertionSession)
+        try await sut.insert(sessionWithSameID)
+        
+        try await expect(sut, toRetrieveSession: [sessionWithSameID])
     }
     
     func test_insert_toSameSession_wouldNotOverwriteExistingSessionAndItsEntries() async throws {
@@ -195,7 +221,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let session = anySession(id: sessionId, entries: [anyEntry(id: presavedEntryId)])
         let addedEntries = [anyEntry(), anyEntry()]
         
-        await sut.insert(session)
+        try await sut.insert(session)
         try await sut.insert(addedEntries, to: session)
         try await expect(sut, toRetrieveEntriesWithIDs: [presavedEntryId] + addedEntries.map(\.id))
     }
