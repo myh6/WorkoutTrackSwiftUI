@@ -141,6 +141,8 @@ extension EntryQuery {
         switch self.sort {
         case .byId(let ascending):
             return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
+        case .byDate(let ascending):
+            return SortDescriptor<WorkoutEntry>(\.session?.date, order: ascending ? .forward : .reverse)
         case .none:
             return nil
         }

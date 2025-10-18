@@ -13,4 +13,5 @@ enum EntryQuery {
 
 enum EntrySort {
     case byId(ascending: Bool)
+    case byDate(ascending: Bool)
 }

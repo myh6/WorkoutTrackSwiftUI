@@ -222,6 +222,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntry: (entryA + entryB).sortedByIDInDescendingOrder(), withQuery: .all(sort: .byId(ascending: false)))
     }
     
+    func test_retrieveEntry_allSortredByDate_deliversAllEntryFromDatabaseInAscendingOrder() async throws {
+        let sut = makeSUT()
+        let sessionA = anySession(date: Date(), entries: [anyEntry()])
+        let sessionB = anySession(date: Date().advanced(by: -200), entries: [anyEntry()])
+        let expectedEntries = [sessionA, sessionB].sortedByDateInAscendingOrderToEntries()
+        
+        try await sut.insert(sessionA)
+        try await sut.insert(sessionB)
+        
+        try await expect(sut, toRetrieveEntry: expectedEntries, withQuery: .all(sort: .byDate(ascending: true)))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
@@ -291,6 +303,10 @@ extension Array where Element == WorkoutSessionDTO {
     
     func sortedByDateInDescendingOrder() -> [WorkoutSessionDTO] {
         sorted { $0.date > $1.date }
+    }
+    
+    func sortedByDateInAscendingOrderToEntries() -> [WorkoutEntryDTO] {
+        sortedByDateInAscendingOrder().flatMap(\.entries)
     }
 }
 
