@@ -139,6 +139,17 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntriesWithIDs: [presavedEntryId] + addedEntries.map(\.id))
     }
     
+    func test_insert_toNonExistantSession_createsSessionAndInsertsTheGivenEntries() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry()
+        let session = anySession()
+        let expectedSession = appendingEntries([entry], to: session)
+        
+        try await sut.insert([entry], to: session)
+        
+        try await expect(sut, toRetrieveSession: [expectedSession])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
@@ -174,6 +185,10 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     private func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0) -> WorkoutSetDTO {
         WorkoutSetDTO(id: id, reps: reps, weight: weight)
+    }
+    
+    private func appendingEntries(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) -> WorkoutSessionDTO {
+        WorkoutSessionDTO(id: session.id, date: session.date, entries: session.entries + entries)
     }
 }
 

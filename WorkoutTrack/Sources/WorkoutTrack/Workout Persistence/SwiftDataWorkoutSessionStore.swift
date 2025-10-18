@@ -34,7 +34,11 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) throws {
-        guard let existing = try getSessionFromContext(id: session.id) else { return }
+        guard let existing = try getSessionFromContext(id: session.id) else {
+            try insert(session)
+            try insert(entries, to: session)
+            return
+        }
         entries.forEach { insert($0, in: existing) }
         try modelContext.save()
     }
