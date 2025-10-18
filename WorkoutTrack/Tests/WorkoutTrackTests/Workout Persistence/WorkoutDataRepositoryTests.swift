@@ -186,6 +186,19 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntryTwice: [])
     }
     
+    func test_retrieveEntry_allSortedById_deliversAllEntryFromDatabaseInAscendingOrder() async throws {
+        let sut = makeSUT()
+        let entryA = [anyEntry()]
+        let sessionA = anySession(entries: entryA)
+        let entryB = [anyEntry(), anyEntry(), anyEntry()]
+        let sessionB = anySession(entries: entryB)
+        
+        try await sut.insert(sessionA)
+        try await sut.insert(sessionB)
+        
+        try await expect(sut, toRetrieveEntry: (entryA + entryB).sortedByIDInAscendingOrder(), withQuery: .all(sort: .byId(ascending: true)))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
@@ -206,16 +219,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], withQuery query: EntryQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
-        let retrieved = try await sut.retrieveEntry()
+        let retrieved = try await sut.retrieveEntry(query)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntryTwice expected: [WorkoutEntryDTO], file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntryTwice expected: [WorkoutEntryDTO], withQuery query: EntryQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
-        try await expect(sut, toRetrieveEntry: expected, file: file, line: line)
-        try await expect(sut, toRetrieveEntry: expected, file: file, line: line)
+        try await expect(sut, toRetrieveEntry: expected, withQuery: query, file: file, line: line)
+        try await expect(sut, toRetrieveEntry: expected, withQuery: query, file: file, line: line)
     }
     
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
@@ -255,5 +268,11 @@ extension Array where Element == WorkoutSessionDTO {
     
     func sortedByDateInDescendingOrder() -> [WorkoutSessionDTO] {
         sorted { $0.date > $1.date }
+    }
+}
+
+extension Array where Element == WorkoutEntryDTO {
+    func sortedByIDInAscendingOrder() -> [WorkoutEntryDTO] {
+        sorted { $0.id < $1.id }
     }
 }
