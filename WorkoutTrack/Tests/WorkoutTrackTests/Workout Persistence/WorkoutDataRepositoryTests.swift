@@ -174,6 +174,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: [session])
     }
     
+    func test_deleteSession_deletesTheSpecificedSessionAndItsEntry() async throws {
+        let sut = makeSUT()
+        let session = anySession(entries: [anyEntry(), anyEntry(), anyEntry()])
+        
+        try await sut.insert(session)
+        try await sut.delete(session)
+        
+        try await expect(sut, toRetrieveEntry: [])
+    }
+    
     func test_retrieveEntry_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
