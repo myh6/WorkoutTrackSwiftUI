@@ -160,6 +160,20 @@ final class WorkoutDataStoreTests: XCTestCase {
         }
     }
     
+    func test_deleteSession_hasNoEffectOnNonExistantSession() async throws {
+        let sut = makeSUT()
+        let session = anySession()
+        try await sut.insert(session)
+        
+        do {
+            try await sut.delete(anySession())
+        } catch {
+            XCTFail("Expected SUT to delete without any error on non existant session")
+        }
+        
+        try await expect(sut, toRetrieveSession: [session])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
