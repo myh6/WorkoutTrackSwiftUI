@@ -47,6 +47,13 @@ final actor SwiftDataWorkoutSessionStore {
         
     }
 }
+
+//MARK: - Entry
+extension SwiftDataWorkoutSessionStore {
+    func retrieveEntry() throws -> [WorkoutEntryDTO] {
+        return []
+    }
+}
  
 extension SwiftDataWorkoutSessionStore {
     private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {

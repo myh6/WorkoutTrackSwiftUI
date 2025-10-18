@@ -174,6 +174,14 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSession: [session])
     }
     
+    func test_retrieveEntry_deliversEmptyOnEmptyDatabase() async throws {
+        let sut = makeSUT()
+        
+        let retrieved = try await sut.retrieveEntry()
+        
+        XCTAssertEqual(retrieved, [])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
