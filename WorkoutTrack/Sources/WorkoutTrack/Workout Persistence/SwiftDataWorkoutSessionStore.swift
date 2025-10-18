@@ -42,6 +42,10 @@ final actor SwiftDataWorkoutSessionStore {
         entries.forEach { insert($0, in: existing) }
         try modelContext.save()
     }
+    
+    func delete(_ session: WorkoutSessionDTO) throws {
+        
+    }
 }
  
 extension SwiftDataWorkoutSessionStore {
