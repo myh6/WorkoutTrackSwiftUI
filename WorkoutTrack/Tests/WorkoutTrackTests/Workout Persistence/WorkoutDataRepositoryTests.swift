@@ -177,9 +177,13 @@ final class WorkoutDataStoreTests: XCTestCase {
     func test_retrieveEntry_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        let retrieved = try await sut.retrieveEntry()
+        try await expect(sut, toRetrieveEntry: [])
+    }
+    
+    func test_retrieveEntry_hasNoSideEffectOnEmptyDatabase() async throws {
+        let sut = makeSUT()
         
-        XCTAssertEqual(retrieved, [])
+        try await expect(sut, toRetrieveEntryTwice: [])
     }
     
     //MARK: - Helpers
@@ -200,6 +204,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], file: StaticString = #file, line: UInt = #line) async throws {
+        
+        let retrieved = try await sut.retrieveEntry()
+        XCTAssertEqual(expected, retrieved, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntryTwice expected: [WorkoutEntryDTO], file: StaticString = #file, line: UInt = #line) async throws {
+        
+        try await expect(sut, toRetrieveEntry: expected, file: file, line: line)
+        try await expect(sut, toRetrieveEntry: expected, file: file, line: line)
     }
     
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
