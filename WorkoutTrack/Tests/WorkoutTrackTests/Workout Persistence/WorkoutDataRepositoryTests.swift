@@ -38,6 +38,15 @@ final class QueryDescriptorBuilderTests: XCTestCase {
         
         XCTAssertEqual(descriptor.sortBy, .byDate(ascending: true))
     }
+    
+    func test_build_containExercises_createsDescriptorWithCorrectFIlter() {
+        let exercisesID = [UUID(), UUID(), UUID(), UUID()]
+        let descriptor = QueryBuilder()
+            .containsExercises(exercisesID)
+            .build()
+        
+        XCTAssertEqual(descriptor.containExercises, exercisesID)
+    }
 }
 
 
