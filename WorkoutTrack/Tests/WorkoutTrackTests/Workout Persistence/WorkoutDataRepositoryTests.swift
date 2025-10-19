@@ -17,6 +17,7 @@ final class QueryDescriptorBuilderTests: XCTestCase {
             .build()
         
         XCTAssertNil(descriptor.dateRange)
+        XCTAssertNil(descriptor.sortBy)
     }
     
     func test_build_withDateRange_createsDescriptorWithCorrectRange() {
@@ -28,6 +29,14 @@ final class QueryDescriptorBuilderTests: XCTestCase {
             .build()
         
         XCTAssertEqual(descriptor.dateRange, from...to)
+    }
+    
+    func test_build_withSortBy_createsDescriptorWithCorrectDateSort() {
+        let descriptor = QueryBuilder()
+            .sort(by: .byDate(ascending: true))
+            .build()
+        
+        XCTAssertEqual(descriptor.sortBy, .byDate(ascending: true))
     }
 }
 

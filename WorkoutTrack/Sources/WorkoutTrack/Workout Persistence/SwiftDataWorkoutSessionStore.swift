@@ -10,10 +10,16 @@ import SwiftData
 
 struct SessionQueryDescriptor {
     let dateRange: ClosedRange<Date>?
+    let sortBy: QuerySort?
+}
+
+public enum QuerySort: Equatable {
+    case byDate(ascending: Bool)
 }
 
 public struct QueryBuilder {
     private var dateRange: ClosedRange<Date>?
+    private var sortBy: QuerySort?
     
     public func filterDateRange(_ range: ClosedRange<Date>) -> Self {
         var copy = self
@@ -21,8 +27,14 @@ public struct QueryBuilder {
         return copy
     }
     
+    public func sort(by sort: QuerySort) -> Self {
+        var copy = self
+        copy.sortBy = sort
+        return copy
+    }
+    
     func build() -> SessionQueryDescriptor {
-        return SessionQueryDescriptor(dateRange: dateRange)
+        return SessionQueryDescriptor(dateRange: dateRange, sortBy: sortBy)
     }
 }
 
