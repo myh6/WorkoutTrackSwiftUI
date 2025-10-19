@@ -13,6 +13,7 @@ struct SessionQueryDescriptor {
     let dateRange: ClosedRange<Date>?
     let containExercises: [UUID]?
     let sortBy: [QuerySort]?
+    let postProcessing: [PostProcessing]?
 }
 
 public enum QuerySort: Equatable {
@@ -20,11 +21,16 @@ public enum QuerySort: Equatable {
     case byDate(ascending: Bool)
 }
 
+enum PostProcessing: Equatable {
+    case onlyIncludFinishedSets
+}
+
 public struct QueryBuilder {
     private var sessionId: UUID?
     private var dateRange: ClosedRange<Date>?
     private var containExercises: [UUID]?
     private var sortBy: [QuerySort]?
+    private var postProcess: [PostProcessing]?
     
     public func filterSession(_ id: UUID) -> Self {
         var copy = self
@@ -50,12 +56,20 @@ public struct QueryBuilder {
         return copy
     }
     
+    public func onlyIncludFinishedSets() -> Self {
+        var copy = self
+        copy.postProcess = createArrayIfNeeded(postProcess) + [.onlyIncludFinishedSets]
+        return copy
+    }
+    
     func build() -> SessionQueryDescriptor {
         return SessionQueryDescriptor(
             sessionId: sessionId,
             dateRange: dateRange,
             containExercises: containExercises,
-            sortBy: sortBy)
+            sortBy: sortBy,
+            postProcessing: postProcess
+        )
     }
     
     private func createArrayIfNeeded<T: Any>(_ value: [T]?) -> [T] {
