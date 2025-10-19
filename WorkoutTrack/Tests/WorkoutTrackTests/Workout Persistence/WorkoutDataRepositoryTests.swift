@@ -34,9 +34,10 @@ final class QueryDescriptorBuilderTests: XCTestCase {
     func test_build_withSortBy_createsDescriptorWithCorrectDateSort() {
         let descriptor = QueryBuilder()
             .sort(by: .byDate(ascending: true))
+            .sort(by: .byId(ascending: false))
             .build()
         
-        XCTAssertEqual(descriptor.sortBy, .byDate(ascending: true))
+        XCTAssertEqual(descriptor.sortBy, [.byDate(ascending: true), .byId(ascending: false)])
     }
     
     func test_build_containExercises_createsDescriptorWithCorrectFIlter() {

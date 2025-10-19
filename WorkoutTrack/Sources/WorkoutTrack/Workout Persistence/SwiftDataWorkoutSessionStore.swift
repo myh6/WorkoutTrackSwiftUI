@@ -12,10 +12,11 @@ struct SessionQueryDescriptor {
     let sessionId: UUID?
     let dateRange: ClosedRange<Date>?
     let containExercises: [UUID]?
-    let sortBy: QuerySort?
+    let sortBy: [QuerySort]?
 }
 
 public enum QuerySort: Equatable {
+    case byId(ascending: Bool)
     case byDate(ascending: Bool)
 }
 
@@ -23,7 +24,7 @@ public struct QueryBuilder {
     private var sessionId: UUID?
     private var dateRange: ClosedRange<Date>?
     private var containExercises: [UUID]?
-    private var sortBy: QuerySort?
+    private var sortBy: [QuerySort]?
     
     public func filterSession(_ id: UUID) -> Self {
         var copy = self
@@ -39,7 +40,7 @@ public struct QueryBuilder {
     
     public func sort(by sort: QuerySort) -> Self {
         var copy = self
-        copy.sortBy = sort
+        copy.sortBy = createArrayIfNeeded(sortBy) + [sort]
         return copy
     }
     
@@ -55,6 +56,11 @@ public struct QueryBuilder {
             dateRange: dateRange,
             containExercises: containExercises,
             sortBy: sortBy)
+    }
+    
+    private func createArrayIfNeeded<T: Any>(_ value: [T]?) -> [T] {
+        guard let value else { return [] }
+        return value
     }
 }
 
