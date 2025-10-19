@@ -9,6 +9,7 @@ import Foundation
 import SwiftData
 
 struct SessionQueryDescriptor {
+    let sessionId: UUID?
     let dateRange: ClosedRange<Date>?
     let containExercises: [UUID]?
     let sortBy: QuerySort?
@@ -19,9 +20,16 @@ public enum QuerySort: Equatable {
 }
 
 public struct QueryBuilder {
+    private var sessionId: UUID?
     private var dateRange: ClosedRange<Date>?
     private var containExercises: [UUID]?
     private var sortBy: QuerySort?
+    
+    public func filterSession(_ id: UUID) -> Self {
+        var copy = self
+        copy.sessionId = id
+        return copy
+    }
     
     public func filterDateRange(_ range: ClosedRange<Date>) -> Self {
         var copy = self
@@ -43,6 +51,7 @@ public struct QueryBuilder {
     
     func build() -> SessionQueryDescriptor {
         return SessionQueryDescriptor(
+            sessionId: sessionId,
             dateRange: dateRange,
             containExercises: containExercises,
             sortBy: sortBy)

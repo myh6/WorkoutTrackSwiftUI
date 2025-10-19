@@ -47,6 +47,16 @@ final class QueryDescriptorBuilderTests: XCTestCase {
         
         XCTAssertEqual(descriptor.containExercises, exercisesID)
     }
+    
+    func test_build_filterSession_createsDescriptorWithCorrectFIlter() {
+        let targetId = UUID()
+        let descriptor = QueryBuilder()
+            .filterSession(targetId)
+            .build()
+        
+        XCTAssertEqual(descriptor.sessionId, targetId)
+    }
+    
 }
 
 
