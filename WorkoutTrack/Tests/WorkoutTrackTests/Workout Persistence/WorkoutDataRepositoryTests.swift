@@ -11,6 +11,14 @@ import SwiftData
 
 final class QueryDescriptorBuilderTests: XCTestCase {
     
+    
+    func test_build_createsDescriptorWithNoProperties() {
+        let descriptor = QueryBuilder()
+            .build()
+        
+        XCTAssertNil(descriptor.dateRange)
+    }
+    
     func test_build_withDateRange_createsDescriptorWithCorrectRange() {
         let from = Date().adding(days: -1)
         let to = Date()
