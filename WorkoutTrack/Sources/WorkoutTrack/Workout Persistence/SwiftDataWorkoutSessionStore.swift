@@ -23,6 +23,7 @@ public enum QuerySort: Equatable {
 
 enum PostProcessing: Equatable {
     case onlyIncludFinishedSets
+    case onlyIncludeExercises([UUID])
 }
 
 public struct QueryBuilder {
@@ -59,6 +60,12 @@ public struct QueryBuilder {
     public func onlyIncludFinishedSets() -> Self {
         var copy = self
         copy.postProcess = createArrayIfNeeded(postProcess) + [.onlyIncludFinishedSets]
+        return copy
+    }
+    
+    public func onlyIncludExercises(_ ids: [UUID]) -> Self {
+        var copy = self
+        copy.postProcess = createArrayIfNeeded(postProcess) + [.onlyIncludeExercises(ids)]
         return copy
     }
     

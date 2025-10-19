@@ -59,11 +59,16 @@ final class QueryDescriptorBuilderTests: XCTestCase {
     }
     
     func test_build_postProcessing_createsDescriptorWithCorrectPostProcessing() {
+        let ids = [UUID(), UUID(), UUID()]
+        
         let descriptor = QueryBuilder()
             .onlyIncludFinishedSets()
+            .onlyIncludExercises(ids)
             .build()
         
-        XCTAssertEqual(descriptor.postProcessing, [.onlyIncludFinishedSets])
+        XCTAssertEqual(descriptor.postProcessing, [
+            .onlyIncludFinishedSets,
+            .onlyIncludeExercises(ids)])
     }
     
 }
