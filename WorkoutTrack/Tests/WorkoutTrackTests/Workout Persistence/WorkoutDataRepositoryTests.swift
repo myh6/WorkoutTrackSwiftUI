@@ -9,6 +9,20 @@ import XCTest
 import SwiftData
 @testable import WorkoutTrack
 
+final class QueryDescriptorBuilderTests: XCTestCase {
+    
+    func test_build_withDateRange_createsDescriptorWithCorrectRange() {
+        let from = Date().adding(days: -1)
+        let to = Date()
+        
+        let descriptor = QueryBuilder()
+            .filterDateRange(from...to)
+            .build()
+        
+        XCTAssertEqual(descriptor.dateRange, from...to)
+    }
+}
+
 
 final class WorkoutDataStoreTests: XCTestCase {
     
@@ -333,5 +347,19 @@ extension Array where Element == WorkoutEntryDTO {
     
     func sortedByIDInDescendingOrder() -> [WorkoutEntryDTO] {
         sorted { $0.id > $1.id }
+    }
+}
+
+extension Date {
+    func adding(seconds: TimeInterval, calendar: Calendar = Calendar(identifier: .gregorian)) -> Date {
+        return self + seconds
+    }
+    
+    func adding(minutes: Int, calendar: Calendar = Calendar(identifier: .gregorian)) -> Date {
+        return Calendar(identifier: .gregorian).date(byAdding: .minute, value: minutes, to: self)!
+    }
+    
+    func adding(days: Int, calendar: Calendar = Calendar(identifier: .gregorian)) -> Date {
+        return Calendar(identifier: .gregorian).date(byAdding: .day, value: days, to: self)!
     }
 }

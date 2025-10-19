@@ -8,6 +8,24 @@
 import Foundation
 import SwiftData
 
+struct SessionQueryDescriptor {
+    let dateRange: ClosedRange<Date>?
+}
+
+public struct QueryBuilder {
+    private var dateRange: ClosedRange<Date>?
+    
+    public func filterDateRange(_ range: ClosedRange<Date>) -> Self {
+        var copy = self
+        copy.dateRange = range
+        return copy
+    }
+    
+    func build() -> SessionQueryDescriptor {
+        return SessionQueryDescriptor(dateRange: dateRange)
+    }
+}
+
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
