@@ -8,12 +8,12 @@
 import Foundation
 import SwiftData
 
-struct SessionQueryDescriptor {
-    let sessionId: UUID?
-    let dateRange: ClosedRange<Date>?
-    let containExercises: [UUID]?
-    let sortBy: [QuerySort]?
-    let postProcessing: [PostProcessing]?
+public struct SessionQueryDescriptor {
+    public let sessionId: UUID?
+    public let dateRange: ClosedRange<Date>?
+    public let containExercises: [UUID]?
+    public let sortBy: [QuerySort]?
+    public let postProcessing: [PostProcessing]?
 }
 
 public enum QuerySort: Equatable {
@@ -21,7 +21,7 @@ public enum QuerySort: Equatable {
     case byDate(ascending: Bool)
 }
 
-enum PostProcessing: Equatable {
+public enum PostProcessing: Equatable {
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
     case limitToFirst(Int)
@@ -33,6 +33,8 @@ public struct QueryBuilder {
     private var containExercises: [UUID]?
     private var sortBy: [QuerySort]?
     private var postProcess: [PostProcessing]?
+    
+    public init() {}
     
     public func filterSession(_ id: UUID) -> Self {
         var copy = self
@@ -76,7 +78,7 @@ public struct QueryBuilder {
         return copy
     }
     
-    func build() -> SessionQueryDescriptor {
+    public func build() -> SessionQueryDescriptor {
         return SessionQueryDescriptor(
             sessionId: sessionId,
             dateRange: dateRange,
