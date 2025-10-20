@@ -55,16 +55,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: allSessions.sortedBySessionInAscendingOrder(), withQuery: descriptor)
     }
     
-    func test_retrieveSession_allSortedBySessionIdInReverse_deliversFoundSessionInDescendingOrder() async throws {
+    func test_retrieve_sortedBySessionIdInReverse_deliversFoundSessionsInDescendingOrder() async throws {
         let sut = makeSUT()
-        let allID = [UUID(), UUID(), UUID()]
-        let allSessions = allID.map { anySession(id: $0) }
+        let allSessions = [anySession(), anySession(), anySession()]
+        let descriptor = QueryBuilder()
+            .sort(by: .byId(ascending: false))
+            .build()
         
         for session in allSessions {
             try await sut.insert(session)
         }
         
-        try await expect(sut, toRetrieveSession: allSessions.sortedBySessionInDescendingOrder(), withQuery: .all(sort: .bySessionId(ascending: false)))
+        try await expect(sut, toRetrieve: allSessions.sortedBySessionInDescendingOrder(), withQuery: descriptor)
     }
     
     func test_retrieveSession_allSortedByDate_deliversFoundSessionsInAscendingOrder() async throws {

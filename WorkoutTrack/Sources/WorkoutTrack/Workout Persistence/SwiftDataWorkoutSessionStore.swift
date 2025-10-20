@@ -95,7 +95,7 @@ extension SwiftDataWorkoutSessionStore {
             for sort in sortOption {
                 switch sort {
                 case .byId(let ascending):
-                    sortDescriptor.append(SortDescriptor(\.id, order: .forward))
+                    sortDescriptor.append(SortDescriptor(\.id, order: ascending ? .forward : .reverse))
                 default:
                     break
                 }
