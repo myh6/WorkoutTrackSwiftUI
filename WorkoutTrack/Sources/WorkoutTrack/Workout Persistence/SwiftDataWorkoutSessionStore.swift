@@ -12,7 +12,11 @@ import SwiftData
 final actor SwiftDataWorkoutSessionStore {
     
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
-        let descriptor = FetchDescriptor<WorkoutSession>()
+        var descriptor = FetchDescriptor<WorkoutSession>()
+        let (_, sort, _) = translate(query)
+        if !sort.isEmpty {
+            descriptor.sortBy = sort
+        }
         return try modelContext.fetch(descriptor).map(\.dto)
     }
     
@@ -80,6 +84,25 @@ extension SwiftDataWorkoutSessionStore {
         let entry = WorkoutEntry(dto: entryDTO)
         entry.session = session
         modelContext.insert(entry)
+    }
+    
+    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Any?) {
+        guard let query else { return (nil, [], nil) }
+        
+        var sortDescriptor = [SortDescriptor<WorkoutSession>]()
+        
+        if let sortOption = query.sortBy {
+            for sort in sortOption {
+                switch sort {
+                case .byId(let ascending):
+                    sortDescriptor.append(SortDescriptor(\.id, order: .forward))
+                default:
+                    break
+                }
+            }
+        }
+        
+        return (nil, sortDescriptor, nil)
     }
 }
 
