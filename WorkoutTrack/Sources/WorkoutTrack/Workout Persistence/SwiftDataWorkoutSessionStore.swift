@@ -12,7 +12,8 @@ import SwiftData
 final actor SwiftDataWorkoutSessionStore {
     
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
-        return []
+        let descriptor = FetchDescriptor<WorkoutSession>()
+        return try modelContext.fetch(descriptor).map(\.dto)
     }
     
     func retrieveSession(_ query: SessionQuery) throws -> [WorkoutSessionDTO] {

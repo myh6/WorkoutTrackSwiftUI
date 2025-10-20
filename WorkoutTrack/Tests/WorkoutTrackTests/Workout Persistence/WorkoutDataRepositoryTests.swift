@@ -23,13 +23,13 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveTwice: [])
     }
     
-    func test_retrieveSession_all_deliversFoundSessionOnNonEmptyDatabase() async throws {
+    func test_retrieve_deliversFoundSessionOnNonEmptyDatabase() async throws {
         let sut = makeSUT()
         let session = anySession()
         
         try await sut.insert(session)
         
-        try await expect(sut, toRetrieveSession: [session], withQuery: .all(sort: nil))
+        try await expect(sut, toRetrieve: [session])
     }
     
     func test_retrieveSession_hasNoSideEffectOnNonEmptyDatabase() async throws {
