@@ -13,7 +13,10 @@ final actor SwiftDataWorkoutSessionStore {
     
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
-        let (_, sort, _) = translate(query)
+        let (predicate, sort, _) = translate(query)
+        if let predicate {
+            descriptor.predicate = predicate
+        }
         if !sort.isEmpty {
             descriptor.sortBy = sort
         }
@@ -88,10 +91,17 @@ extension SwiftDataWorkoutSessionStore {
     
     private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Any?) {
         guard let query else { return (nil, [], nil) }
-        
+        let predicate = getPredicate(from: query.sessionId, date: query.dateRange, exercises: query.containExercises)
         let sortDescriptor = getSortDescriptor(query.sortBy)
         
-        return (nil, sortDescriptor, nil)
+        return (predicate, sortDescriptor, nil)
+    }
+    
+    private func getPredicate(from id: UUID?, date: ClosedRange<Date>?, exercises: [UUID]?) -> Predicate<WorkoutSession>? {
+        
+        if let id {
+            return #Predicate { $0.id == id }
+        } else { return nil }
     }
     
     private func getSortDescriptor(_ arr: [QuerySort]?) -> [SortDescriptor<WorkoutSession>] {
