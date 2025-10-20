@@ -24,6 +24,7 @@ public enum QuerySort: Equatable {
 enum PostProcessing: Equatable {
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
+    case limitToFirst(Int)
 }
 
 public struct QueryBuilder {
@@ -66,6 +67,12 @@ public struct QueryBuilder {
     public func onlyIncludExercises(_ ids: [UUID]) -> Self {
         var copy = self
         copy.postProcess = createArrayIfNeeded(postProcess) + [.onlyIncludeExercises(ids)]
+        return copy
+    }
+    
+    public func limitToFirst(_ count: Int) -> Self {
+        var copy = self
+        copy.postProcess = createArrayIfNeeded(postProcess) + [.limitToFirst(count)]
         return copy
     }
     

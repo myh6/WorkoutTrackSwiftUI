@@ -64,11 +64,14 @@ final class QueryDescriptorBuilderTests: XCTestCase {
         let descriptor = QueryBuilder()
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
+            .limitToFirst(3)
             .build()
         
         XCTAssertEqual(descriptor.postProcessing, [
             .onlyIncludFinishedSets,
-            .onlyIncludeExercises(ids)])
+            .onlyIncludeExercises(ids),
+            .limitToFirst(3)
+        ])
     }
     
 }
