@@ -121,37 +121,6 @@ extension WorkoutSession {
     }
 }
 
-extension SessionQuery {
-    var predicate: Predicate<WorkoutSession>? {
-        switch self {
-        case .all:
-            return nil
-        case .sessionID(id: let id):
-            return #Predicate { $0.id == id }
-        }
-    }
-    
-    var sort: SessionSort? {
-        switch self {
-        case .all(let sort):
-            return sort
-        case .sessionID:
-            return nil
-        }
-    }
-    
-    var sortDescriptor: SortDescriptor<WorkoutSession>? {
-        switch self.sort {
-        case .bySessionId(let ascending):
-            return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
-        case .byDate(let ascending):
-            return SortDescriptor(\.date, order: ascending ? .forward : .reverse)
-        case .none:
-            return nil
-        }
-    }
-}
-
 extension EntryQuery {
     var predicate: Predicate<WorkoutEntry>? {
         switch self {
