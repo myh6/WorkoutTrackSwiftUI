@@ -14,14 +14,13 @@ final class WorkoutDataStoreTests: XCTestCase {
     func test_retrieve_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        let retrieved = try await sut.retrieve(query: nil)
-        XCTAssertEqual(retrieved, [])
+        try await expect(sut, toRetrieve: [])
     }
     
-    func test_retrieveSession_hasNoSideEffectOnEmptyDatabase() async throws {
+    func test_retrieve_hasNoSideEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await expect(sut, toRetrieveSessionTwice: [])
+        try await expect(sut, toRetrieveTwice: [])
     }
     
     func test_retrieveSession_all_deliversFoundSessionOnNonEmptyDatabase() async throws {
@@ -281,6 +280,16 @@ final class WorkoutDataStoreTests: XCTestCase {
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieveSession(query).flatMap(\.entries)
         XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieve expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieve = try await sut.retrieve(query: query)
+        XCTAssertEqual(retrieve, expectedSessions, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveTwice expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
+        try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
+        try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
     }
     
     private func anySession(id: UUID = UUID(), date: Date = .now, entries: [WorkoutEntryDTO] = []) -> WorkoutSessionDTO {
