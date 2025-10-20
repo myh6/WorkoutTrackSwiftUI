@@ -11,10 +11,11 @@ import SwiftData
 
 final class WorkoutDataStoreTests: XCTestCase {
     
-    func test_retrieveSession_deliversEmptyOnEmptyDatabase() async throws {
+    func test_retrieve_deliversEmptyOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await expect(sut, toRetrieveSession: [])
+        let retrieved = try await sut.retrieve(query: nil)
+        XCTAssertEqual(retrieved, [])
     }
     
     func test_retrieveSession_hasNoSideEffectOnEmptyDatabase() async throws {

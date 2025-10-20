@@ -11,6 +11,10 @@ import SwiftData
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
+    func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
+        return []
+    }
+    
     func retrieveSession(_ query: SessionQuery) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
         if let predicate = query.predicate {
