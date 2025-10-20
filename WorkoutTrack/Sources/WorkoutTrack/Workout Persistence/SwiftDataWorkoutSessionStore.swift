@@ -92,17 +92,23 @@ extension SwiftDataWorkoutSessionStore {
         var sortDescriptor = [SortDescriptor<WorkoutSession>]()
         
         if let sortOption = query.sortBy {
-            for sort in sortOption {
-                switch sort {
-                case .byId(let ascending):
-                    sortDescriptor.append(SortDescriptor(\.id, order: ascending ? .forward : .reverse))
-                default:
-                    break
-                }
-            }
+            sortDescriptor = getSortDescriptor(sortOption)
         }
         
         return (nil, sortDescriptor, nil)
+    }
+    
+    private func getSortDescriptor(_ arr: [QuerySort]) -> [SortDescriptor<WorkoutSession>] {
+        var sortDescriptor: [SortDescriptor<WorkoutSession>] = []
+        for sort in arr {
+            switch sort {
+            case .byId(let ascending):
+                sortDescriptor.append(SortDescriptor(\.id, order: ascending ? .forward : .reverse))
+            default:
+                break
+            }
+        }
+        return sortDescriptor
     }
 }
 
