@@ -115,7 +115,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [session], withQuery: descriptor)
     }
     
-    func test_insertSessionWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
+    func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
             entries: [anyEntry(
@@ -123,7 +123,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await sut.insert(session)
         
-        try await expect(sut, toRetrieveSession: [session])
+        try await expect(sut, toRetrieve: [session])
     }
     
     func test_insertSessionWithSameID_wouldNotCreateNewSessionButOverwirteTheExistingOne() async throws {
@@ -135,7 +135,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await sut.insert(firstInsertionSession)
         try await sut.insert(sessionWithSameID)
         
-        try await expect(sut, toRetrieveSession: [sessionWithSameID])
+        try await expect(sut, toRetrieve: [sessionWithSameID])
     }
     
     func test_insert_toSameSession_wouldNotOverwriteExistingSessionAndItsEntries() async throws {
@@ -158,7 +158,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await sut.insert([entry], to: session)
         
-        try await expect(sut, toRetrieveSession: [expectedSession])
+        try await expect(sut, toRetrieve: [expectedSession])
     }
     
     func test_deleteSession_hasNoEffectOnEmptyDatabase() async {
@@ -182,7 +182,7 @@ final class WorkoutDataStoreTests: XCTestCase {
             XCTFail("Expected SUT to delete without any error on non existant session")
         }
         
-        try await expect(sut, toRetrieveSession: [session])
+        try await expect(sut, toRetrieve: [session])
     }
     
     func test_deleteSession_deletesTheSpecificedSessionAndItsEntry() async throws {
@@ -264,19 +264,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
     }
-    
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSession expected: [WorkoutSessionDTO], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
-        
-        let retrieved = try await sut.retrieveSession(query)
-        XCTAssertEqual(expected, retrieved, file: file, line: line)
-    }
-    
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSessionTwice expected: [WorkoutSessionDTO], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
-        
-        try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
-        try await expect(sut, toRetrieveSession: expected, withQuery: query, file: file, line: line)
-    }
-    
+
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], withQuery query: EntryQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
         
         let retrieved = try await sut.retrieveEntry(query)
@@ -289,8 +277,8 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntry: expected, withQuery: query, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
-        let retrieved = try await sut.retrieveSession(query).flatMap(\.entries)
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.retrieve(query: query).flatMap(\.entries)
         XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
     }
     

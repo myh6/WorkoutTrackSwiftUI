@@ -23,17 +23,6 @@ final actor SwiftDataWorkoutSessionStore {
         return try modelContext.fetch(descriptor).map(\.dto)
     }
     
-    func retrieveSession(_ query: SessionQuery) throws -> [WorkoutSessionDTO] {
-        var descriptor = FetchDescriptor<WorkoutSession>()
-        if let predicate = query.predicate {
-            descriptor.predicate = predicate
-        }
-        if let sort = query.sortDescriptor {
-            descriptor.sortBy = [sort]
-        }
-        return try modelContext.fetch(descriptor).map(\.dto)
-    }
-    
     func insert(_ session: WorkoutSessionDTO) throws {
         if let existing = try getSessionFromContext(id: session.id) {
             existing.update(from: session, in: modelContext)
