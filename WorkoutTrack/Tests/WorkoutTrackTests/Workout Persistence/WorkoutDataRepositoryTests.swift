@@ -207,56 +207,6 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntryTwice: [])
     }
     
-    func test_retrieveEntry_allSortedById_deliversAllEntryFromDatabaseInAscendingOrder() async throws {
-        let sut = makeSUT()
-        let entryA = [anyEntry()]
-        let sessionA = anySession(entries: entryA)
-        let entryB = [anyEntry(), anyEntry(), anyEntry()]
-        let sessionB = anySession(entries: entryB)
-        
-        try await sut.insert(sessionA)
-        try await sut.insert(sessionB)
-        
-        try await expect(sut, toRetrieveEntry: (entryA + entryB).sortedByIDInAscendingOrder(), withQuery: .all(sort: .byId(ascending: true)))
-    }
-    
-    func test_retrieveEntry_allSortedById_deliversAllEntryFromDatabaseInDescendingOrder() async throws {
-        let sut = makeSUT()
-        let entryA = [anyEntry()]
-        let sessionA = anySession(entries: entryA)
-        let entryB = [anyEntry(), anyEntry(), anyEntry()]
-        let sessionB = anySession(entries: entryB)
-        
-        try await sut.insert(sessionA)
-        try await sut.insert(sessionB)
-        
-        try await expect(sut, toRetrieveEntry: (entryA + entryB).sortedByIDInDescendingOrder(), withQuery: .all(sort: .byId(ascending: false)))
-    }
-    
-    func test_retrieveEntry_allSortredByDate_deliversAllEntryFromDatabaseInAscendingOrder() async throws {
-        let sut = makeSUT()
-        let sessionA = anySession(date: Date(), entries: [anyEntry()])
-        let sessionB = anySession(date: Date().advanced(by: -200), entries: [anyEntry()])
-        let expectedEntries = [sessionA, sessionB].sortedByDateInAscendingOrderToEntries()
-        
-        try await sut.insert(sessionA)
-        try await sut.insert(sessionB)
-        
-        try await expect(sut, toRetrieveEntry: expectedEntries, withQuery: .all(sort: .byDate(ascending: true)))
-    }
-    
-    func test_retrieveEntry_allSortredByDate_deliversAllEntryFromDatabaseInDescendingOrder() async throws {
-        let sut = makeSUT()
-        let sessionA = anySession(date: Date(), entries: [anyEntry()])
-        let sessionB = anySession(date: Date().advanced(by: -200), entries: [anyEntry()])
-        let expectedEntries = [sessionA, sessionB].sortedByDateInDescendingOrderToEntries()
-        
-        try await sut.insert(sessionA)
-        try await sut.insert(sessionB)
-        
-        try await expect(sut, toRetrieveEntry: expectedEntries, withQuery: .all(sort: .byDate(ascending: false)))
-    }
-    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
@@ -265,13 +215,13 @@ final class WorkoutDataStoreTests: XCTestCase {
         return sut
     }
 
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], withQuery query: EntryQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntry expected: [WorkoutEntryDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         
-        let retrieved = try await sut.retrieveEntry(query)
+        let retrieved = try await sut.retrieve(query: query).flatMap(\.entries)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntryTwice expected: [WorkoutEntryDTO], withQuery query: EntryQuery = .all(sort: nil), file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntryTwice expected: [WorkoutEntryDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         
         try await expect(sut, toRetrieveEntry: expected, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieveEntry: expected, withQuery: query, file: file, line: line)

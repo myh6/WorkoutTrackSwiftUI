@@ -52,20 +52,6 @@ final actor SwiftDataWorkoutSessionStore {
     }
 }
 
-//MARK: - Entry
-extension SwiftDataWorkoutSessionStore {
-    func retrieveEntry(_ query: EntryQuery) throws -> [WorkoutEntryDTO] {
-        var descriptor = FetchDescriptor<WorkoutEntry>()
-        if let predicate = query.predicate {
-            descriptor.predicate = predicate
-        }
-        if let sort = query.sortDescriptor {
-            descriptor.sortBy = [sort]
-        }
-        return try modelContext.fetch(descriptor).map(\.dto)
-    }
-}
- 
 extension SwiftDataWorkoutSessionStore {
     private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {
         let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == id })
@@ -117,33 +103,6 @@ extension WorkoutSession {
             let entry = WorkoutEntry(dto: entryDTO)
             entry.session = self
             return entry
-        }
-    }
-}
-
-extension EntryQuery {
-    var predicate: Predicate<WorkoutEntry>? {
-        switch self {
-        case .all:
-            return nil
-        }
-    }
-    
-    var sort: EntrySort? {
-        switch self {
-        case .all(let sort):
-            return sort
-        }
-    }
-    
-    var sortDescriptor: SortDescriptor<WorkoutEntry>? {
-        switch self.sort {
-        case .byId(let ascending):
-            return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
-        case .byDate(let ascending):
-            return SortDescriptor<WorkoutEntry>(\.session?.date, order: ascending ? .forward : .reverse)
-        case .none:
-            return nil
         }
     }
 }
