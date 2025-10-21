@@ -13,7 +13,7 @@ final class LocalizationTests: XCTestCase {
     func test_localizedString_haveKeysAndValuesForAllSupportedLocalizations() {
         let table = "Exercises"
         let bundle = ExercisesPresentationResources.bundle
-        print("Bundle path: \(bundle.bundlePath)")
+        
         assertLocalizedKeyAndValuesExist(in: bundle, table)
     }
     
