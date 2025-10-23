@@ -100,6 +100,7 @@ struct PredicateFactory {
     private static func newPredicate(_ id: UUID?, _ date: ClosedRange<Date>?, _ exercise: [UUID]?) -> Predicate<WorkoutSession> {
         var idPredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
         var datePredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
+        var exercisePredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
         
         if let id {
             idPredicate = #Predicate { $0.id == id }
@@ -114,8 +115,14 @@ struct PredicateFactory {
             }
         }
         
+        if let exercise {
+            exercisePredicate = #Predicate {
+                $0.entries.contains(where: { entry in exercise.contains(entry.exerciseID) })
+            }
+        }
+        
         return #Predicate<WorkoutSession> { session in
-            idPredicate.evaluate(session) && datePredicate.evaluate(session)
+            idPredicate.evaluate(session) && datePredicate.evaluate(session) && exercisePredicate.evaluate(session)
         }
     }
     
@@ -131,6 +138,10 @@ struct PredicateFactory {
             let lowerbound = date.lowerBound.startOfDay()
             let upperbound = date.upperBound.endOfDay()
             return #Predicate { $0.id == id && (lowerbound...upperbound).contains($0.date) }
+        case (nil, nil, let exercises?):
+            return #Predicate {
+                $0.entries.contains(where: { entry in exercises.contains(entry.exerciseID) })
+            }
         default:
             return #Predicate { _ in true }
         }

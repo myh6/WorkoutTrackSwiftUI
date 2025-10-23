@@ -134,6 +134,27 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [validSession], withQuery: descriptor)
     }
     
+    
+    // TODO: - Add sorting to this test for entries
+    func test_retrieve_exercises_deliversSessionsWithOneOfTheSpecifiedExercise() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+        let sessionWithOneSpecifiedExercise = anySession(entries: [anyEntry(exercise: exerciseA)])
+        let sessionWithAnotherSpecifiedExercise = anySession(entries: [anyEntry(exercise: exerciseB)])
+        let sessionWithDifferentExercise = anySession(entries: [anyEntry()])
+        let descriptor = QueryBuilder()
+            .containsExercises([exerciseA, exerciseB])
+            .sort(by: .byId(ascending: true))
+            .build()
+        
+        try await sut.insert(sessionWithOneSpecifiedExercise)
+        try await sut.insert(sessionWithAnotherSpecifiedExercise)
+        try await sut.insert(sessionWithDifferentExercise)
+        
+        try await expect(sut, toRetrieve: [sessionWithOneSpecifiedExercise, sessionWithAnotherSpecifiedExercise].sortedBySessionInAscendingOrder(), withQuery: descriptor)
+    }
+    
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
