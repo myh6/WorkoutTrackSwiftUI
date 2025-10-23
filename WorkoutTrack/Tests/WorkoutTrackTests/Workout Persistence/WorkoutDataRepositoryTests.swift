@@ -115,6 +115,25 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [session], withQuery: descriptor)
     }
     
+    func test_retrieve_dateRange_deliversSessionsThatFallWithinTheSpecifiedDateRange() async throws {
+        let sut = makeSUT()
+        let validDate = Calendar(identifier: .gregorian).startOfDay(for: Date())
+        let validSession = anySession(date: validDate.adding(days: 1).adding(seconds: -1))
+        let oneSecondLess = anySession(date: validDate.adding(seconds: -1))
+        let oneDayLater = anySession(date: validDate.adding(days: 1))
+        
+        let descriptor = QueryBuilder()
+            .filterDateRange(validDate...validDate)
+            .build()
+        
+        for session in [validSession, oneSecondLess, oneDayLater] {
+            print(session.date)
+            try await sut.insert(session)
+        }
+        
+        try await expect(sut, toRetrieve: [validSession], withQuery: descriptor)
+    }
+    
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
