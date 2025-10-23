@@ -13,14 +13,18 @@ final actor SwiftDataWorkoutSessionStore {
     
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
-        let (predicate, sort, _) = translate(query)
+        let (predicate, sort, postProcess) = translate(query)
         if let predicate {
             descriptor.predicate = predicate
         }
         if !sort.isEmpty {
             descriptor.sortBy = sort
         }
-        return try modelContext.fetch(descriptor).map(\.dto)
+        var retrieved = try modelContext.fetch(descriptor).map(\.dto)
+        if let postProcess {
+            retrieved = postProcess(retrieved)
+        }
+        return retrieved
     }
     
     func insert(_ session: WorkoutSessionDTO) throws {
@@ -64,12 +68,14 @@ extension SwiftDataWorkoutSessionStore {
         modelContext.insert(entry)
     }
     
-    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Any?) {
+    typealias Process = ([WorkoutSessionDTO]) -> [WorkoutSessionDTO]
+    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Process?) {
         guard let query else { return (nil, [], nil) }
         let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange, query.containExercises)
         let sortDescriptor = getSortDescriptor(query.sortBy)
+        let transform = getProcess(query.postProcessing)
         
-        return (predicate, sortDescriptor, nil)
+        return (predicate, sortDescriptor, transform)
     }
     
     private func getSortDescriptor(_ arr: [QuerySort]?) -> [SortDescriptor<WorkoutSession>] {
@@ -86,6 +92,15 @@ extension SwiftDataWorkoutSessionStore {
             }
         }
         return sortDescriptor
+    }
+    
+    private func getProcess(_ postProcessing: [PostProcessing]?) -> Process? {
+        guard let postProcessing, !postProcessing.isEmpty else { return nil }
+        return { session in
+            postProcessing.reduce(session) { result, post in
+                post.transform(result)
+            }
+        }
     }
 }
 

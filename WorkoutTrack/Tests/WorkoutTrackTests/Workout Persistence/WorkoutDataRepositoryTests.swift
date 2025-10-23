@@ -109,6 +109,19 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [session].sortedByEntryCreatedAtInAscendingOrder())
     }
     
+    func test_retrieve_entryCustomOrder_deliversEntryInCustomOrder() async throws {
+        let sut = makeSUT()
+        let allEntry = [4,1,2,5,3].map { anyEntry(order: $0) }
+        let session = anySession(entries: allEntry)
+        let descriptor = QueryBuilder()
+            .sort(by: .entryCustomOrder)
+            .build()
+        
+        try await sut.insert(session)
+        
+        try await expect(sut, toRetrieve: [session].sortedByEntryCustomOrder(), withQuery: descriptor)
+    }
+    
     func test_retrieve_id_deliversCorrespondingSessionWithExactID() async throws {
         let sut = makeSUT()
         let id = UUID()
@@ -350,6 +363,15 @@ extension Array where Element == WorkoutSessionDTO {
                 id: session.id,
                 date: session.date,
                 entries: session.entries.sortedByEntryCreatedAtInAscendingOrder())
+        }
+    }
+    
+    func sortedByEntryCustomOrder() -> [WorkoutSessionDTO] {
+        map { session in
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: session.entries.sorted { $0.order < $1.order } )
         }
     }
 }

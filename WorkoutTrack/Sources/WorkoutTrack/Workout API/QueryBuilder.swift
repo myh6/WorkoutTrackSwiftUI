@@ -28,6 +28,25 @@ public enum PostProcessing: Equatable {
     case limitToFirst(Int)
 }
 
+extension PostProcessing {
+    var transform: ([WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+        switch self {
+        case .sortByEntryCustomOrder:
+            return { sessions in
+                sessions.map { session in
+                    WorkoutSessionDTO(
+                        id: session.id,
+                        date: session.date,
+                        entries: session.entries.sorted { $0.order < $1.order }
+                    )
+                }
+            }
+        default:
+            return { _ in [] }
+        }
+    }
+}
+
 public struct QueryBuilder {
     private var sessionId: UUID?
     private var dateRange: ClosedRange<Date>?
