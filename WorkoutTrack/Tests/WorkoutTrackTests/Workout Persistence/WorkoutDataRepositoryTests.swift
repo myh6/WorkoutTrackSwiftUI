@@ -183,9 +183,27 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await expect(sut, toRetrieve: [
             sessionWithOneSpecifiedExercise,
-            sessionWithAllSpecifiedExercise]
+            sessionWithAllSpecifiedExercise
+        ]
             .sortedBySessionInAscendingOrder()
             .sortedByEntryCreatedAtInAscendingOrder(), withQuery: descriptor)
+    }
+    
+    func test_retrieve_onlyIncludeFinishedSets_deliversSessionsWithFinishedSetsOnly() async throws {
+        let sut = makeSUT()
+        let sets = [anySet(isFinished: true, order: 3),
+                    anySet(isFinished: false, order: 2),
+                    anySet(isFinished: true, order: 1),
+                    anySet(isFinished: true, order: 0)
+        ]
+        let session = anySession(entries: [anyEntry(sets: sets)])
+        let descriptor = QueryBuilder()
+            .onlyIncludFinishedSets()
+            .build()
+        
+        try await sut.insert(session)
+        
+        try await expect(sut, toRetrieve: [session].filterUnfinishedSets(), withQuery: descriptor)
     }
     
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
@@ -323,8 +341,8 @@ final class WorkoutDataStoreTests: XCTestCase {
         WorkoutEntryDTO(id: id, exerciseID: exercise, sets: sets, createdAt: createdAt, order: order)
     }
     
-    private func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0) -> WorkoutSetDTO {
-        WorkoutSetDTO(id: id, reps: reps, weight: weight)
+    private func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0, isFinished: Bool = false, order: Int = 0) -> WorkoutSetDTO {
+        WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
     }
     
     private func appendingEntries(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) -> WorkoutSessionDTO {
@@ -349,14 +367,6 @@ extension Array where Element == WorkoutSessionDTO {
         sorted { $0.date > $1.date }
     }
     
-    func sortedByDateInAscendingOrderToEntries() -> [WorkoutEntryDTO] {
-        sortedByDateInAscendingOrder().flatMap(\.entries)
-    }
-    
-    func sortedByDateInDescendingOrderToEntries() -> [WorkoutEntryDTO] {
-        sortedByDateInDescendingOrder().flatMap(\.entries)
-    }
-    
     func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutSessionDTO] {
         map { session in
             WorkoutSessionDTO(
@@ -374,17 +384,25 @@ extension Array where Element == WorkoutSessionDTO {
                 entries: session.entries.sorted { $0.order < $1.order } )
         }
     }
+    
+    func filterUnfinishedSets() -> [WorkoutSessionDTO] {
+        map { session in
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: session.entries.map { entry in
+                    WorkoutEntryDTO(
+                        id: entry.id,
+                        exerciseID: entry.exerciseID,
+                        sets: entry.sets.filter { $0.isFinished }.sorted { $0.order < $1.order },
+                        createdAt: entry.createdAt,
+                        order: entry.order)
+                })
+        }
+    }
 }
 
 extension Array where Element == WorkoutEntryDTO {
-    func sortedByIDInAscendingOrder() -> [WorkoutEntryDTO] {
-        sorted { $0.id < $1.id }
-    }
-    
-    func sortedByIDInDescendingOrder() -> [WorkoutEntryDTO] {
-        sorted { $0.id > $1.id }
-    }
-    
     func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntryDTO] {
         sorted { $0.createdAt < $1.createdAt }
     }

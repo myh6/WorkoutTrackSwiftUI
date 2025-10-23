@@ -57,6 +57,6 @@ extension WorkoutEntry {
     }
     
     var dto: WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto), createdAt: createdAt, order: order)
+        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto).sorted { $0.order < $1.order }, createdAt: createdAt, order: order)
     }
 }

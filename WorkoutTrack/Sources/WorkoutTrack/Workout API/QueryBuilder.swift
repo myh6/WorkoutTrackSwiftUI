@@ -41,6 +41,23 @@ extension PostProcessing {
                     )
                 }
             }
+            
+        case .onlyIncludFinishedSets:
+            return { sessions in
+                sessions.map { session in
+                    WorkoutSessionDTO(
+                        id: session.id,
+                        date: session.date,
+                        entries: session.entries.map { entry in
+                            WorkoutEntryDTO(
+                                id: entry.id,
+                                exerciseID: entry.exerciseID,
+                                sets: entry.sets.filter { $0.isFinished },
+                                createdAt: entry.createdAt,
+                                order: entry.order)
+                        })
+                }
+            }
         default:
             return { _ in [] }
         }
