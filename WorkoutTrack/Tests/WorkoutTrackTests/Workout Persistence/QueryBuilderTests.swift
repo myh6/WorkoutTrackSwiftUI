@@ -14,8 +14,7 @@ final class QueryBuilderTests: XCTestCase {
         let descriptor = QueryBuilder()
             .build()
         
-        XCTAssertNil(descriptor.dateRange)
-        XCTAssertNil(descriptor.sortBy)
+        XCTassertQueryDescriptorEmpty(descriptor: descriptor)
     }
     
     func test_build_withDateRange_createsDescriptorWithCorrectRange() {
@@ -26,7 +25,7 @@ final class QueryBuilderTests: XCTestCase {
             .filterDateRange(from...to)
             .build()
         
-        XCTAssertEqual(descriptor.dateRange, from...to)
+        XCTAssertDescriptionOnlyHas(\.dateRange, equalTo: (from...to), in: descriptor)
     }
     
     func test_build_withSortBy_createsDescriptorWithCorrectDateSort() {
@@ -35,7 +34,10 @@ final class QueryBuilderTests: XCTestCase {
             .sort(by: .byId(ascending: false))
             .build()
         
-        XCTAssertEqual(descriptor.sortBy, [.byDate(ascending: true), .byId(ascending: false)])
+        XCTAssertDescriptionOnlyHas(\.sortBy, equalTo: [
+            .byDate(ascending: true),
+            .byId(ascending: false)
+        ], in: descriptor)
     }
     
     func test_build_containExercises_createsDescriptorWithCorrectFIlter() {
@@ -44,7 +46,7 @@ final class QueryBuilderTests: XCTestCase {
             .containsExercises(exercisesID)
             .build()
         
-        XCTAssertEqual(descriptor.containExercises, exercisesID)
+        XCTAssertDescriptionOnlyHas(\.containExercises, equalTo: exercisesID, in: descriptor)
     }
     
     func test_build_filterSession_createsDescriptorWithCorrectFIlter() {
@@ -53,7 +55,7 @@ final class QueryBuilderTests: XCTestCase {
             .filterSession(targetId)
             .build()
         
-        XCTAssertEqual(descriptor.sessionId, targetId)
+        XCTAssertDescriptionOnlyHas(\.sessionId, equalTo: targetId, in: descriptor)
     }
     
     func test_build_postProcessing_createsDescriptorWithCorrectPostProcessing() {
@@ -66,14 +68,51 @@ final class QueryBuilderTests: XCTestCase {
             .limitToFirst(3)
             .build()
         
-        XCTAssertEqual(descriptor.postProcessing, [
+        XCTAssertDescriptionOnlyHas(\.postProcessing, equalTo: [
             .sortByEntryCustomOrder,
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
             .limitToFirst(3)
-        ])
+        ], in: descriptor)
     }
     
+    //MARK: - Helpers
+    private func XCTassertQueryDescriptorEmpty(descriptor: SessionQueryDescriptor, file: StaticString = #file, line: UInt = #line) {
+        XCTAssertNil(descriptor.sessionId, file: file, line: line)
+        XCTAssertNil(descriptor.dateRange, file: file, line: line)
+        XCTAssertNil(descriptor.containExercises, file: file, line: line)
+        XCTAssertNil(descriptor.sortBy, file: file, line: line)
+        XCTAssertNil(descriptor.postProcessing, file: file, line: line)
+    }
+    
+    private func XCTAssertDescriptionOnlyHas<T: Equatable>(
+        _ keyPath: KeyPath<SessionQueryDescriptor, T?>,
+        equalTo expected: T?,
+        in descriptor: SessionQueryDescriptor,
+        file: StaticString = #file, line: UInt = #line
+    ) {
+        XCTAssertEqual(descriptor[keyPath: keyPath], expected, file: file, line: line)
+        
+        if keyPath != \SessionQueryDescriptor.dateRange {
+            XCTAssertNil(descriptor.dateRange, file: file, line: line)
+        }
+        
+        if keyPath != \SessionQueryDescriptor.sortBy {
+            XCTAssertNil(descriptor.sortBy, file: file, line: line)
+        }
+        
+        if keyPath != \SessionQueryDescriptor.containExercises {
+            XCTAssertNil(descriptor.containExercises, file: file, line: line)
+        }
+        
+        if keyPath != \SessionQueryDescriptor.postProcessing {
+            XCTAssertNil(descriptor.postProcessing, file: file, line: line)
+        }
+        
+        if keyPath != \SessionQueryDescriptor.sessionId {
+            XCTAssertNil(descriptor.sessionId, file: file, line: line)
+        }
+    }
 }
 
 extension Date {
