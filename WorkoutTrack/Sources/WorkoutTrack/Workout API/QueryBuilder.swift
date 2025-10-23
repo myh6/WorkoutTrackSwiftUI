@@ -18,9 +18,11 @@ public struct SessionQueryDescriptor {
 public enum QuerySort: Equatable {
     case byId(ascending: Bool)
     case byDate(ascending: Bool)
+    case entryCustomOrder
 }
 
 public enum PostProcessing: Equatable {
+    case sortByEntryCustomOrder
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
     case limitToFirst(Int)
@@ -49,7 +51,11 @@ public struct QueryBuilder {
     
     public func sort(by sort: QuerySort) -> Self {
         var copy = self
-        copy.sortBy = createArrayIfNeeded(sortBy) + [sort]
+        if sort == .entryCustomOrder {
+            copy.postProcess = createArrayIfNeeded(postProcess) + [.sortByEntryCustomOrder]
+        } else {
+            copy.sortBy = createArrayIfNeeded(sortBy) + [sort]
+        }
         return copy
     }
     

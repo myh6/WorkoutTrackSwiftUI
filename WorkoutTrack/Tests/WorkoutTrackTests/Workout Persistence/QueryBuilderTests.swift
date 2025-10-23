@@ -60,12 +60,14 @@ final class QueryBuilderTests: XCTestCase {
         let ids = [UUID(), UUID(), UUID()]
         
         let descriptor = QueryBuilder()
+            .sort(by: .entryCustomOrder)
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
             .limitToFirst(3)
             .build()
         
         XCTAssertEqual(descriptor.postProcessing, [
+            .sortByEntryCustomOrder,
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
             .limitToFirst(3)
