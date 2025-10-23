@@ -99,6 +99,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: allSession.sortedByDateInDescendingOrder(), withQuery: descriptor)
     }
     
+    func test_retrieve_entryDefault_deliversEntryInCreatedAtAscendingOrder() async throws {
+        let sut = makeSUT()
+        let allEntry = [Date().advanced(by: -100), Date().advanced(by: -300), Date()].map { anyEntry(createdAt: $0) }
+        let session = anySession(entries: allEntry)
+        
+        try await sut.insert(session)
+        
+        try await expect(sut, toRetrieve: [session].sortedByEntryCreatedAtInAscendingOrder())
+    }
+    
     func test_retrieve_id_deliversCorrespondingSessionWithExactID() async throws {
         let sut = makeSUT()
         let id = UUID()
@@ -286,8 +296,8 @@ final class WorkoutDataStoreTests: XCTestCase {
         WorkoutSessionDTO(id: id, date: date, entries: entries)
     }
     
-    private func anyEntry(id: UUID = UUID(), exercise: UUID = UUID(), sets: [WorkoutSetDTO] = []) -> WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exercise, sets: sets)
+    private func anyEntry(id: UUID = UUID(), exercise: UUID = UUID(), sets: [WorkoutSetDTO] = [], createdAt: Date = Date(), order: Int = 0) -> WorkoutEntryDTO {
+        WorkoutEntryDTO(id: id, exerciseID: exercise, sets: sets, createdAt: createdAt, order: order)
     }
     
     private func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0) -> WorkoutSetDTO {
@@ -323,6 +333,15 @@ extension Array where Element == WorkoutSessionDTO {
     func sortedByDateInDescendingOrderToEntries() -> [WorkoutEntryDTO] {
         sortedByDateInDescendingOrder().flatMap(\.entries)
     }
+    
+    func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutSessionDTO] {
+        map { session in
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: session.entries.sortedByEntryCreatedAtInAscendingOrder())
+        }
+    }
 }
 
 extension Array where Element == WorkoutEntryDTO {
@@ -332,5 +351,9 @@ extension Array where Element == WorkoutEntryDTO {
     
     func sortedByIDInDescendingOrder() -> [WorkoutEntryDTO] {
         sorted { $0.id > $1.id }
+    }
+    
+    func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntryDTO] {
+        sorted { $0.createdAt < $1.createdAt }
     }
 }

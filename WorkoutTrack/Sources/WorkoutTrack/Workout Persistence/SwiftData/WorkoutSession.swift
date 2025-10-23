@@ -45,6 +45,6 @@ extension WorkoutSession {
     }
     
     var dto: WorkoutSessionDTO {
-        WorkoutSessionDTO(id: id, date: date, entries: entries.map(\.dto))
+        WorkoutSessionDTO(id: id, date: date, entries: entries.map(\.dto).sorted(by: { $0.createdAt < $1.createdAt }))
     }
 }
