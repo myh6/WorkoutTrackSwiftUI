@@ -101,25 +101,51 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     func test_retrieve_entryDefault_deliversEntryInCreatedAtAscendingOrder() async throws {
         let sut = makeSUT()
-        let allEntry = [Date().advanced(by: -100), Date().advanced(by: -300), Date()].map { anyEntry(createdAt: $0) }
-        let session = anySession(entries: allEntry)
-        
+
+        let entry1 = anyEntry(createdAt: Date().advanced(by: -100))
+        let entry2 = anyEntry(createdAt: Date().advanced(by: -300))
+        let entry3 = anyEntry(createdAt: Date())
+
+        let session = anySession(entries: [entry1, entry2, entry3].shuffled())
         try await sut.insert(session)
-        
-        try await expect(sut, toRetrieve: [session].sortedByEntryCreatedAtInAscendingOrder())
+
+        let expected = [
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: [entry2, entry1, entry3]
+            )
+        ]
+
+        try await expect(sut, toRetrieve: expected)
     }
     
     func test_retrieve_entryCustomOrder_deliversEntryInCustomOrder() async throws {
         let sut = makeSUT()
-        let allEntry = [4,1,2,5,3].map { anyEntry(order: $0) }
-        let session = anySession(entries: allEntry)
+        
+        let entry4 = anyEntry(order: 4)
+        let entry1 = anyEntry(order: 1)
+        let entry2 = anyEntry(order: 2)
+        let entry5 = anyEntry(order: 5)
+        let entry3 = anyEntry(order: 3)
+        
+        let session = anySession(entries: [entry4, entry1, entry2, entry5, entry3].shuffled())
+        
         let descriptor = QueryBuilder()
             .sort(by: .entryCustomOrder)
             .build()
         
         try await sut.insert(session)
         
-        try await expect(sut, toRetrieve: [session].sortedByEntryCustomOrder(), withQuery: descriptor)
+        let expected = [
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: [entry1, entry2, entry3, entry4, entry5]
+            )
+        ]
+        
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
     }
     
     func test_retrieve_id_deliversCorrespondingSessionWithExactID() async throws {
@@ -157,59 +183,102 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [validSession], withQuery: descriptor)
     }
         
-    func test_retrieve_exercises_deliversSessionsWithOneOfTheSpecifiedExercise() async throws {
+    func test_retrieve_containsExercises_filtersOutSessionsWithoutAnyMatchingExercise() async throws {
         let sut = makeSUT()
         let exerciseA = UUID()
         let exerciseB = UUID()
-        let sessionWithOneSpecifiedExercise = anySession(entries: [
-            anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -2)),
-            anyEntry(createdAt: Date().adding(seconds: 1))
-        ])
-        let sessionWithAllSpecifiedExercise = anySession(entries: [
-            anyEntry(exercise: exerciseB, createdAt: Date().adding(minutes: 1)),
-            anyEntry(exercise: exerciseA, createdAt: Date().adding(minutes: 2)),
-            anyEntry(createdAt: Date())
-        ])
+
+        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -2))
+        let otherEntry = anyEntry(createdAt: Date().adding(seconds: 1))
+        let sessionWithOneSpecifiedExercise = anySession(entries: [validEntryA, otherEntry])
+
         let invalidSession = anySession(entries: [anyEntry()])
-        
+
         let descriptor = QueryBuilder()
             .containsExercises([exerciseA, exerciseB])
             .sort(by: .byId(ascending: true))
             .build()
-        
+
         try await sut.insert(sessionWithOneSpecifiedExercise)
-        try await sut.insert(sessionWithAllSpecifiedExercise)
         try await sut.insert(invalidSession)
-        
-        try await expect(sut, toRetrieve: [
-            sessionWithOneSpecifiedExercise,
-            sessionWithAllSpecifiedExercise
+
+        let expected = [
+            anySession(
+                id: sessionWithOneSpecifiedExercise.id,
+                date: sessionWithOneSpecifiedExercise.date,
+                entries: [validEntryA, otherEntry]
+            )
         ]
-            .sortedBySessionInAscendingOrder()
-            .sortedByEntryCreatedAtInAscendingOrder(), withQuery: descriptor)
+
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
+
+    func test_retrieve_containsExercises_retainsSessionsWithAnyMatchingExercise() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+
+        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(minutes: 2))
+        let validEntryB = anyEntry(exercise: exerciseB, createdAt: Date().adding(minutes: 1))
+        let otherEntry = anyEntry(createdAt: Date())
+
+        let sessionWithAllSpecifiedExercise = anySession(entries: [validEntryB, validEntryA, otherEntry])
+
+        let descriptor = QueryBuilder()
+            .containsExercises([exerciseA, exerciseB])
+            .sort(by: .byId(ascending: true))
+            .build()
+
+        try await sut.insert(sessionWithAllSpecifiedExercise)
+
+        let expected = [
+            anySession(
+                id: sessionWithAllSpecifiedExercise.id,
+                date: sessionWithAllSpecifiedExercise.date,
+                entries: [validEntryB, validEntryA, otherEntry].sortedByDefaultOrder()
+            )
+        ]
+
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
     }
     
     func test_retrieve_onlyIncludeFinishedSets_deliversSessionsWithFinishedSetsOnly() async throws {
         let sut = makeSUT()
-        let sets = [anySet(isFinished: true, order: 3),
-                    anySet(isFinished: false, order: 2),
-                    anySet(isFinished: true, order: 1),
-                    anySet(isFinished: true, order: 0)
+        let validSets = [
+            anySet(isFinished: true, order: 2),
+            anySet(isFinished: true, order: 1),
+            anySet(isFinished: true, order: 4)
         ]
-        let session = anySession(entries: [anyEntry(sets: sets)])
+        let sets = validSets + [anySet(isFinished: false, order: 0), anySet(isFinished: false, order: 3)]
+        let entry = anyEntry(sets: sets.shuffled())
+        let session = anySession(entries: [entry])
         let descriptor = QueryBuilder()
             .onlyIncludFinishedSets()
             .build()
         
         try await sut.insert(session)
         
-        try await expect(sut, toRetrieve: [session].filterUnfinishedSets(), withQuery: descriptor)
+        let expected = anySession(
+            id: session.id,
+            date: session.date,
+            entries: [
+                anyEntry(
+                    id: entry.id,
+                    exercise: entry.exerciseID,
+                    sets: validSets.sortedByDefaultOrder(),
+                    createdAt: entry.createdAt,
+                    order: entry.order
+                )
+            ]
+        )
+        
+        try await expect(sut, toRetrieve: [expected], withQuery: descriptor)
     }
     
     func test_retrieve_onlyIncludeExercises_filtersOutNonIncludedEntriesWithinSessions() async throws {
         let sut = makeSUT()
         let exerciseA = UUID(), exerciseB = UUID()
-        let validEntry = [anyEntry(exercise: exerciseA), anyEntry(exercise: exerciseB)]
+        let validEntry = [anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -1)), anyEntry(exercise: exerciseB)]
         let session1 = anySession(entries: (validEntry + [anyEntry(), anyEntry()]).shuffled())
         let sessions = [
             session1, anySession(entries: [anyEntry()])
@@ -421,40 +490,6 @@ extension Array where Element == WorkoutSessionDTO {
     func sortedByDateInDescendingOrder() -> [WorkoutSessionDTO] {
         sorted { $0.date > $1.date }
     }
-    
-    func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutSessionDTO] {
-        map { session in
-            WorkoutSessionDTO(
-                id: session.id,
-                date: session.date,
-                entries: session.entries.sortedByEntryCreatedAtInAscendingOrder())
-        }
-    }
-    
-    func sortedByEntryCustomOrder() -> [WorkoutSessionDTO] {
-        map { session in
-            WorkoutSessionDTO(
-                id: session.id,
-                date: session.date,
-                entries: session.entries.sorted { $0.order < $1.order } )
-        }
-    }
-    
-    func filterUnfinishedSets() -> [WorkoutSessionDTO] {
-        map { session in
-            WorkoutSessionDTO(
-                id: session.id,
-                date: session.date,
-                entries: session.entries.map { entry in
-                    WorkoutEntryDTO(
-                        id: entry.id,
-                        exerciseID: entry.exerciseID,
-                        sets: entry.sets.filter { $0.isFinished }.sorted { $0.order < $1.order },
-                        createdAt: entry.createdAt,
-                        order: entry.order)
-                })
-        }
-    }
 }
 
 extension Array where Element == WorkoutEntryDTO {
@@ -464,5 +499,15 @@ extension Array where Element == WorkoutEntryDTO {
     
     func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntryDTO] {
         sorted { $0.createdAt < $1.createdAt }
+    }
+}
+
+extension Array where Element == WorkoutSetDTO {
+    func sortedByDefaultOrder() -> [WorkoutSetDTO] {
+        sortedByOrder()
+    }
+    
+    func sortedByOrder() -> [WorkoutSetDTO] {
+        sorted { $0.order < $1.order }
     }
 }
