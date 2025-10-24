@@ -44,6 +44,19 @@ extension PostProcessing {
                         })
                 }
             }
+        case .onlyIncludeExercises(let ids):
+            return { sessions in
+                sessions.map { session in
+                    WorkoutSessionDTO(
+                        id: session.id,
+                        date: session.date,
+                        entries: session.entries.filter {
+                            ids.contains($0.exerciseID)
+                        }
+                    )
+                }
+                .filter { !$0.entries.isEmpty }
+            }
         default:
             return { _ in [] }
         }

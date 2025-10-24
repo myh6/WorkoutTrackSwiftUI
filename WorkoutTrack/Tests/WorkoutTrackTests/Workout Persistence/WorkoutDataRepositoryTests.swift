@@ -206,6 +206,33 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [session].filterUnfinishedSets(), withQuery: descriptor)
     }
     
+    func test_retrieve_onlyIncludeExercises_filtersOutNonIncludedEntriesWithinSessions() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID(), exerciseB = UUID()
+        let validEntry = [anyEntry(exercise: exerciseA), anyEntry(exercise: exerciseB)]
+        let session1 = anySession(entries: (validEntry + [anyEntry(), anyEntry()]).shuffled())
+        let sessions = [
+            session1, anySession(entries: [anyEntry()])
+        ]
+        let descriptor = QueryBuilder()
+            .onlyIncludExercises([exerciseA, exerciseB])
+            .build()
+        
+        for session in sessions {
+            try await sut.insert(session)
+        }
+        
+        let expected = [
+            anySession(
+                id: session1.id,
+                date: session1.date,
+                entries: validEntry.sortedByDefaultOrder()
+            )
+        ]
+        
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
+    
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
@@ -325,6 +352,7 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieve expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         let retrieve = try await sut.retrieve(query: query)
+        print(retrieve)
         XCTAssertEqual(retrieve, expectedSessions, file: file, line: line)
     }
     
@@ -403,6 +431,10 @@ extension Array where Element == WorkoutSessionDTO {
 }
 
 extension Array where Element == WorkoutEntryDTO {
+    func sortedByDefaultOrder() -> [WorkoutEntryDTO] {
+        return sortedByEntryCreatedAtInAscendingOrder()
+    }
+    
     func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntryDTO] {
         sorted { $0.createdAt < $1.createdAt }
     }
