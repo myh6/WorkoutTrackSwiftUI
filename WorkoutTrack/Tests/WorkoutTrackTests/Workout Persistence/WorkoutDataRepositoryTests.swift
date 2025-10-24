@@ -233,6 +233,33 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: expected, withQuery: descriptor)
     }
     
+    func test_retrieve_onlyIncludeExercises_retainsSessionsWithAnyMatchingExercise() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID(), exerciseB = UUID()
+        let validEntry = [anyEntry(exercise: exerciseA)]
+        let session1 = anySession(entries: (validEntry + [anyEntry(), anyEntry()]).shuffled())
+        let sessions = [
+            session1, anySession(entries: [anyEntry()])
+        ]
+        let descriptor = QueryBuilder()
+            .onlyIncludExercises([exerciseA, exerciseB])
+            .build()
+        
+        for session in sessions {
+            try await sut.insert(session)
+        }
+        
+        let expected = [
+            anySession(
+                id: session1.id,
+                date: session1.date,
+                entries: validEntry.sortedByDefaultOrder()
+            )
+        ]
+        
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
+    
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
         let session = anySession(
