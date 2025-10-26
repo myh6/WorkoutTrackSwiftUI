@@ -354,14 +354,14 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     func test_insert_toSameSession_wouldNotOverwriteExistingSessionAndItsEntries() async throws {
         let sut = makeSUT()
-        let sessionId = UUID()
-        let presavedEntryId = UUID()
-        let session = anySession(id: sessionId, entries: [anyEntry(id: presavedEntryId)])
-        let addedEntries = [anyEntry(), anyEntry()]
+        let presavedEntry = anyEntry()
+        let session = anySession(entries: [presavedEntry])
+        let addedEntries = [anyEntry(createdAt: Date().adding(minutes: 1)), anyEntry(createdAt: Date().adding(minutes: -2))]
         
         try await sut.insert(session)
         try await sut.insert(addedEntries, to: session)
-        try await expect(sut, toRetrieveEntriesWithIDs: [presavedEntryId] + addedEntries.map(\.id))
+        
+        try await expect(sut, toRetrieveEntry: ([presavedEntry] + addedEntries).sortedByDefaultOrder())
     }
     
     func test_insert_toNonExistantSession_createsSessionAndInsertsTheGivenEntries() async throws {
@@ -443,12 +443,11 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveEntriesWithIDs ids: [UUID], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         let retrieved = try await sut.retrieve(query: query).flatMap(\.entries)
-        XCTAssertEqual(retrieved.map(\.id).sorted(), ids.sorted(), file: file, line: line)
+        XCTAssertEqual(retrieved.map(\.id), ids.sorted(), file: file, line: line)
     }
     
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieve expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         let retrieve = try await sut.retrieve(query: query)
-        print(retrieve)
         XCTAssertEqual(retrieve, expectedSessions, file: file, line: line)
     }
     
