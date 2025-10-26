@@ -11,15 +11,20 @@ import SwiftData
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
-    func retrieveSession(_ query: SessionQuery) throws -> [WorkoutSessionDTO] {
+    func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
-        if let predicate = query.predicate {
+        let (predicate, sort, postProcess) = translate(query)
+        if let predicate {
             descriptor.predicate = predicate
         }
-        if let sort = query.sortDescriptor {
-            descriptor.sortBy = [sort]
+        if !sort.isEmpty {
+            descriptor.sortBy = sort
         }
-        return try modelContext.fetch(descriptor).map(\.dto)
+        var retrieved = try modelContext.fetch(descriptor).map(\.dto)
+        if let postProcess {
+            retrieved = postProcess(retrieved)
+        }
+        return retrieved
     }
     
     func insert(_ session: WorkoutSessionDTO) throws {
@@ -44,24 +49,13 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func delete(_ session: WorkoutSessionDTO) throws {
+        guard let existing = try getSessionFromContext(id: session.id) else { return }
         
+        modelContext.delete(existing)
+        try modelContext.save()
     }
 }
 
-//MARK: - Entry
-extension SwiftDataWorkoutSessionStore {
-    func retrieveEntry(_ query: EntryQuery) throws -> [WorkoutEntryDTO] {
-        var descriptor = FetchDescriptor<WorkoutEntry>()
-        if let predicate = query.predicate {
-            descriptor.predicate = predicate
-        }
-        if let sort = query.sortDescriptor {
-            descriptor.sortBy = [sort]
-        }
-        return try modelContext.fetch(descriptor).map(\.dto)
-    }
-}
- 
 extension SwiftDataWorkoutSessionStore {
     private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {
         let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == id })
@@ -72,6 +66,41 @@ extension SwiftDataWorkoutSessionStore {
         let entry = WorkoutEntry(dto: entryDTO)
         entry.session = session
         modelContext.insert(entry)
+    }
+    
+    typealias Process = ([WorkoutSessionDTO]) -> [WorkoutSessionDTO]
+    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Process?) {
+        guard let query else { return (nil, [], nil) }
+        let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange, query.containExercises)
+        let sortDescriptor = getSortDescriptor(query.sortBy)
+        let transform = getProcess(query.postProcessing)
+        
+        return (predicate, sortDescriptor, transform)
+    }
+    
+    private func getSortDescriptor(_ arr: [QuerySort]?) -> [SortDescriptor<WorkoutSession>] {
+        guard let arr else { return [] }
+        var sortDescriptor: [SortDescriptor<WorkoutSession>] = []
+        for sort in arr {
+            switch sort {
+            case .byId(let ascending):
+                sortDescriptor.append(SortDescriptor(\.id, order: ascending ? .forward : .reverse))
+            case .byDate(let ascending):
+                sortDescriptor.append(SortDescriptor(\.date, order: ascending ? .forward : .reverse))
+            default:
+                continue
+            }
+        }
+        return sortDescriptor
+    }
+    
+    private func getProcess(_ postProcessing: [PostProcessing]?) -> Process? {
+        guard let postProcessing, !postProcessing.isEmpty else { return nil }
+        return { session in
+            postProcessing.reduce(session) { result, post in
+                post.transform(result)
+            }
+        }
     }
 }
 
@@ -84,62 +113,6 @@ extension WorkoutSession {
             let entry = WorkoutEntry(dto: entryDTO)
             entry.session = self
             return entry
-        }
-    }
-}
-
-extension SessionQuery {
-    var predicate: Predicate<WorkoutSession>? {
-        switch self {
-        case .all:
-            return nil
-        case .sessionID(id: let id):
-            return #Predicate { $0.id == id }
-        }
-    }
-    
-    var sort: SessionSort? {
-        switch self {
-        case .all(let sort):
-            return sort
-        case .sessionID:
-            return nil
-        }
-    }
-    
-    var sortDescriptor: SortDescriptor<WorkoutSession>? {
-        switch self.sort {
-        case .bySessionId(let ascending):
-            return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
-        case .byDate(let ascending):
-            return SortDescriptor(\.date, order: ascending ? .forward : .reverse)
-        case .none:
-            return nil
-        }
-    }
-}
-
-extension EntryQuery {
-    var predicate: Predicate<WorkoutEntry>? {
-        switch self {
-        case .all:
-            return nil
-        }
-    }
-    
-    var sort: EntrySort? {
-        switch self {
-        case .all(let sort):
-            return sort
-        }
-    }
-    
-    var sortDescriptor: SortDescriptor<WorkoutEntry>? {
-        switch self.sort {
-        case .byId(let ascending):
-            return SortDescriptor(\.id, order: ascending ? .forward : .reverse)
-        case .none:
-            return nil
         }
     }
 }

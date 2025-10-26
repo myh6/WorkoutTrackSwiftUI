@@ -17,17 +17,24 @@ final class WorkoutEntry {
 
     @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.entry)
     var sets: [WorkoutSet]
+    
+    var createdAt: Date
+    var order: Int
 
     init(
         id: UUID = UUID(),
         exerciseID: UUID,
         session: WorkoutSession? = nil,
-        sets: [WorkoutSet] = []
+        sets: [WorkoutSet] = [],
+        createdAt: Date,
+        order: Int
     ) {
         self.id = id
         self.exerciseID = exerciseID
         self.session = session
         self.sets = sets
+        self.createdAt = createdAt
+        self.order = order
     }
 }
 
@@ -35,11 +42,13 @@ struct WorkoutEntryDTO: Equatable {
     let id: UUID
     let exerciseID: UUID
     let sets: [WorkoutSetDTO]
+    let createdAt: Date
+    let order: Int
 }
 
 extension WorkoutEntry {
     convenience init(dto: WorkoutEntryDTO) {
-        self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [])
+        self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [], createdAt: dto.createdAt, order: dto.order)
         self.sets = dto.sets.map { setDTO in
             let set = WorkoutSet(dto: setDTO)
             set.entry = self
@@ -48,6 +57,6 @@ extension WorkoutEntry {
     }
     
     var dto: WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto))
+        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto).sorted { $0.order < $1.order }, createdAt: createdAt, order: order)
     }
 }
