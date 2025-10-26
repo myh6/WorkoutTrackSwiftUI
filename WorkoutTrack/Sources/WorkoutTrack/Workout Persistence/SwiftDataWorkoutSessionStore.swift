@@ -48,6 +48,28 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
+    func insert(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) throws {
+        guard let existingEntry = try getEntryFromContext(id: entry.id) else { return }
+        
+        let startingOrder = (existingEntry.sets.map(\.order).max() ?? -1) + 1
+        let orderedSet = sets.enumerated().map { offset, set in
+            WorkoutSetDTO(
+                id: set.id,
+                reps: set.reps,
+                weight: set.weight,
+                isFinished: set.isFinished,
+                order: startingOrder + offset)
+        }
+        
+        orderedSet.forEach { setDTO in
+            let set = WorkoutSet(dto: setDTO)
+            set.entry = existingEntry
+            modelContext.insert(set)
+        }
+        
+        try modelContext.save()
+    }
+    
     func delete(_ session: WorkoutSessionDTO) throws {
         guard let existing = try getSessionFromContext(id: session.id) else { return }
         
@@ -59,6 +81,11 @@ final actor SwiftDataWorkoutSessionStore {
 extension SwiftDataWorkoutSessionStore {
     private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {
         let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == id })
+        return try modelContext.fetch(descriptor).first
+    }
+    
+    private func getEntryFromContext(id: UUID) throws -> WorkoutEntry? {
+        let descriptor = FetchDescriptor<WorkoutEntry>(predicate: #Predicate { $0.id == id })
         return try modelContext.fetch(descriptor).first
     }
     

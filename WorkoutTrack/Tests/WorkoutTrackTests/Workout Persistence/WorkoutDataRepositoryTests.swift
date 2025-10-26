@@ -375,6 +375,22 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [expectedSession])
     }
     
+    // TODO: - Insert multiple sets using sesson insertion might have wrong order property.
+    func test_insertSets_toExistingEntryPersistsTheSetsAndDoesNotDuplicateEntry() async throws {
+        let sut = makeSUT()
+        let presavedSet = anySet()
+        let entry = anyEntry(sets: [presavedSet])
+        let newSet = anySet()
+        
+        try await sut.insert(anySession(entries: [entry]))
+        try await sut.insert([newSet], to: entry)
+        
+        let expectedSet = [presavedSet, anySet(id: newSet.id, reps: newSet.reps, weight: newSet.weight, isFinished: newSet.isFinished, order: 1)]
+        let expectedEntry = anyEntry(id: entry.id, exercise: entry.exerciseID, sets: expectedSet, createdAt: entry.createdAt, order: entry.order)
+        
+        try await expect(sut, toRetrieveEntry: [expectedEntry])
+    }
+    
     func test_deleteSession_hasNoEffectOnEmptyDatabase() async {
         let sut = makeSUT()
         
