@@ -65,14 +65,12 @@ final class QueryBuilderTests: XCTestCase {
             .sort(by: .entryCustomOrder)
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
-            .limitToFirst(3)
             .build()
         
         XCTAssertDescriptionOnlyHas(\.postProcessing, equalTo: [
             .sortByEntryCustomOrder,
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
-            .limitToFirst(3)
         ], in: descriptor)
     }
     

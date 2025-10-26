@@ -70,12 +70,6 @@ public struct QueryBuilder {
         return copy
     }
     
-    public func limitToFirst(_ count: Int) -> Self {
-        var copy = self
-        copy.postProcess = createArrayIfNeeded(postProcess) + [.limitToFirst(count)]
-        return copy
-    }
-    
     public func build() -> SessionQueryDescriptor {
         return SessionQueryDescriptor(
             sessionId: sessionId,

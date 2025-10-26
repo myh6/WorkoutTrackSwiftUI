@@ -11,7 +11,6 @@ public enum PostProcessing: Equatable {
     case sortByEntryCustomOrder
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
-    case limitToFirst(Int)
 }
 
 extension PostProcessing {
@@ -57,8 +56,6 @@ extension PostProcessing {
                 }
                 .filter { !$0.entries.isEmpty }
             }
-        default:
-            return { _ in [] }
         }
     }
 }
