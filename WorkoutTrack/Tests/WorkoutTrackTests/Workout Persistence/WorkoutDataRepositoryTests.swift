@@ -375,6 +375,17 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [expectedSession])
     }
     
+    func test_insertEntry_doesNotCreateDuplicationOnReinsertion() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry()
+        let session = anySession(entries: [entry])
+        
+        try await sut.insert(session)
+        try await sut.insert([entry], to: session)
+        
+        try await expect(sut, toRetrieveEntry: [entry])
+    }
+    
     func test_insertSets_toExistingEntryPersistsTheSetsAndDoesNotDuplicateEntry() async throws {
         let sut = makeSUT()
         let presavedSet = anySet()
