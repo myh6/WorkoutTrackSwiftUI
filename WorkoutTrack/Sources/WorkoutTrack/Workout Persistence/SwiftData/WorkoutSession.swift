@@ -45,6 +45,21 @@ extension WorkoutSession {
     }
     
     var dto: WorkoutSessionDTO {
-        WorkoutSessionDTO(id: id, date: date, entries: entries.map(\.dto).sorted(by: { $0.createdAt < $1.createdAt }))
+        WorkoutSessionDTO(id: id, date: date, entries: entries
+            .map(\.dto)
+            .sorted(by: sortByCreatedAtThenCustomThenUUID)
+        )
+    }
+    
+    private func sortByCreatedAtThenCustomThenUUID(_ entry1: WorkoutEntryDTO, _ entry2: WorkoutEntryDTO) -> Bool {
+        if entry1.createdAt != entry2.createdAt {
+            return entry1.createdAt < entry2.createdAt
+        } else {
+            if entry1.order != entry2.order {
+                return entry1.order < entry2.order
+            } else {
+                return entry1.id < entry2.id
+            }
+        }
     }
 }

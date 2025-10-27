@@ -120,6 +120,27 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: expected)
     }
     
+    func test_retrieve_entriesDefaultWithSameCreatedAt_areSortedByCustomOrderThenByUUID() async throws {
+        let sut = makeSUT()
+        let sameTime = Date()
+        let entry1 = anyEntry(createdAt: sameTime, order: 0)
+        let entry2 = anyEntry(createdAt: sameTime, order: 0)
+        let entry3 = anyEntry(createdAt: sameTime, order: 2)
+        let entry4 = anyEntry(createdAt: sameTime, order: 3)
+        
+        let session = anySession(entries: [entry1, entry2, entry3, entry4].shuffled())
+        try await sut.insert(session)
+        
+        let expected = [
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: [entry1, entry2].sorted{ $0.id < $1.id} + [entry3, entry4])
+        ]
+        
+        try await expect(sut, toRetrieve: expected)
+    }
+    
     func test_retrieve_entryCustomOrder_deliversEntryInCustomOrder() async throws {
         let sut = makeSUT()
         
