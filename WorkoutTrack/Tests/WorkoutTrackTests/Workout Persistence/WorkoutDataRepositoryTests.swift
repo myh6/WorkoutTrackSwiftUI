@@ -521,11 +521,13 @@ final class WorkoutDataStoreTests: XCTestCase {
     func test_deleteSet_deletesTheSpecificedSet() async throws {
         let sut = makeSUT()
         let set = anySet()
-        let entry = anyEntry(sets: [anySet(), set])
+        let deleteSet = anySet()
+        let entry = anyEntry(sets: [set, deleteSet])
         
         try await sut.insert(anySession(entries: [entry]))
+        try await sut.delete(deleteSet)
         
-        try
+        try await expect(sut, toRetrieveSets: [set])
     }
     
     //MARK: - Helpers

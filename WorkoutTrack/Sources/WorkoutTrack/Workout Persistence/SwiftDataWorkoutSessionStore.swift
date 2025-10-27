@@ -81,7 +81,12 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
-    func delete(_ set: WorkoutSetDTO) throws {}
+    func delete(_ set: WorkoutSetDTO) throws {
+        guard let existing = try getSetFromContext(id: set.id) else { return }
+        
+        modelContext.delete(existing)
+        try modelContext.save()
+    }
 }
 
 extension SwiftDataWorkoutSessionStore {
@@ -92,6 +97,11 @@ extension SwiftDataWorkoutSessionStore {
     
     private func getEntryFromContext(id: UUID) throws -> WorkoutEntry? {
         let descriptor = FetchDescriptor<WorkoutEntry>(predicate: #Predicate { $0.id == id })
+        return try modelContext.fetch(descriptor).first
+    }
+    
+    private func getSetFromContext(id: UUID) throws -> WorkoutSet? {
+        let descriptor = FetchDescriptor<WorkoutSet>(predicate: #Predicate { $0.id == id })
         return try modelContext.fetch(descriptor).first
     }
     
