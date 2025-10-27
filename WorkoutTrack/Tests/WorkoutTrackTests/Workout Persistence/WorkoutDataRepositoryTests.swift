@@ -484,6 +484,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         }
     }
     
+    func test_deleteEntry_hasNoSideEffectsOnNonExistantEntry() async throws {
+        let sut = makeSUT()
+        
+        try await sut.insert(anySession(entries: [anyEntry()]))
+        
+        do {
+            try await sut.delete(anyEntry())
+        } catch {
+            XCTFail("Expected SUT do delete without any error on non existant entry")
+        }
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
