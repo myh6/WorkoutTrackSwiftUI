@@ -451,18 +451,6 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntry: [])
     }
     
-    func test_retrieveEntry_deliversEmptyOnEmptyDatabase() async throws {
-        let sut = makeSUT()
-        
-        try await expect(sut, toRetrieveEntry: [])
-    }
-    
-    func test_retrieveEntry_hasNoSideEffectOnEmptyDatabase() async throws {
-        let sut = makeSUT()
-        
-        try await expect(sut, toRetrieveEntryTwice: [])
-    }
-    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
