@@ -375,7 +375,6 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [expectedSession])
     }
     
-    // TODO: - Insert multiple sets using sesson insertion might have wrong order property.
     func test_insertSets_toExistingEntryPersistsTheSetsAndDoesNotDuplicateEntry() async throws {
         let sut = makeSUT()
         let presavedSet = anySet()
@@ -399,11 +398,23 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await sut.insert(anySession(entries: [entry]))
         try await sut.insert(newSet, to: entry)
         
-        let expectedOrder = [0, 1, 2, 3, 4]
+        let retrievedOrder = try await retrievedOrder(from: sut)
         
-        let retrievedOrder = try await sut.retrieve(query: nil).flatMap(\.entries).flatMap(\.sets).map(\.order)
+        XCTAssertEqual(retrievedOrder, [0, 1, 2, 3, 4])
+    }
+    
+    func test_insertSets_overwritesPreviousOrdersWithSequentialValues() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry(sets: [anySet(order: 5), anySet(order: 10)])
+        let session = anySession(entries: [entry])
+        try await sut.insert(session)
         
-        XCTAssertEqual(expectedOrder, retrievedOrder)
+        let newSets = [anySet(), anySet()]
+        try await sut.insert(newSets, to: entry)
+        
+        let allOrders = try await retrievedOrder(from: sut)
+        
+        XCTAssertEqual(allOrders, [0, 1, 2, 3])
     }
     
     func test_deleteSession_hasNoEffectOnEmptyDatabase() async {
@@ -485,6 +496,10 @@ final class WorkoutDataStoreTests: XCTestCase {
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveTwice expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
+    }
+    
+    private func retrievedOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
+        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).map(\.order)
     }
     
     private func anySession(id: UUID = UUID(), date: Date = .now, entries: [WorkoutEntryDTO] = []) -> WorkoutSessionDTO {
