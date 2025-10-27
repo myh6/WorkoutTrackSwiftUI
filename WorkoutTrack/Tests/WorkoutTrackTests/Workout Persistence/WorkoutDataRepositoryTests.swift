@@ -508,6 +508,25 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveSets: [])
     }
     
+    func test_deleteSet_hasNoEffectsOnEmptyDatabase() async throws {
+        let sut = makeSUT()
+        
+        do {
+            try await sut.delete(anySet())
+        } catch {
+            XCTFail("Expected SUT to delete without any error on non existant set")
+        }
+    }
+    
+    func test_deleteSet_hasNoEffectsOnNonExistantSet() async throws {
+        let sut = makeSUT()
+        let set = anySet()
+        try await sut.insert(anySession(entries: [anyEntry(sets: [set])]))
+        
+        try await sut.delete(anySet())
+        try await expect(sut, toRetrieveSets: [set])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
