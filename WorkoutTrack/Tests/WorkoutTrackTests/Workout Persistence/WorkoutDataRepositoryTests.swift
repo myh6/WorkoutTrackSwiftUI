@@ -486,11 +486,12 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     func test_deleteEntry_hasNoSideEffectsOnNonExistantEntry() async throws {
         let sut = makeSUT()
-        
-        try await sut.insert(anySession(entries: [anyEntry()]))
+        let entry = anyEntry()
+        try await sut.insert(anySession(entries: [entry]))
         
         do {
             try await sut.delete(anyEntry())
+            try await expect(sut, toRetrieveEntry: [entry])
         } catch {
             XCTFail("Expected SUT do delete without any error on non existant entry")
         }
