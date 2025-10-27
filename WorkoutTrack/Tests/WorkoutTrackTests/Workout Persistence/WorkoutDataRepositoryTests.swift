@@ -265,32 +265,34 @@ final class WorkoutDataStoreTests: XCTestCase {
     
     func test_retrieve_onlyIncludeFinishedSets_deliversSessionsWithFinishedSetsOnly() async throws {
         let sut = makeSUT()
-        let validSets = [
+        let validSets1 = [
             anySet(isFinished: true, order: 0),
             anySet(isFinished: true, order: 1),
             anySet(isFinished: true, order: 2)
         ]
-        let sets = validSets + [anySet(isFinished: false), anySet(isFinished: false)]
-        let entry = anyEntry(sets: sets)
-        let session = anySession(entries: [entry])
+        let validSets2 = [
+            anySet(isFinished: true, order: 0),
+            anySet(isFinished: true, order: 1)
+        ]
+        let sets1 = validSets1 + [anySet(isFinished: false), anySet(isFinished: false)]
+        let sets2 = validSets2 + [anySet(isFinished: false)]
+        let entry1 = anyEntry(sets: sets1)
+        let entry2 = anyEntry(sets: sets2)
+        let session = anySession(entries: [entry1, entry2])
         let descriptor = QueryBuilder()
             .onlyIncludFinishedSets()
             .build()
         
         try await sut.insert(session)
         
+        let expectedEntries = [
+            anyEntry(id: entry1.id, exercise: entry1.exerciseID, sets: validSets1.sortedByDefaultOrder(), createdAt: entry1.createdAt, order: entry1.order),
+            anyEntry(id: entry2.id, exercise: entry2.exerciseID, sets: validSets2.sortedByDefaultOrder(), createdAt: entry2.createdAt, order: entry2.order)
+        ]
         let expected = anySession(
             id: session.id,
             date: session.date,
-            entries: [
-                anyEntry(
-                    id: entry.id,
-                    exercise: entry.exerciseID,
-                    sets: validSets.sortedByDefaultOrder(),
-                    createdAt: entry.createdAt,
-                    order: entry.order
-                )
-            ]
+            entries: expectedEntries
         )
         
         try await expect(sut, toRetrieve: [expected], withQuery: descriptor)
