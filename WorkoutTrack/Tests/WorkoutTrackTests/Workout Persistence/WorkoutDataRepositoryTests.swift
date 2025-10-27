@@ -496,6 +496,17 @@ final class WorkoutDataStoreTests: XCTestCase {
         }
     }
     
+    func test_deleteEntry_deletesTheSpecificedEntryAndItsSets() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry(sets: [anySet(), anySet()])
+        
+        try await sut.insert(anySession(entries: [entry]))
+        try await sut.delete(entry)
+        
+        try await expect(sut, toRetrieveEntry: [])
+        try await expect(sut, toRetrieveSets: [])
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])

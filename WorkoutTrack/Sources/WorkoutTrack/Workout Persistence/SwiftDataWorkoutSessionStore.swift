@@ -75,7 +75,10 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func delete(_ entry: WorkoutEntryDTO) throws {
+        guard let existing = try getEntryFromContext(id: entry.id) else { return }
         
+        modelContext.delete(existing)
+        try modelContext.save()
     }
 }
 
