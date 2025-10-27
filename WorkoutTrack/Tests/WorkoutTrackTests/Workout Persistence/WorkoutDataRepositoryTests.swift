@@ -455,12 +455,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         let session = anySession()
         try await sut.insert(session)
         
-        do {
-            try await sut.delete(anySession())
-        } catch {
-            XCTFail("Expected SUT to delete without any error on non existant session")
-        }
-        
+        try await sut.delete(anySession())
         try await expect(sut, toRetrieve: [session])
     }
     
@@ -489,12 +484,8 @@ final class WorkoutDataStoreTests: XCTestCase {
         let entry = anyEntry()
         try await sut.insert(anySession(entries: [entry]))
         
-        do {
-            try await sut.delete(anyEntry())
-            try await expect(sut, toRetrieveEntry: [entry])
-        } catch {
-            XCTFail("Expected SUT do delete without any error on non existant entry")
-        }
+        try await sut.delete(anyEntry())
+        try await expect(sut, toRetrieveEntry: [entry])
     }
     
     func test_deleteEntry_deletesTheSpecificedEntryAndItsSets() async throws {
@@ -525,6 +516,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         
         try await sut.delete(anySet())
         try await expect(sut, toRetrieveSets: [set])
+    }
+    
+    func test_deleteSet_deletesTheSpecificedSet() async throws {
+        let sut = makeSUT()
+        let set = anySet()
+        let entry = anyEntry(sets: [anySet(), set])
+        
+        try await sut.insert(anySession(entries: [entry]))
+        
+        try
     }
     
     //MARK: - Helpers
