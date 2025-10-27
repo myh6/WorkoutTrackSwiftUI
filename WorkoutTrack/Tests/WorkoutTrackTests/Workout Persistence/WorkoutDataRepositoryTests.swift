@@ -474,6 +474,16 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieveEntry: [])
     }
     
+    func test_deleteEntry_hasNoEffectsOnEmptyDatabase() async {
+        let sut = makeSUT()
+        
+        do {
+            try await sut.delete(anyEntry())
+        } catch {
+            XCTFail("Expected SUT to delete without any error on non existant entry")
+        }
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> SwiftDataWorkoutSessionStore {
         let schema = Schema([WorkoutSession.self])
