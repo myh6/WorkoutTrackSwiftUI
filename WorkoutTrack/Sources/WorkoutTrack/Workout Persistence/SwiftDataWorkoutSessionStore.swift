@@ -53,8 +53,10 @@ final actor SwiftDataWorkoutSessionStore {
     func insert(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) throws {
         guard let existingEntry = try getEntryFromContext(id: entry.id) else { return }
         
+        let existingIDs = Set(existingEntry.sets.map(\.id))
+        let newSets = sets.filter { !existingIDs.contains($0.id) }
         let startingOrder = (existingEntry.sets.map(\.order).max() ?? -1) + 1
-        let orderedSet = existingEntry.assignOrder(to: sets, startingAt: startingOrder)
+        let orderedSet = existingEntry.assignOrder(to: newSets, startingAt: startingOrder)
         
         orderedSet.forEach { setDTO in
             let set = WorkoutSet(dto: setDTO)

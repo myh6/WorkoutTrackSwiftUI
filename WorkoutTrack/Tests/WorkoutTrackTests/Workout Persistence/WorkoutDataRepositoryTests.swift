@@ -417,6 +417,18 @@ final class WorkoutDataStoreTests: XCTestCase {
         XCTAssertEqual(allOrders, [0, 1, 2, 3])
     }
     
+    func test_insertSets_doesNotCreateDuplcicateSetsOnReinsertion() async throws {
+        let sut = makeSUT()
+        let sets = [anySet(order: 0), anySet(order: 1)]
+        let entry = anyEntry(sets: sets)
+        let session = anySession(entries: [entry])
+        try await sut.insert(session)
+        
+        try await sut.insert(sets, to: entry)
+        
+        try await expect(sut, toRetrieveSets: sets)
+    }
+    
     func test_deleteSession_hasNoEffectOnEmptyDatabase() async {
         let sut = makeSUT()
         
@@ -484,6 +496,11 @@ final class WorkoutDataStoreTests: XCTestCase {
     private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveTwice expectedSessions: [WorkoutSessionDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
         try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
         try await expect(sut, toRetrieve: expectedSessions, withQuery: query, file: file, line: line)
+    }
+    
+    private func expect(_ sut: SwiftDataWorkoutSessionStore, toRetrieveSets expectedSets: [WorkoutSetDTO], withQuery query: SessionQueryDescriptor? = nil, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets)
+        XCTAssertEqual(retrieved, expectedSets, file: file, line: line)
     }
     
     private func retrievedOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
