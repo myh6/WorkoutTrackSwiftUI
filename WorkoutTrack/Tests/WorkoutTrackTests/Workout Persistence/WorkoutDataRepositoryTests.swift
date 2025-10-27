@@ -245,12 +245,12 @@ final class WorkoutDataStoreTests: XCTestCase {
     func test_retrieve_onlyIncludeFinishedSets_deliversSessionsWithFinishedSetsOnly() async throws {
         let sut = makeSUT()
         let validSets = [
-            anySet(isFinished: true, order: 2),
+            anySet(isFinished: true, order: 0),
             anySet(isFinished: true, order: 1),
-            anySet(isFinished: true, order: 4)
+            anySet(isFinished: true, order: 2)
         ]
-        let sets = validSets + [anySet(isFinished: false, order: 0), anySet(isFinished: false, order: 3)]
-        let entry = anyEntry(sets: sets.shuffled())
+        let sets = validSets + [anySet(isFinished: false), anySet(isFinished: false)]
+        let entry = anyEntry(sets: sets)
         let session = anySession(entries: [entry])
         let descriptor = QueryBuilder()
             .onlyIncludFinishedSets()
@@ -389,6 +389,21 @@ final class WorkoutDataStoreTests: XCTestCase {
         let expectedEntry = anyEntry(id: entry.id, exercise: entry.exerciseID, sets: expectedSet, createdAt: entry.createdAt, order: entry.order)
         
         try await expect(sut, toRetrieveEntry: [expectedEntry])
+    }
+    
+    func test_insertSets_assignsOrderBasedOnExistingSetsCount() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry(sets: [anySet(), anySet(), anySet()])
+        let newSet = [anySet(), anySet()]
+        
+        try await sut.insert(anySession(entries: [entry]))
+        try await sut.insert(newSet, to: entry)
+        
+        let expectedOrder = [0, 1, 2, 3, 4]
+        
+        let retrievedOrder = try await sut.retrieve(query: nil).flatMap(\.entries).flatMap(\.sets).map(\.order)
+        
+        XCTAssertEqual(expectedOrder, retrievedOrder)
     }
     
     func test_deleteSession_hasNoEffectOnEmptyDatabase() async {
