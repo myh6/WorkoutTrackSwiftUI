@@ -352,6 +352,21 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [sessionWithSameID])
     }
     
+    func test_insertSession_withFewerEntries_overwritesOldEntries() async throws {
+        let sut = makeSUT()
+        let entry = anyEntry()
+        let presavedEntries = [entry, anyEntry()]
+        let session = anySession(entries: presavedEntries)
+        let newEntry = [entry]
+        let sessionWithFewEntries = anySession(id: session.id, date: session.date, entries: newEntry)
+        
+        try await sut.insert(session)
+        try await sut.insert(sessionWithFewEntries)
+        
+        try await expect(sut, toRetrieve: [sessionWithFewEntries])
+        
+    }
+    
     func test_insert_toSameSession_wouldNotOverwriteExistingSessionAndItsEntries() async throws {
         let sut = makeSUT()
         let presavedEntry = anyEntry()
