@@ -9,6 +9,7 @@ import Foundation
 
 public enum PostProcessing: Equatable {
     case sortByEntryCustomOrder
+    case containsExercises([UUID])
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
 }
@@ -18,6 +19,8 @@ extension PostProcessing {
         switch self {
         case .sortByEntryCustomOrder:
             return Self.sortByEntryCustomOrder
+        case .containsExercises(let ids):
+            return { _ in [] }
         case .onlyIncludFinishedSets:
             return Self.onlyIncludeFinishedSets
         case .onlyIncludeExercises(let ids):

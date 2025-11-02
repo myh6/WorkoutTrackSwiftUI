@@ -54,7 +54,7 @@ public struct QueryBuilder {
     
     public func containsExercises(_ ids: [UUID]) -> Self {
         var copy = self
-        copy.containExercises = ids
+        copy.postProcess = createArrayIfNeeded(postProcess) + [.containsExercises(ids)]
         return copy
     }
     

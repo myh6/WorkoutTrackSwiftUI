@@ -114,7 +114,7 @@ extension SwiftDataWorkoutSessionStore {
     typealias Process = ([WorkoutSessionDTO]) -> [WorkoutSessionDTO]
     private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Process?) {
         guard let query else { return (nil, [], nil) }
-        let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange, query.containExercises)
+        let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange)
         let sortDescriptor = getSortDescriptor(query.sortBy)
         let transform = getProcess(query.postProcessing)
         

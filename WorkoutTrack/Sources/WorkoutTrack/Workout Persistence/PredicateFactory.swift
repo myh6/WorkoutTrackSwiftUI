@@ -9,19 +9,18 @@ import Foundation
 import SwiftData
 
 struct PredicateFactory {
-    static func getPredicate(_ id: UUID?, _ date: ClosedRange<Date>?, _ exercise: [UUID]?) -> Predicate<WorkoutSession> {
+    static func getPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
         if #available(macOS 14.4, iOS 17.4, *) {
-            return newPredicate(id, date, exercise)
+            return newPredicate(id, date)
         } else {
-            return legacyPredicate(id, date, exercise)
+            return legacyPredicate(id, date)
         }
     }
     
     @available(macOS 14.4, iOS 17.4, *)
-    private static func newPredicate(_ id: UUID?, _ date: ClosedRange<Date>?, _ exercise: [UUID]?) -> Predicate<WorkoutSession> {
+    private static func newPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
         var idPredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
         var datePredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
-        var exercisePredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
         
         if let id {
             idPredicate = #Predicate { $0.id == id }
@@ -36,33 +35,24 @@ struct PredicateFactory {
             }
         }
         
-        if let exercise {
-            exercisePredicate = #Predicate {
-                $0.entries.contains(where: { entry in exercise.contains(entry.exerciseID) })
-            }
-        }
-        
         return #Predicate<WorkoutSession> { session in
-            idPredicate.evaluate(session) && datePredicate.evaluate(session) && exercisePredicate.evaluate(session)
+            idPredicate.evaluate(session) && datePredicate.evaluate(session)
         }
     }
     
-    private static func legacyPredicate(_ id: UUID?, _ date: ClosedRange<Date>?, _ exercises: [UUID]?) -> Predicate<WorkoutSession> {
-        switch (id, date, exercises) {
-        case (let id?, nil, nil):
+    // TODO: - Haven't covered all the possible predicates.
+    private static func legacyPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
+        switch (id, date) {
+        case (let id?, nil):
             return #Predicate { $0.id == id }
-        case let (nil, date?, nil):
+        case (nil, let date?):
             let lowerbound = date.lowerBound.startOfDay()
             let upperbound = date.upperBound.endOfDay()
             return #Predicate { (lowerbound...upperbound).contains($0.date) }
-        case (let id?, let date?, nil):
+        case (let id?, let date?):
             let lowerbound = date.lowerBound.startOfDay()
             let upperbound = date.upperBound.endOfDay()
             return #Predicate { $0.id == id && (lowerbound...upperbound).contains($0.date) }
-        case (nil, nil, let exercises?):
-            return #Predicate {
-                $0.entries.contains(where: { entry in exercises.contains(entry.exerciseID) })
-            }
         default:
             return #Predicate { _ in true }
         }

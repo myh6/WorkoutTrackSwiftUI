@@ -40,15 +40,6 @@ final class QueryBuilderTests: XCTestCase {
         ], in: descriptor)
     }
     
-    func test_build_containExercises_createsDescriptorWithCorrectFIlter() {
-        let exercisesID = [UUID(), UUID(), UUID(), UUID()]
-        let descriptor = QueryBuilder()
-            .containsExercises(exercisesID)
-            .build()
-        
-        XCTAssertDescriptionOnlyHas(\.containExercises, equalTo: exercisesID, in: descriptor)
-    }
-    
     func test_build_filterSession_createsDescriptorWithCorrectFIlter() {
         let targetId = UUID()
         let descriptor = QueryBuilder()
@@ -60,15 +51,18 @@ final class QueryBuilderTests: XCTestCase {
     
     func test_build_postProcessing_createsDescriptorWithCorrectPostProcessing() {
         let ids = [UUID(), UUID(), UUID()]
+        let containIDs = [UUID(), UUID(), UUID()]
         
         let descriptor = QueryBuilder()
             .sort(by: .entryCustomOrder)
+            .containsExercises(containIDs)
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
             .build()
         
         XCTAssertDescriptionOnlyHas(\.postProcessing, equalTo: [
             .sortByEntryCustomOrder,
+            .containsExercises(containIDs),
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
         ], in: descriptor)
