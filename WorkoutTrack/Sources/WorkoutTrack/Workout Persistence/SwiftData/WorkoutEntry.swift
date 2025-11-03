@@ -71,4 +71,17 @@ extension WorkoutEntry {
                 order: base + offset)
         }
     }
+    
+    func update(from dto: WorkoutEntryDTO, in context: ModelContext) {
+        self.exerciseID = dto.exerciseID
+        self.order = dto.order
+        self.createdAt = dto.createdAt
+        
+        sets.forEach { context.delete($0) }
+        self.sets = dto.sets.map { setDTO in
+            let set = WorkoutSet(dto: setDTO)
+            set.entry = self
+            return set
+        }
+    }
 }

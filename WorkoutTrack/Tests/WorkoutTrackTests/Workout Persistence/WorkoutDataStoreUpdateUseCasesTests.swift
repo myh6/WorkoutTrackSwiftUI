@@ -45,7 +45,7 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         
         try await sut.update(anyEntry())
         
-        try await expect(sut, toRetrieve: [])
+        try await expect(sut, toRetrieveEntry: [])
     }
     
     func test_updateEntry_hasNoSideEffectOnEmptyDatabae() async throws {
@@ -54,6 +54,24 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await sut.update(anyEntry())
         try await sut.update(anyEntry())
         
-        try await expect(sut, toRetrieve: [])
+        try await expect(sut, toRetrieveEntry: [])
     }
+    
+    func test_updateEntry_updatesExistingEntry() async throws {
+        let sut = makeSUT()
+        let entryId = UUID()
+        let otherEntry = anyEntry(createdAt: Date().adding(seconds: -1))
+        
+        try await sut.insert(anySession(entries: [
+            otherEntry,
+            anyEntry(id: entryId, sets: [anySet()])
+        ]))
+        
+        let updatedEntry = anyEntry(id: entryId, exercise: UUID(), sets: [anySet(order: 0), anySet(order: 1)], createdAt: Date().adding(seconds: 10))
+        
+        try await sut.update(updatedEntry)
+        
+        try await expect(sut, toRetrieveEntry: [otherEntry, updatedEntry].sortedByDefaultOrder())
+    }
+    
 }
