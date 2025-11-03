@@ -11,6 +11,7 @@ import SwiftData
 @ModelActor
 final actor SwiftDataWorkoutSessionStore {
     
+    //MARK: - Retrieve
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
         var descriptor = FetchDescriptor<WorkoutSession>()
         let (predicate, sort, postProcess) = translate(query)
@@ -27,6 +28,7 @@ final actor SwiftDataWorkoutSessionStore {
         return retrieved
     }
     
+    //MARK: - Insert
     func insert(_ session: WorkoutSessionDTO) throws {
         if let existing = try getSessionFromContext(id: session.id) {
             existing.update(from: session, in: modelContext)
@@ -67,6 +69,7 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
+    //MARK: - Delete
     func delete(_ session: WorkoutSessionDTO) throws {
         guard let existing = try getSessionFromContext(id: session.id) else { return }
         
@@ -88,6 +91,7 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
+    //MARK: - Update
     func update(_ session: WorkoutSessionDTO) {
         
     }
