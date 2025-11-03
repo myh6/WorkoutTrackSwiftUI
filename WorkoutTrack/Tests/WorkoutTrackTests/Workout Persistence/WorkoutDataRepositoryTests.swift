@@ -376,48 +376,48 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: expected, withQuery: descriptor)
     }
     
-//    func test_retrieve_filtersByDateRangeAndExercisesTogether() async throws {
-//        let sut = makeSUT()
-//        let exerciseA = UUID()
-//        let exerciseB = UUID()
-//
-//        let validDate = Calendar(identifier: .gregorian).startOfDay(for: Date())
-//        let insideRangeDate = validDate.adding(days: 1).adding(seconds: -1) // still within validDate...validDate
-//        let outsideBefore = validDate.adding(seconds: -1)
-//
-//        let validEntryA = anyEntry(exercise: exerciseA)
-//        let validEntryB = anyEntry(exercise: exerciseB)
-//        let otherEntry = anyEntry()
-//
-//        // ✅ This session has both: valid date AND valid exercise → should be included
-//        let matchingSession = anySession(date: insideRangeDate, entries: [validEntryA, otherEntry])
-//        
-//        // ❌ Valid date, but invalid exercises → should be excluded
-//        let sessionWithWrongExercise = anySession(date: insideRangeDate, entries: [otherEntry])
-//
-//        // ❌ Valid exercises, but outside date range → should be excluded
-//        let sessionWithWrongDate = anySession(date: outsideBefore, entries: [validEntryB])
-//        
-//        let descriptor = QueryBuilder()
-//            .filterDateRange(validDate...validDate)
-//            .containsExercises([exerciseA, exerciseB])
-//            .sort(by: .byDate(ascending: true))
-//            .build()
-//
-//        try await sut.insert(matchingSession)
-//        try await sut.insert(sessionWithWrongExercise)
-//        try await sut.insert(sessionWithWrongDate)
-//
-//        let expected = [
-//            anySession(
-//                id: matchingSession.id,
-//                date: matchingSession.date,
-//                entries: [validEntryA, otherEntry].sortedByDefaultOrder()
-//            )
-//        ]
-//
-//        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
-//    }
+    func test_retrieve_filtersByDateRangeAndExercisesTogether() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+
+        let validDate = Calendar(identifier: .gregorian).startOfDay(for: Date())
+        let insideRangeDate = validDate.adding(days: 1).adding(seconds: -1) // still within validDate...validDate
+        let outsideBefore = validDate.adding(seconds: -1)
+
+        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -1))
+        let validEntryB = anyEntry(exercise: exerciseB)
+        let otherEntryForValidSession = anyEntry()
+
+        // ✅ This session has both: valid date AND valid exercise → should be included
+        let matchingSession = anySession(date: insideRangeDate, entries: [validEntryA, otherEntryForValidSession])
+        
+        // ❌ Valid date, but invalid exercises → should be excluded
+        let sessionWithWrongExercise = anySession(date: insideRangeDate, entries: [anyEntry()])
+
+        // ❌ Valid exercises, but outside date range → should be excluded
+        let sessionWithWrongDate = anySession(date: outsideBefore, entries: [validEntryB])
+        
+        let descriptor = QueryBuilder()
+            .filterDateRange(validDate...validDate)
+            .containsExercises([exerciseA, exerciseB])
+            .sort(by: .byDate(ascending: true))
+            .build()
+
+        try await sut.insert(matchingSession)
+        try await sut.insert(sessionWithWrongExercise)
+        try await sut.insert(sessionWithWrongDate)
+
+        let expected = [
+            anySession(
+                id: matchingSession.id,
+                date: matchingSession.date,
+                entries: [validEntryA, otherEntryForValidSession].sortedByDefaultOrder()
+            )
+        ]
+
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
     
     func test_insertWithEntryAndSet_deliversFoundSessionWithPersistedEntryAndSet() async throws {
         let sut = makeSUT()
