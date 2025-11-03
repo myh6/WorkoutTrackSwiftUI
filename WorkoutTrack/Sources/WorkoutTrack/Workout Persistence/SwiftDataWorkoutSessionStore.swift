@@ -87,6 +87,11 @@ final actor SwiftDataWorkoutSessionStore {
         modelContext.delete(existing)
         try modelContext.save()
     }
+    
+    func update(_ session: WorkoutSessionDTO) {
+        
+    }
+    
 }
 
 extension SwiftDataWorkoutSessionStore {
