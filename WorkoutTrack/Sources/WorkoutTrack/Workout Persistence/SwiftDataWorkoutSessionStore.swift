@@ -162,16 +162,3 @@ extension SwiftDataWorkoutSessionStore {
         }
     }
 }
-
-extension WorkoutSession {
-    func update(from dto: WorkoutSessionDTO, in context: ModelContext) {
-        self.date = dto.date
-        entries.forEach { context.delete($0) }
-        
-        self.entries = dto.entries.map { entryDTO in
-            let entry = WorkoutEntry(dto: entryDTO)
-            entry.session = self
-            return entry
-        }
-    }
-}
