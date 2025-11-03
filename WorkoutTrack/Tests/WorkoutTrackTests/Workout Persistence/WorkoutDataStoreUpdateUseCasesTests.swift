@@ -13,7 +13,7 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     func test_updateSession_hasNoEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        await sut.update(anySession())
+        try await sut.update(anySession())
         
         try await expect(sut, toRetrieve: [])
     }
@@ -21,10 +21,23 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     func test_updateSession_hasNoSideEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        await sut.update(anySession())
-        await sut.update(anySession())
+        try await sut.update(anySession())
+        try await sut.update(anySession())
 
         try await expect(sut, toRetrieve: [])
+    }
+    
+    func test_updateSession_updatesExistingSession() async throws {
+        let sut = makeSUT()
+        let sessionId = UUID()
+        
+        try await sut.insert(anySession(id: sessionId, date: Date.distantPast, entries: [anyEntry(sets: [anySet()])]))
+        
+        let updatedSession = anySession(id: sessionId, entries: [anyEntry(sets: [anySet()])])
+        
+        try await sut.update(updatedSession)
+        
+        try await expect(sut, toRetrieve: [updatedSession])
     }
     
 }

@@ -92,8 +92,11 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     //MARK: - Update
-    func update(_ session: WorkoutSessionDTO) {
+    func update(_ session: WorkoutSessionDTO) throws {
+        guard let existing = try getSessionFromContext(id: session.id) else { return }
         
+        existing.update(from: session, in: modelContext)
+        try modelContext.save()
     }
     
 }
