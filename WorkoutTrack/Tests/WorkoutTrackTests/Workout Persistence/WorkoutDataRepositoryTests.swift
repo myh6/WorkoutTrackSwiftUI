@@ -204,88 +204,89 @@ final class WorkoutDataStoreTests: XCTestCase {
         try await expect(sut, toRetrieve: [validSession], withQuery: descriptor)
     }
         
-//    func test_retrieve_containsExercises_filtersOutSessionsWithoutAnyMatchingExercise() async throws {
-//        let sut = makeSUT()
-//        let exerciseA = UUID()
-//        let exerciseB = UUID()
-//
-//        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -2))
-//        let otherEntry = anyEntry(createdAt: Date().adding(seconds: 1))
-//        let sessionWithOneSpecifiedExercise = anySession(entries: [validEntryA, otherEntry])
-//
-//        let invalidSession = anySession(entries: [anyEntry()])
-//
-//        let descriptor = QueryBuilder()
-//            .containsExercises([exerciseA, exerciseB])
-//            .sort(by: .byId(ascending: true))
-//            .build()
-//
-//        try await sut.insert(sessionWithOneSpecifiedExercise)
-//        try await sut.insert(invalidSession)
-//
-//        let expected = [
-//            anySession(
-//                id: sessionWithOneSpecifiedExercise.id,
-//                date: sessionWithOneSpecifiedExercise.date,
-//                entries: [validEntryA, otherEntry]
-//            )
-//        ]
-//
-//        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
-//    }
-//
-//    func test_retrieve_containsExercises_retainsSessionsWithAnyMatchingExercise() async throws {
-//        let sut = makeSUT()
-//        let exerciseA = UUID()
-//        let exerciseB = UUID()
-//
-//        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(minutes: 2))
-//        let validEntryB = anyEntry(exercise: exerciseB, createdAt: Date().adding(minutes: 1))
-//        let otherEntry = anyEntry(createdAt: Date())
-//
-//        let sessionWithAllSpecifiedExercise = anySession(entries: [validEntryB, validEntryA, otherEntry])
-//        let session2 = anySession(entries: [validEntryB])
-//
-//        let descriptor = QueryBuilder()
-//            .containsExercises([exerciseA, exerciseB])
-//            .sort(by: .byId(ascending: true))
-//            .build()
-//
-//        try await sut.insert(sessionWithAllSpecifiedExercise)
-//        try await sut.insert(session2)
-//
-//        let expected = [
-//            anySession(
-//                id: sessionWithAllSpecifiedExercise.id,
-//                date: sessionWithAllSpecifiedExercise.date,
-//                entries: [validEntryB, validEntryA, otherEntry].sortedByDefaultOrder()
-//            )
-//            ,
-//            anySession(
-//                id: session2.id,
-//                date: session2.date,
-//                entries: [validEntryB]
-//            )
-//        ]
-//
-//        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
-//    }
-//    
-//    func test_retrieve_containsExercises_deliversNoEntriesWhenNoExerciseIsMatching() async throws {
-//        let sut = makeSUT()
-//        let anyExerciseID = UUID()
-//        let session = anySession(entries: [anyEntry(), anyEntry()])
-//
-//        let descriptor = QueryBuilder()
-//            .containsExercises([anyExerciseID])
-//            .sort(by: .byId(ascending: true))
-//            .build()
-//
-//        try await sut.insert(session)
-//
-//        try await expect(sut, toRetrieve: [], withQuery: descriptor)
-//    }
-//    
+    func test_retrieve_containsExercises_filtersOutSessionsWithoutAnyMatchingExercise() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+
+        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(seconds: -2))
+        let otherEntry = anyEntry(createdAt: Date().adding(seconds: 1))
+        let sessionWithOneSpecifiedExercise = anySession(entries: [validEntryA, otherEntry])
+
+        let invalidSession = anySession(entries: [anyEntry()])
+
+        let descriptor = QueryBuilder()
+            .containsExercises([exerciseA, exerciseB])
+            .sort(by: .byId(ascending: true))
+            .build()
+
+        try await sut.insert(sessionWithOneSpecifiedExercise)
+        try await sut.insert(invalidSession)
+
+        let expected = [
+            anySession(
+                id: sessionWithOneSpecifiedExercise.id,
+                date: sessionWithOneSpecifiedExercise.date,
+                entries: [validEntryA, otherEntry]
+            )
+        ]
+
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
+
+    func test_retrieve_containsExercises_retainsSessionsWithAnyMatchingExercise() async throws {
+        let sut = makeSUT()
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+
+        let validEntryA = anyEntry(exercise: exerciseA, createdAt: Date().adding(minutes: 2))
+        let bExerciseEntryOne = anyEntry(exercise: exerciseB, createdAt: Date().adding(minutes: 1))
+        let bExerciseEntryTwo = anyEntry(exercise: exerciseB, createdAt: Date().adding(minutes: 1))
+        let otherEntry = anyEntry(createdAt: Date())
+
+        let sessionWithAllSpecifiedExercise = anySession(entries: [bExerciseEntryOne, validEntryA, otherEntry])
+        let session2 = anySession(entries: [bExerciseEntryTwo])
+
+        let descriptor = QueryBuilder()
+            .containsExercises([exerciseA, exerciseB])
+            .sort(by: .byDate(ascending: true))
+            .build()
+        
+        try await sut.insert(sessionWithAllSpecifiedExercise)
+        try await sut.insert(session2)
+
+        let expected = [
+            anySession(
+                id: sessionWithAllSpecifiedExercise.id,
+                date: sessionWithAllSpecifiedExercise.date,
+                entries: [bExerciseEntryOne, validEntryA, otherEntry].sortedByDefaultOrder()
+            )
+            ,
+            anySession(
+                id: session2.id,
+                date: session2.date,
+                entries: [bExerciseEntryTwo]
+            )
+        ]
+
+        try await expect(sut, toRetrieve: expected, withQuery: descriptor)
+    }
+    
+    func test_retrieve_containsExercises_deliversNoEntriesWhenNoExerciseIsMatching() async throws {
+        let sut = makeSUT()
+        let anyExerciseID = UUID()
+        let session = anySession(entries: [anyEntry(), anyEntry()])
+
+        let descriptor = QueryBuilder()
+            .containsExercises([anyExerciseID])
+            .sort(by: .byId(ascending: true))
+            .build()
+
+        try await sut.insert(session)
+
+        try await expect(sut, toRetrieve: [], withQuery: descriptor)
+    }
+    
     func test_retrieve_onlyIncludeFinishedSets_deliversSessionsWithFinishedSetsOnly() async throws {
         let sut = makeSUT()
         let validSets1 = [
@@ -299,7 +300,7 @@ final class WorkoutDataStoreTests: XCTestCase {
         ]
         let sets1 = validSets1 + [anySet(isFinished: false), anySet(isFinished: false)]
         let sets2 = validSets2 + [anySet(isFinished: false)]
-        let entry1 = anyEntry(sets: sets1)
+        let entry1 = anyEntry(sets: sets1, createdAt: Date().adding(seconds: -1))
         let entry2 = anyEntry(sets: sets2)
         let session = anySession(entries: [entry1, entry2])
         let descriptor = QueryBuilder()

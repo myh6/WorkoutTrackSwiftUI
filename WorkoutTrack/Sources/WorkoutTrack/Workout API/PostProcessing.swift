@@ -20,7 +20,9 @@ extension PostProcessing {
         case .sortByEntryCustomOrder:
             return Self.sortByEntryCustomOrder
         case .containsExercises(let ids):
-            return { _ in [] }
+            return { session in
+                Self.containsExercises(ids: ids, in: session)
+            }
         case .onlyIncludFinishedSets:
             return Self.onlyIncludeFinishedSets
         case .onlyIncludeExercises(let ids):
@@ -37,6 +39,14 @@ extension PostProcessing {
                 date: session.date,
                 entries: session.entries.sorted { $0.order < $1.order }
             )
+        }
+    }
+    
+    private static func containsExercises(ids: [UUID], in sessions: [WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+        let set = Set(ids)
+        return sessions.filter { session in
+            let exerciseIds = Set(session.entries.map(\.exerciseID))
+            return !exerciseIds.isDisjoint(with: set)
         }
     }
     
