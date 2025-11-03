@@ -74,4 +74,11 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [otherEntry, updatedEntry].sortedByDefaultOrder())
     }
     
+    func test_updateSet_hasNoEffectOnEmptyDatabase() async throws {
+        let sut = makeSUT()
+        
+        try await sut.update(anySet())
+        
+        try await expect(sut, toRetrieveSets: [])
+    }
 }

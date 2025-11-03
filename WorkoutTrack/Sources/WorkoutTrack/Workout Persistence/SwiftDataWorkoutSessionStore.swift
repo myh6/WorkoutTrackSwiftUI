@@ -106,6 +106,8 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
+    func update(_ set: WorkoutSetDTO) throws {}
+    
 }
 
 extension SwiftDataWorkoutSessionStore {
