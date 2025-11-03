@@ -48,4 +48,12 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieve: [])
     }
     
+    func test_updateEntry_hasNoSideEffectOnEmptyDatabae() async throws {
+        let sut = makeSUT()
+        
+        try await sut.update(anyEntry())
+        try await sut.update(anyEntry())
+        
+        try await expect(sut, toRetrieve: [])
+    }
 }
