@@ -115,7 +115,9 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
-    func update(_ set: WorkoutSetDTO) throws {}
+    func update(_ set: WorkoutSetDTO) throws {
+        
+    }
     
 }
 

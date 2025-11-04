@@ -142,6 +142,15 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveSets: [])
     }
     
+    func test_updateSet_doesNothingToNonExistingSet() async throws {
+        let sut = makeSUT()
+        let savedSession = anySession(entries: [anyEntry(sets: [anySet()])])
+        try await sut.insert(savedSession)
+        try await sut.update(anySet())
+        
+        try await expect(sut, toRetrieve: [savedSession])
+    }
+    
     //MARK: - Helpers
     private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await sut.retrieve(query: query).flatMap(\.entries).map(\.order)
