@@ -99,10 +99,15 @@ final actor SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
-    func update(_ entry: WorkoutEntryDTO) throws {
-        guard let existing = try getEntryFromContext(id: entry.id) else { return }
+    func update(_ entry: WorkoutEntryDTO, withinSession id: UUID) throws {
+        guard let existingSession = try getSessionFromContext(id: id) else { return }
+        let existingEntries = existingSession.entries.map(\.dto).sorted(by: { $0.order < $1.order })
+        let newEntries = reorderEntries(existingEntries, moving: entry)
         
-        existing.update(from: entry, in: modelContext)
+        for entry in newEntries {
+            try update(entry)
+        }
+        
         try modelContext.save()
     }
     
@@ -165,5 +170,26 @@ extension SwiftDataWorkoutSessionStore {
                 post.transform(result)
             }
         }
+    }
+    
+    private func reorderEntries(_ existing: [WorkoutEntryDTO], moving updated: WorkoutEntryDTO) -> [WorkoutEntryDTO] {
+        var entries = existing.filter { $0.id != updated.id }
+        entries.insert(updated, at: min(updated.order, entries.count))
+        return entries.enumerated().map { index, entry in
+            entry.reordered(to: index)
+        }
+    }
+    
+    private func update(_ entry: WorkoutEntryDTO) throws {
+        guard let existing = try getEntryFromContext(id: entry.id) else { return }
+        existing.update(from: entry, in: modelContext)
+        try modelContext.save()
+    }
+    
+}
+
+extension WorkoutEntryDTO {
+    var debugOrder: (UUID, Int) {
+        return (id, order)
     }
 }
