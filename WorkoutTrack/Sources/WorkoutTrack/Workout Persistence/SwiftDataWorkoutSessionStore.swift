@@ -100,9 +100,12 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func update(_ entry: WorkoutEntryDTO, withinSession id: UUID) throws {
-        guard let existingSession = try getSessionFromContext(id: id) else { return }
+        guard
+            let existingSession = try getSessionFromContext(id: id),
+            existingSession.entries.map(\.id).contains(entry.id)
+        else { return }
+        
         let existingEntries = existingSession.entries.map(\.dto).sorted(by: { $0.order < $1.order })
-        guard existingEntries.map(\.id).contains(entry.id) else { return }
         let newEntries = reorderEntries(existingEntries, moving: entry)
         
         for entry in newEntries {
