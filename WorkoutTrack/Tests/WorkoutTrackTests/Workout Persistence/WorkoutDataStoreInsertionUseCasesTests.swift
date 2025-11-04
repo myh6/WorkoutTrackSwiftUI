@@ -83,6 +83,15 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [entry])
     }
     
+    func test_insertSets_toNonExistingEntryDoesNothing() async throws {
+        let sut = makeSUT()
+        
+        try await sut.insert([anySet()], to: anyEntry())
+        
+        try await expect(sut, toRetrieveEntry: [])
+        try await expect(sut, toRetrieveSets: [])
+    }
+        
     func test_insertSets_toExistingEntryPersistsTheSetsAndDoesNotDuplicateEntry() async throws {
         let sut = makeSUT()
         let presavedSet = anySet()
