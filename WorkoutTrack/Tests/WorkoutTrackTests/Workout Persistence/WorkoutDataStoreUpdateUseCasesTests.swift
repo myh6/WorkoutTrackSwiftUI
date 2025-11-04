@@ -68,6 +68,17 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [])
     }
     
+    func test_updateEntry_doesNothingToNonExistingEntry() async throws {
+        let sut = makeSUT()
+        let sessionId = UUID()
+        let savedSession = anySession(id: sessionId, entries: [anyEntry()])
+        
+        try await sut.insert(savedSession)
+        try await sut.update(anyEntry(), withinSession: sessionId)
+        
+        try await expect(sut, toRetrieve: [savedSession])
+    }
+    
     func test_updateEntry_updatesExistingEntry() async throws {
         let sut = makeSUT()
         let sessionId = UUID()
