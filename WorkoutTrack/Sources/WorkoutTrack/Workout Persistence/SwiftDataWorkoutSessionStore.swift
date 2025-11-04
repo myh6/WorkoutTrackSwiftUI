@@ -191,9 +191,3 @@ extension SwiftDataWorkoutSessionStore {
     }
     
 }
-
-extension WorkoutEntryDTO {
-    var debugOrder: (UUID, Int) {
-        return (id, order)
-    }
-}
