@@ -128,7 +128,7 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     func test_updateSet_hasNoEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await sut.update(anySet())
+        try await sut.update(anySet(), withinEntry: UUID())
         
         try await expect(sut, toRetrieveSets: [])
     }
@@ -136,20 +136,32 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     func test_updateSet_hasNoSideEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
-        try await sut.update(anySet())
-        try await sut.update(anySet())
+        try await sut.update(anySet(), withinEntry: UUID())
+        try await sut.update(anySet(), withinEntry: UUID())
         
         try await expect(sut, toRetrieveSets: [])
     }
     
     func test_updateSet_doesNothingToNonExistingSet() async throws {
         let sut = makeSUT()
-        let savedSession = anySession(entries: [anyEntry(sets: [anySet()])])
+        let entryID = UUID()
+        let savedSession = anySession(entries: [anyEntry(id: entryID, sets: [anySet()])])
         try await sut.insert(savedSession)
-        try await sut.update(anySet())
+        try await sut.update(anySet(), withinEntry: entryID)
         
         try await expect(sut, toRetrieve: [savedSession])
     }
+    
+    func test_updateSet_doesNothingToNonExisitingEntry() async throws {
+        let sut = makeSUT()
+        let savedSession = anySession(entries: [anyEntry()])
+        try await sut.insert(savedSession)
+        try await sut.update(anySet(), withinEntry: UUID())
+        
+        try await expect(sut, toRetrieve: [savedSession])
+    }
+    
+
     
     //MARK: - Helpers
     private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
