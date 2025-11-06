@@ -116,7 +116,10 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func update(_ set: WorkoutSetDTO, withinEntry id: UUID) throws {
+        guard let existingSet = try getSetFromContext(id: set.id) else { return }
         
+        existingSet.update(from: set, in: modelContext)
+        try modelContext.save()
     }
     
 }

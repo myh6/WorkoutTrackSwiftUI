@@ -52,4 +52,11 @@ extension WorkoutSet {
     var dto: WorkoutSetDTO {
         WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
     }
+    
+    func update(from set: WorkoutSetDTO, in session: ModelContext) {
+        self.reps = set.reps
+        self.weight = set.weight
+        self.isFinished = set.isFinished
+        self.order = set.order
+    }
 }
