@@ -125,6 +125,30 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [updatedEntry, newEntryA, newEntryB], withQuery: descriptor)
     }
     
+    func test_updateEntry_doesNotChangeOrderValueWhenThereIsOnlyOneEntry() async throws {
+        let sut = makeSUT()
+        
+        let sessionId = UUID()
+        let entryId = UUID()
+        let newExerciseId = UUID()
+        
+        let savedSession = anySession(id: sessionId, entries: [
+            anyEntry(id: entryId, exercise: UUID(), order: 0)
+        ])
+        
+        try await sut.insert(savedSession)
+        
+        // Should not update the order when there's only one entry within a session
+        let updatedEntry = anyEntry(id: entryId, exercise: newExerciseId, order: 1)
+        try await sut.update(updatedEntry, withinSession: sessionId)
+        
+        let result = try await retrieveEntry(from: sut)
+        let retrievedEntry = try XCTUnwrap(result.first)
+        XCTAssertEqual(retrievedEntry.id, entryId)
+        XCTAssertEqual(retrievedEntry.exerciseID, newExerciseId)
+        XCTAssertEqual(retrievedEntry.order, 0)
+    }
+    
     func test_updateSet_hasNoEffectOnEmptyDatabase() async throws {
         let sut = makeSUT()
         
@@ -207,9 +231,39 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveSets: [updatedSet, newSetA, newSetB])
     }
     
+    func test_updateSet_doesNotChangeOrderValueWhenThereIsOnlyOneSet() async throws {
+        let sut = makeSUT()
+        
+        let entryId = UUID()
+        let setId = UUID()
+        
+        let savedSession = anySession(entries: [anyEntry(id: entryId, sets: [anySet(id: setId, isFinished: false, order: 0)])])
+        
+        try await sut.insert(savedSession)
+        
+        // Change the order to 1 (default is 0)
+        let updatedSet = anySet(id: setId, isFinished: true, order: 1)
+        
+        try await sut.update(updatedSet, withinEntry: entryId)
+        // Should still be zero (zero-index based)
+        let result = try await retrieveSet(from: sut)
+        let retrievedSet = try XCTUnwrap(result.first)
+        XCTAssertEqual(retrievedSet.id, setId)
+        XCTAssertEqual(retrievedSet.isFinished, true)
+        XCTAssertEqual(retrievedSet.order, 0)
+    }
+    
     //MARK: - Helpers
+    private func retrieveEntry(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutEntryDTO] {
+        return try await sut.retrieve(query: query).flatMap(\.entries)
+    }
+    
     private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await sut.retrieve(query: query).flatMap(\.entries).map(\.order)
+    }
+    
+    private func retrieveSet(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutSetDTO] {
+        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets)
     }
     
     private func retrieveSetOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {

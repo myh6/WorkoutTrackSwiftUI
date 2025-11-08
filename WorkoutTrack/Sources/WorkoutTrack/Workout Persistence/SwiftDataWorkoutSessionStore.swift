@@ -200,7 +200,7 @@ extension SwiftDataWorkoutSessionStore {
     
     private func reorderSets(_ existing: [WorkoutSetDTO], moving updated: WorkoutSetDTO) -> [WorkoutSetDTO] {
         var sets = existing.filter { $0.id != updated.id }.sorted(by: { $0.order < $1.order })
-        sets.insert(updated, at: updated.order)
+        sets.insert(updated, at: min(updated.order, sets.count))
         return sets.enumerated().map { index, set in
             set.reordered(to: index)
         }
