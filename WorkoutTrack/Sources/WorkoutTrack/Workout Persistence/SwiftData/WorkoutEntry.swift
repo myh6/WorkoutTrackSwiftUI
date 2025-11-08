@@ -44,6 +44,14 @@ public struct WorkoutEntryDTO: Equatable, Identifiable {
     public let sets: [WorkoutSetDTO]
     public let createdAt: Date
     public let order: Int
+    
+    public init(id: UUID, exerciseID: UUID, sets: [WorkoutSetDTO], createdAt: Date, order: Int) {
+        self.id = id
+        self.exerciseID = exerciseID
+        self.sets = sets
+        self.createdAt = createdAt
+        self.order = order
+    }
 }
 
 extension WorkoutEntry {
