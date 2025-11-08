@@ -44,6 +44,12 @@ struct WorkoutSetDTO: Equatable {
     let order: Int
 }
 
+extension WorkoutSetDTO {
+    func reordered(to newIndex: Int) -> WorkoutSetDTO {
+        WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: newIndex)
+    }
+}
+
 extension WorkoutSet {
     convenience init(dto: WorkoutSetDTO) {
         self.init(id: dto.id, reps: dto.reps, weight: dto.weight, isFinished: dto.isFinished, order: dto.order, entry: nil)

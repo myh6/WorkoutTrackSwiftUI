@@ -179,8 +179,40 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveSets: [updatedSet])
     }
     
+    func test_updateSet_updatesAllOthersOrderValueWhenUpdatingOrder() async throws {
+        let sut = makeSUT()
+        let sessionId = UUID()
+        let entryId = UUID()
+        let setId = UUID()
+        
+        let setA = anySet(order: 0)
+        let setB = anySet(order: 1)
+        let setC = anySet(id: setId, order: 2)
+        
+        try await sut.insert(anySession(id: sessionId, entries: [
+            anyEntry(id: entryId, sets: [
+                setA, setB, setC
+            ])
+        ]))
+        
+        let updatedSet = anySet(id: setId, order: 0)
+        
+        try await sut.update(updatedSet, withinEntry: entryId)
+        // Set A & Set B should automatically adjust its order value
+        let newSetA = anySet(id: setA.id, reps: setA.reps, weight: setA.weight, isFinished: setA.isFinished, order: 1)
+        let newSetB = anySet(id: setB.id, reps: setB.reps, weight: setB.weight, isFinished: setB.isFinished, order: 2)
+        
+        let allOrders = try await retrieveSetOrder(from: sut)
+        XCTAssertEqual(allOrders, [0, 1, 2])
+        try await expect(sut, toRetrieveSets: [updatedSet, newSetA, newSetB])
+    }
+    
     //MARK: - Helpers
     private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await sut.retrieve(query: query).flatMap(\.entries).map(\.order)
+    }
+    
+    private func retrieveSetOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
+        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).map(\.order)
     }
 }

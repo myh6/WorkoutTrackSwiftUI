@@ -116,9 +116,18 @@ final actor SwiftDataWorkoutSessionStore {
     }
     
     func update(_ set: WorkoutSetDTO, withinEntry id: UUID) throws {
-        guard let existingSet = try getSetFromContext(id: set.id) else { return }
+        guard
+            let existingEntry = try getEntryFromContext(id: id),
+            existingEntry.sets.map(\.id).contains(set.id)
+        else { return }
         
-        existingSet.update(from: set, in: modelContext)
+        let existingSets = existingEntry.sets.map(\.dto)
+        let newSets = reorderSets(existingSets, moving: set)
+        
+        for set in newSets {
+            try update(set)
+        }
+        
         try modelContext.save()
     }
     
@@ -189,9 +198,23 @@ extension SwiftDataWorkoutSessionStore {
         }
     }
     
+    private func reorderSets(_ existing: [WorkoutSetDTO], moving updated: WorkoutSetDTO) -> [WorkoutSetDTO] {
+        var sets = existing.filter { $0.id != updated.id }.sorted(by: { $0.order < $1.order })
+        sets.insert(updated, at: updated.order)
+        return sets.enumerated().map { index, set in
+            set.reordered(to: index)
+        }
+    }
+    
     private func update(_ entry: WorkoutEntryDTO) throws {
         guard let existing = try getEntryFromContext(id: entry.id) else { return }
         existing.update(from: entry, in: modelContext)
+        try modelContext.save()
+    }
+    
+    private func update(_ set: WorkoutSetDTO) throws {
+        guard let existing = try getSetFromContext(id: set.id) else { return }
+        existing.update(from: set, in: modelContext)
         try modelContext.save()
     }
     
