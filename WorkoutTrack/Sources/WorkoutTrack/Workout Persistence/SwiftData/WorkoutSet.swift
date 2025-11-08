@@ -36,12 +36,12 @@ final class WorkoutSet {
     }
 }
 
-struct WorkoutSetDTO: Equatable, Identifiable {
-    let id: UUID
-    let reps: Int
-    let weight: Double
-    let isFinished: Bool
-    let order: Int
+public struct WorkoutSetDTO: Equatable, Identifiable {
+    public let id: UUID
+    public let reps: Int
+    public let weight: Double
+    public let isFinished: Bool
+    public let order: Int
 }
 
 extension WorkoutSet {

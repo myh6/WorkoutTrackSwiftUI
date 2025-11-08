@@ -38,12 +38,12 @@ final class WorkoutEntry {
     }
 }
 
-struct WorkoutEntryDTO: Equatable, Identifiable {
-    let id: UUID
-    let exerciseID: UUID
-    let sets: [WorkoutSetDTO]
-    let createdAt: Date
-    let order: Int
+public struct WorkoutEntryDTO: Equatable, Identifiable {
+    public let id: UUID
+    public let exerciseID: UUID
+    public let sets: [WorkoutSetDTO]
+    public let createdAt: Date
+    public let order: Int
 }
 
 extension WorkoutEntry {

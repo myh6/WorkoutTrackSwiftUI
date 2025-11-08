@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @ModelActor
-final actor SwiftDataWorkoutSessionStore {
+final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     
     //MARK: - Retrieve
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {

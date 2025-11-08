@@ -6,7 +6,6 @@
 //
 
 import XCTest
-import SwiftData
 @testable import WorkoutTrack
 
 final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
@@ -152,7 +151,7 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
         WorkoutSessionDTO(id: session.id, date: session.date, entries: session.entries + entries)
     }
     
-    private func retrievedOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
+    private func retrievedOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).map(\.order)
     }
 }

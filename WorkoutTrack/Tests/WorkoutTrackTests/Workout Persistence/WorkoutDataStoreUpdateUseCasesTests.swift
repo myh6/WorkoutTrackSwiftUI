@@ -254,19 +254,19 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     }
     
     //MARK: - Helpers
-    private func retrieveEntry(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutEntryDTO] {
+    private func retrieveEntry(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutEntryDTO] {
         return try await sut.retrieve(query: query).flatMap(\.entries)
     }
     
-    private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
+    private func retrieveEntryOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await retrieveEntry(from: sut, with: query).map(\.order)
     }
     
-    private func retrieveSet(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutSetDTO] {
+    private func retrieveSet(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutSetDTO] {
         return try await retrieveEntry(from: sut, with: query).flatMap(\.sets)
     }
     
-    private func retrieveSetOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
+    private func retrieveSetOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
         return try await retrieveSet(from: sut, with: query).map(\.order)
     }
 }
