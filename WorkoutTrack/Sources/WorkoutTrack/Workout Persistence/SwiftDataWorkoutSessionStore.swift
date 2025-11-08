@@ -106,10 +106,9 @@ final actor SwiftDataWorkoutSessionStore {
         else { return }
         
         let existingEntries = existingSession.entries.map(\.dto).sorted(by: { $0.order < $1.order })
-        let newEntries = reorderEntries(existingEntries, moving: entry)
         
-        for entry in newEntries {
-            try update(entry)
+        try reorderAndUpdate(existing: existingEntries, moving: entry, rerder: reorder) {
+            try update($0)
         }
         
         try modelContext.save()
@@ -122,15 +121,13 @@ final actor SwiftDataWorkoutSessionStore {
         else { return }
         
         let existingSets = existingEntry.sets.map(\.dto)
-        let newSets = reorderSets(existingSets, moving: set)
-        
-        for set in newSets {
-            try update(set)
+
+        try reorderAndUpdate(existing: existingSets, moving: set, rerder: reorder) {
+            try update($0)
         }
         
         try modelContext.save()
     }
-    
 }
 
 extension SwiftDataWorkoutSessionStore {
@@ -190,19 +187,15 @@ extension SwiftDataWorkoutSessionStore {
         }
     }
     
-    private func reorderEntries(_ existing: [WorkoutEntryDTO], moving updated: WorkoutEntryDTO) -> [WorkoutEntryDTO] {
-        var entries = existing.filter { $0.id != updated.id }
-        entries.insert(updated, at: min(updated.order, entries.count))
-        return entries.enumerated().map { index, entry in
-            entry.reordered(to: index)
-        }
-    }
-    
-    private func reorderSets(_ existing: [WorkoutSetDTO], moving updated: WorkoutSetDTO) -> [WorkoutSetDTO] {
-        var sets = existing.filter { $0.id != updated.id }.sorted(by: { $0.order < $1.order })
-        sets.insert(updated, at: min(updated.order, sets.count))
-        return sets.enumerated().map { index, set in
-            set.reordered(to: index)
+    private func reorder<T: Orderable>(_ items: [T], moving updated: T) -> [T] {
+        var newItems = items
+            .filter { $0.id != updated.id }
+            .sorted { $0.order < $1.order }
+        
+        newItems.insert(updated, at: min(updated.order, newItems.count))
+        
+        return newItems.enumerated().map { index, item in
+            item.reordered(to: index)
         }
     }
     
@@ -218,4 +211,15 @@ extension SwiftDataWorkoutSessionStore {
         try modelContext.save()
     }
     
+    private func reorderAndUpdate<T: Identifiable>(
+        existing: [T],
+        moving updated: T,
+        rerder: ([T], T) -> [T],
+        apply: (T) throws -> Void
+    ) rethrows {
+        let reordered = rerder(existing, updated)
+        for item in reordered {
+            try apply(item)
+        }
+    }
 }

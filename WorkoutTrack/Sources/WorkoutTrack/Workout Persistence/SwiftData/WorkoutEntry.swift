@@ -38,18 +38,12 @@ final class WorkoutEntry {
     }
 }
 
-struct WorkoutEntryDTO: Equatable {
+struct WorkoutEntryDTO: Equatable, Identifiable {
     let id: UUID
     let exerciseID: UUID
     let sets: [WorkoutSetDTO]
     let createdAt: Date
     let order: Int
-}
-
-extension WorkoutEntryDTO {
-    func reordered(to newIndex: Int) -> WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets, createdAt: createdAt, order: newIndex)
-    }
 }
 
 extension WorkoutEntry {

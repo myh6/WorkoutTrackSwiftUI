@@ -36,18 +36,12 @@ final class WorkoutSet {
     }
 }
 
-struct WorkoutSetDTO: Equatable {
+struct WorkoutSetDTO: Equatable, Identifiable {
     let id: UUID
     let reps: Int
     let weight: Double
     let isFinished: Bool
     let order: Int
-}
-
-extension WorkoutSetDTO {
-    func reordered(to newIndex: Int) -> WorkoutSetDTO {
-        WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: newIndex)
-    }
 }
 
 extension WorkoutSet {
