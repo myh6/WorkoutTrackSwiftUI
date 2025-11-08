@@ -259,14 +259,14 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
     }
     
     private func retrieveEntryOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
-        return try await sut.retrieve(query: query).flatMap(\.entries).map(\.order)
+        return try await retrieveEntry(from: sut, with: query).map(\.order)
     }
     
     private func retrieveSet(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutSetDTO] {
-        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets)
+        return try await retrieveEntry(from: sut, with: query).flatMap(\.sets)
     }
     
     private func retrieveSetOrder(from sut: SwiftDataWorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
-        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).map(\.order)
+        return try await retrieveSet(from: sut, with: query).map(\.order)
     }
 }
