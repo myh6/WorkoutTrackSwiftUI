@@ -82,6 +82,22 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [entry])
     }
     
+    func test_insertEntry_canHaveTheSameIdButInDifferentSession() async throws {
+        let sut = makeSUT()
+        let exerciseId = UUID()
+        let sessionA = anySession(date: Date.distantPast, entries: [
+            anyEntry(exercise: exerciseId)
+        ])
+        let sessionB = anySession(entries: [
+            anyEntry(exercise: exerciseId)
+        ])
+        
+        try await sut.insert(sessionA)
+        try await sut.insert(sessionB)
+        
+        try await expect(sut, toRetrieve: [sessionA, sessionB])
+    }
+    
     func test_insertSets_toNonExistingEntryDoesNothing() async throws {
         let sut = makeSUT()
         
