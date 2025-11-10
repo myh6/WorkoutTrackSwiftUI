@@ -15,8 +15,7 @@ struct ExerciseRecord {
 }
 
 struct PRCalculator {
-    
-    func maxWeightPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
+    static func maxWeightPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
         let allSets: [ExerciseRecord] = workouts.flatMap { session in
             session.entries
                 .filter { $0.exerciseID == exercise }
@@ -36,7 +35,7 @@ struct PRCalculator {
 final class PRCalculatorTests: XCTestCase {
     
     func test_maxWeightPR_returnsNilWhenNoWorkoutData() {
-        let pr = PRCalculator().maxWeightPR(for: UUID(), from: [])
+        let pr = PRCalculator.maxWeightPR(for: UUID(), from: [])
         
         XCTAssertNil(pr)
     }
@@ -48,7 +47,7 @@ final class PRCalculatorTests: XCTestCase {
             ])
         ])]
         
-        let pr = PRCalculator().maxWeightPR(for: UUID(), from: workouts)
+        let pr = PRCalculator.maxWeightPR(for: UUID(), from: workouts)
         
         XCTAssertNil(pr)
     }
@@ -66,7 +65,7 @@ final class PRCalculatorTests: XCTestCase {
                     sets: [anySet(weight: 5), anySet(weight: 40, isFinished: false)])])
         ]
         
-        let pr = try XCTUnwrap(PRCalculator().maxWeightPR(for: exerciseId, from: workouts))
+        let pr = try XCTUnwrap(PRCalculator.maxWeightPR(for: exerciseId, from: workouts))
         
         XCTAssertEqual(pr.session, prSession)
         XCTAssertEqual(pr.entry, prEntry)
