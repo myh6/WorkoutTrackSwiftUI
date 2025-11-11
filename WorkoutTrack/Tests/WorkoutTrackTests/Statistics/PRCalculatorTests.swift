@@ -81,4 +81,16 @@ final class PRCalculatorTests: XCTestCase {
         
         XCTAssertNil(pr)
     }
+    
+    func test_maxRepsPR_returnsNilWhenNoMatchingExercise() {
+        let workouts = [anySession(entries: [
+            anyEntry(id: UUID(), sets: [
+                anySet(weight: 50), anySet(weight: 60)
+            ])
+        ])]
+        
+        let pr = PRCalculator.maxRepsPR(for: UUID(), from: workouts)
+        
+        XCTAssertNil(pr)
+    }
 }
