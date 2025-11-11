@@ -30,6 +30,10 @@ struct PRCalculator {
             .filter { $0.set.isFinished }
             .max(by: { $0.set.weight < $1.set.weight })
     }
+    
+    static func maxRepsPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
+        return nil
+    }
 }
 
 final class PRCalculatorTests: XCTestCase {
@@ -70,5 +74,11 @@ final class PRCalculatorTests: XCTestCase {
         XCTAssertEqual(pr.session, prSession)
         XCTAssertEqual(pr.entry, prEntry)
         XCTAssertEqual(pr.set, prSet)
+    }
+    
+    func test_maxRepsPR_returnsNilWhenNoWorkoutData() {
+        let pr = PRCalculator.maxRepsPR(for: UUID(), from: [])
+        
+        XCTAssertNil(pr)
     }
 }
