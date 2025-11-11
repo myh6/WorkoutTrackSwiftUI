@@ -8,40 +8,6 @@
 import XCTest
 import WorkoutTrack
 
-struct ExerciseRecord {
-    let session: WorkoutSessionDTO
-    let entry: WorkoutEntryDTO
-    let set: WorkoutSetDTO
-}
-
-extension Array where Element == WorkoutSessionDTO {
-    func mapToExerciseRecords(for exercise: UUID) -> [ExerciseRecord] {
-        self.flatMap { session in
-            session.entries
-                .filter { $0.exerciseID == exercise }
-                .flatMap { entry in
-                    entry.sets.map { ExerciseRecord(session: session, entry: entry, set: $0) }
-                }
-        }
-    }
-}
-
-struct PRCalculator {
-    static func maxWeightPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
-        return workouts
-            .mapToExerciseRecords(for: exercise)
-            .filter { $0.set.isFinished }
-            .max(by: { $0.set.weight < $1.set.weight })
-    }
-    
-    static func maxRepsPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
-        return workouts
-            .mapToExerciseRecords(for: exercise)
-            .filter { $0.set.isFinished }
-            .max(by: { $0.set.reps < $1.set.reps })
-    }
-}
-
 final class PRCalculatorTests: XCTestCase {
     
     func test_maxWeightPR_returnsNilWhenNoWorkoutData() {
