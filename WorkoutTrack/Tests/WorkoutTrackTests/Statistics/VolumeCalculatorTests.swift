@@ -29,6 +29,10 @@ struct VolumeCalculator {
             return VolumeStat(date: session.date, volume: totalVolume)
         }
     }
+    
+    static func volumePerExercise(from sessions: [WorkoutSessionDTO]) -> [UUID: Double] {
+        return [:]
+    }
 }
 
 final class VolumeCalculatorTests: XCTestCase {
@@ -70,6 +74,11 @@ final class VolumeCalculatorTests: XCTestCase {
         
         XCTAssertEqual(result.sortedByDate(),
                        workouts.map(\.volume).sortedByDate())
+    }
+    
+    func test_volumePerExercise_returnsEmptyWhenNoWorkout() {
+        let result = VolumeCalculator.volumePerExercise(from: [])
+        XCTAssertTrue(result.isEmpty)
     }
     
     //MARK: - Helpers
