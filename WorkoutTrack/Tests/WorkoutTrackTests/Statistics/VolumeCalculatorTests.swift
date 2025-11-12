@@ -14,7 +14,7 @@ struct VolumeStat: Equatable {
 }
 
 struct VolumeCalculator {
-    static func getDailyVolume(from workouts: [WorkoutSessionDTO]) -> [VolumeStat] {
+    static func getDailyVolume(from workouts: [WorkoutSessionDTO], filteredByExercise exercise: UUID?) -> [VolumeStat] {
         return workouts.map { session in
             let totalVolume = session.entries
                 .flatMap(\.sets)
@@ -29,20 +29,26 @@ struct VolumeCalculator {
 
 final class VolumeCalculatorTests: XCTestCase {
     
-    func tes_getDailyVolume_returnsEmptyWhenNoWorkout() {
-        let result = VolumeCalculator.getDailyVolume(from: [])
+    func test_getDailyVolume_returnsEmptyWhenNoWorkout() {
+        let result = VolumeCalculator.getDailyVolume(from: [], filteredByExercise: nil)
         
-        XCTAssertEqual(result, [])
+        XCTAssertTrue(result.isEmpty)
     }
     
-    func test_getDailyVolume_returnsAllWorkoutVolumeFromProvidedWorkout() {
+    func test_getDailyVolume_filteredExercise_returnsEmptyWhenNoWorkout() {
+        let result = VolumeCalculator.getDailyVolume(from: [], filteredByExercise: UUID())
+        
+        XCTAssertTrue(result.isEmpty)
+    }
+    
+    func test_getDailyVolume_withNoFilteredExercise_returnsAllWorkoutVolumeFromProvidedWorkout() {
         let workouts = [
             getTodaySession(),
             getOneDaysBeforeSession(),
             getTwoDaysBeforeSession()
         ]
         
-        let result = VolumeCalculator.getDailyVolume(from: workouts.map(\.session))
+        let result = VolumeCalculator.getDailyVolume(from: workouts.map(\.session), filteredByExercise: nil)
         
         XCTAssertEqual(result.sortedByDate(),
                        workouts.map(\.volume).sortedByDate())
