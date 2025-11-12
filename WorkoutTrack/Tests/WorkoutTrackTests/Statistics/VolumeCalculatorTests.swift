@@ -23,15 +23,27 @@ struct VolumeCalculator {
                 }
                 .flatMap(\.sets)
                 .filter(\.isFinished)
-                .reduce(0.0) {
-                    $0 + (Double($1.reps) * $1.weight)
-                }
+                .reduce(0.0, VolumeCalculator.calculateVolume)
             return VolumeStat(date: session.date, volume: totalVolume)
         }
     }
     
     static func volumePerExercise(from sessions: [WorkoutSessionDTO]) -> [UUID: Double] {
-        return [:]
+        var res = [UUID: Double]()
+        
+        for session in sessions {
+            for entry in session.entries {
+                let volume = entry.sets
+                    .filter(\.isFinished)
+                    .reduce(0.0, VolumeCalculator.calculateVolume)
+                res[entry.exerciseID, default: 0.0] += volume
+            }
+        }
+        return res
+    }
+    
+    private static func calculateVolume(_ initial: Double, _ nextSet: WorkoutSetDTO) -> Double {
+        initial + (Double(nextSet.reps) * nextSet.weight)
     }
 }
 
@@ -79,6 +91,32 @@ final class VolumeCalculatorTests: XCTestCase {
     func test_volumePerExercise_returnsEmptyWhenNoWorkout() {
         let result = VolumeCalculator.volumePerExercise(from: [])
         XCTAssertTrue(result.isEmpty)
+    }
+    
+    func test_volumePerExercise_returnsCorrectAggregatedVolumePerExercise() {
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+        
+        let sessions: [WorkoutSessionDTO] = [
+            anySession(entries: [
+                anyEntry(exercise: exerciseA, sets: [
+                    anySet(reps: 10, weight: 20, isFinished: true),  // 200
+                    anySet(reps: 5, weight: 20, isFinished: false)   // ignored
+                ]),
+                anyEntry(exercise: exerciseB, sets: [
+                    anySet(reps: 5, weight: 10, isFinished: true)    // 50
+                ])
+            ]),
+            anySession(entries: [
+                anyEntry(exercise: exerciseA, sets: [
+                    anySet(reps: 5, weight: 10, isFinished: true)    // 50
+                ])
+            ])
+        ]
+        
+        let result = VolumeCalculator.volumePerExercise(from: sessions)
+        XCTAssertEqual(result[exerciseA], 250)
+        XCTAssertEqual(result[exerciseB], 50)
     }
     
     //MARK: - Helpers
