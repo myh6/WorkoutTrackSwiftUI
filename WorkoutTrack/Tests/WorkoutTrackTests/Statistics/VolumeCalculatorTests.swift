@@ -8,45 +8,6 @@
 import XCTest
 import WorkoutTrack
 
-struct VolumeStat: Equatable {
-    let date: Date
-    let volume: Double
-}
-
-struct VolumeCalculator {
-    static func getDailyVolume(from workouts: [WorkoutSessionDTO], filteredByExercise exercise: UUID?) -> [VolumeStat] {
-        return workouts.map { session in
-            let totalVolume = session.entries
-                .filter {
-                    if let exercise { return $0.exerciseID == exercise }
-                    return true
-                }
-                .flatMap(\.sets)
-                .filter(\.isFinished)
-                .reduce(0.0, VolumeCalculator.calculateVolume)
-            return VolumeStat(date: session.date, volume: totalVolume)
-        }
-    }
-    
-    static func volumePerExercise(from sessions: [WorkoutSessionDTO]) -> [UUID: Double] {
-        var res = [UUID: Double]()
-        
-        for session in sessions {
-            for entry in session.entries {
-                let volume = entry.sets
-                    .filter(\.isFinished)
-                    .reduce(0.0, VolumeCalculator.calculateVolume)
-                res[entry.exerciseID, default: 0.0] += volume
-            }
-        }
-        return res
-    }
-    
-    private static func calculateVolume(_ initial: Double, _ nextSet: WorkoutSetDTO) -> Double {
-        initial + (Double(nextSet.reps) * nextSet.weight)
-    }
-}
-
 final class VolumeCalculatorTests: XCTestCase {
     
     func test_getDailyVolume_returnsEmptyWhenNoWorkout() {
