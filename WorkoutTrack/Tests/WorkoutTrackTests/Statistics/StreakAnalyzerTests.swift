@@ -8,19 +8,6 @@
 import XCTest
 import WorkoutTrack
 
-struct StreakAnalyzer {
-    static func getWorkoutDays(from workouts: [WorkoutSessionDTO], calendar: Calendar = .current) -> [Date: Bool] {
-        var result: [Date: Bool] = [:]
-        
-        for session in workouts {
-            let day = calendar.startOfDay(for: session.date)
-            result[day] = true
-        }
-        
-        return result
-    }
-}
-
 final class StreakAnalyzerTests: XCTestCase {
     
     func test_getWorkoutDays_returnsEmptyWhenNoWorkout() {
