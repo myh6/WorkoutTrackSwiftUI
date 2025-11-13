@@ -20,4 +20,15 @@ final class OneRepMaxCalculatorTests: XCTestCase {
         let result = OneRepMaxCalculator.getBestOneRepMax(for: UUID(), from: [])
         XCTAssertNil(result)
     }
+    
+    func test_getBestOneRepMax_returnsNilWhenNoMatchingExercise() {
+        let result = OneRepMaxCalculator.getBestOneRepMax(for: UUID(), from: [
+            anySession(entries: [
+                anyEntry(exercise: UUID(), sets: [
+                    anySet(reps: 10, weight: 10)
+                ])
+            ])
+        ])
+        XCTAssertNil(result)
+    }
 }
