@@ -42,6 +42,14 @@ public struct WorkoutSetDTO: Equatable, Identifiable {
     public let weight: Double
     public let isFinished: Bool
     public let order: Int
+    
+    public init(id: UUID, reps: Int, weight: Double, isFinished: Bool, order: Int) {
+        self.id = id
+        self.reps = reps
+        self.weight = weight
+        self.isFinished = isFinished
+        self.order = order
+    }
 }
 
 extension WorkoutSet {

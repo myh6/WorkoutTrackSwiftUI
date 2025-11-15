@@ -31,6 +31,12 @@ public struct WorkoutSessionDTO: Equatable {
     public let id: UUID
     public let date: Date
     public let entries: [WorkoutEntryDTO]
+    
+    public init(id: UUID, date: Date, entries: [WorkoutEntryDTO]) {
+        self.id = id
+        self.date = date
+        self.entries = entries
+    }
 }
 
 

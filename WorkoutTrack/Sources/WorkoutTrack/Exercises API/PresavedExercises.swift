@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum ExerciseCategory: String, CaseIterable {
+enum BodyCategory: String, CaseIterable {
     case abs
     case arms
     case back
@@ -18,14 +18,14 @@ enum ExerciseCategory: String, CaseIterable {
 }
 
 enum PresavedExercises {
-    static let grouped: [(category: ExerciseCategory, exercises: [LocalizedExercise])] =
-        ExerciseCategory.allCases.map { ($0, $0.exercises) }
+    static let grouped: [(category: BodyCategory, exercises: [LocalizedExercise])] =
+        BodyCategory.allCases.map { ($0, $0.exercises) }
 
     /// A flattened list of all presaved exercises.
     static let all: [LocalizedExercise] = grouped.flatMap { $0.exercises }
 }
 
-private extension ExerciseCategory {
+private extension BodyCategory {
     var categoryKey: String { "exercise.category.\(rawValue)" }
 
     var exercises: [LocalizedExercise] {
