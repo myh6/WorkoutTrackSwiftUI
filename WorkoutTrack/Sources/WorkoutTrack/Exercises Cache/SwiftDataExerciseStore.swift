@@ -41,3 +41,9 @@ final actor SwiftDataExerciseStore: ExerciseStore {
         }
     }
 }
+
+extension SwiftDataExerciseStore: ExerciseLoader {
+    func loadExercises(by query: ExerciseQuery) async throws -> [DisplayableExercise] {
+        try self.retrieve(by: query)
+    }
+}

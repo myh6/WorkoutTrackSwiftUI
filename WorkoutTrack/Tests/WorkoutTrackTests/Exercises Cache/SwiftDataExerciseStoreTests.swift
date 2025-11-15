@@ -193,6 +193,23 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
     
+    // Test if SwiftDataExerciseStore conform to ExerciseLoader
+    func test_loadExercises_byAllQuery_returnsInsertedExercises() async throws {
+        let schema = Schema([ExerciseEntity.self])
+        let store = try! SwiftDataExerciseStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
+        let inserted = anyExercise()
+        try await store.insert(inserted)
+        
+        let sut: ExerciseLoader = store
+        let retrieved = try await sut.loadExercises(by: .all(sort: nil))
+        
+        let retrievedExercise = try XCTUnwrap(retrieved.first)
+        XCTAssertEqual(retrievedExercise.id, inserted.id)
+        XCTAssertEqual(retrievedExercise.category, inserted.category)
+        XCTAssertEqual(retrievedExercise.name, inserted.name)
+        XCTAssertEqual(retrievedExercise.isCustom, inserted.isCustom)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> ExerciseStore {
         let schema = Schema([ExerciseEntity.self])
