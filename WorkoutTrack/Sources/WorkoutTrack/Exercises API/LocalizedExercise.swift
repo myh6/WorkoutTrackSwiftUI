@@ -10,18 +10,18 @@ import CryptoKit
 
 public struct LocalizedExercise: Equatable {
     public let nameKey: String
-    public let categoryKey: String
+    public let rawCategory: BodyCategory
     
-    public init(nameKey: String, categoryKey: String) {
+    public init(nameKey: String, category: BodyCategory) {
         self.nameKey = nameKey
-        self.categoryKey = categoryKey
+        self.rawCategory = category
     }
 }
 
 //MARK: - DisplayableExercise
 extension LocalizedExercise: DisplayableExercise {
     public var id: UUID {
-        let input = nameKey + "|" + categoryKey
+        let input = nameKey + "|" + rawCategory.rawValue
         let digest = SHA256.hash(data: Data(input.utf8))
         let bytes = Array(digest)
         let uuid = uuid_t(
@@ -43,12 +43,7 @@ extension LocalizedExercise: DisplayableExercise {
     }
 
     public var category: String {
-        NSLocalizedString(
-            categoryKey,
-            tableName: "Exercises",
-            bundle: ExercisesPresentationResources.bundle,
-            comment: "Exercise category"
-        )
+        rawCategory.localizedName
     }
     
     public var isCustom: Bool { false }

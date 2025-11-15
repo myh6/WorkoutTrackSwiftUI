@@ -11,5 +11,6 @@ public protocol DisplayableExercise {
     var id: UUID { get }
     var name: String { get }
     var category: String { get }
+    var rawCategory: BodyCategory { get }
     var isCustom: Bool { get }
 }

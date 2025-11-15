@@ -16,6 +16,8 @@ final class ExerciseEntity {
             lowercasedName = name.lowercased()
         }
     }
+    
+    /// Store ``BodyCategory`` raw value
     var category: String {
         didSet {
             lowercasedCategory = category.lowercased()
@@ -36,7 +38,7 @@ final class ExerciseEntity {
 
 extension ExerciseEntity {
     var model: CustomExercise {
-        .init(id: id, name: name, category: category)
+        .init(id: id, name: name, category: BodyCategory(rawValue: category) ?? .other)
     }
 }
 
@@ -76,7 +78,7 @@ extension ExerciseQuery {
         case .byName(let name, _):
             return #Predicate { $0.lowercasedName.contains(name) }
         case .byCategory(let category, _):
-            let lowercasedRetrieved = category.lowercased()
+            let lowercasedRetrieved = category.rawValue.lowercased()
             return #Predicate { $0.lowercasedCategory == lowercasedRetrieved }
         }
     }

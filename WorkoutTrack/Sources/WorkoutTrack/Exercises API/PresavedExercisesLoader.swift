@@ -23,7 +23,7 @@ struct PresavedExercisesLoader {
                 .applyCustomSorting(sorting)
         case .byCategory(let category, let sorting):
             return all
-                .filter { $0.category.localizedCaseInsensitiveContains(category) }
+                .filter { $0.rawCategory == category }
                 .applyCustomSorting(sorting)
         }
     }

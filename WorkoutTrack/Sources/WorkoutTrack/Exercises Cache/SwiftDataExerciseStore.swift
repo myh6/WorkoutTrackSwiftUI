@@ -12,7 +12,7 @@ import SwiftData
 final actor SwiftDataExerciseStore: ExerciseStore {
     
     func insert(_ exercise: CustomExercise) throws {
-        let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.category)
+        let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.rawCategory.rawValue)
         modelContext.insert(entity)
         try modelContext.save()
     }

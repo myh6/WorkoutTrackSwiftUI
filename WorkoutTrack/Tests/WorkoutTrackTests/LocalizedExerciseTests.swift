@@ -11,32 +11,32 @@ import XCTest
 final class LocalizedExerciseConformanceTests: XCTestCase {
     func test_compilesAsDisplayableExercise() {
         func acceptsDisplayable(_ v: any DisplayableExercise) {}
-        let sut = LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs")
+        let sut = LocalizedExercise(nameKey: "exercise.name.back_squat", category: .legs)
         acceptsDisplayable(sut)
     }
 }
 
 final class LocalizedExerciseLocalizationTests: XCTestCase {
     func test_nameAndCategoryLocalizeFromExercisesTable() {
-        let sut = LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs")
+        let sut = LocalizedExercise(nameKey: "exercise.name.back_squat", category: .legs)
         let name = sut.name
-        let category = sut.category
+        let category = sut.rawCategory
         
         XCTAssertNotEqual(name, sut.nameKey)
-        XCTAssertNotEqual(category, sut.categoryKey)
+        XCTAssertNotEqual(category.rawValue, sut.category)
     }
 }
 
 final class LocalizedExerciseIDTests: XCTestCase {
     func test_sameKeysYieldSameDeterministicID() {
-        let a = LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs")
-        let b = LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs")
+        let a = LocalizedExercise(nameKey: "exercise.name.back_squat", category: .legs)
+        let b = LocalizedExercise(nameKey: "exercise.name.back_squat", category: .legs)
         XCTAssertEqual(a.id, b.id)
     }
 
     func test_differentKeysYieldDifferentDeterministicID() {
-        let a = LocalizedExercise(nameKey: "exercise.name.back_squat", categoryKey: "exercise.category.legs")
-        let b = LocalizedExercise(nameKey: "exercise.name.bench_press", categoryKey: "exercise.category.chest")
+        let a = LocalizedExercise(nameKey: "exercise.name.back_squat", category: .legs)
+        let b = LocalizedExercise(nameKey: "exercise.name.bench_press", category: .chest)
         XCTAssertNotEqual(a.id, b.id)
     }
 }

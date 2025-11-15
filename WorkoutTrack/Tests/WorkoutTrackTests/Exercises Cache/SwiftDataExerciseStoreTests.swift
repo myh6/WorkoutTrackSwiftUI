@@ -150,8 +150,8 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     
     func test_retrieve_byCategory_deliversTheCorrectExerciseIgnoringCases() async throws {
         let sut = makeSUT()
-        let category = "certain category"
-        let correctCategoryExercise = anyExercise(category: category.uppercased())
+        let category: BodyCategory = .abs
+        let correctCategoryExercise = anyExercise(category: category)
         let allExercises = (makeExercises(count: 5) + [correctCategoryExercise]).shuffled()
         
         try await batchInsert(allExercises, to: sut)
@@ -211,7 +211,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
     }
     
-    private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: String = "any category") -> CustomExercise {
+    private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: BodyCategory = .other) -> CustomExercise {
         CustomExercise(id: id, name: name, category: category)
     }
     
@@ -221,7 +221,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         }
     }
     
-    private func makeExercises(count: Int, category: String = "any category") -> [CustomExercise] {
+    private func makeExercises(count: Int, category: BodyCategory = .other) -> [CustomExercise] {
         (0..<count).map { index in
             CustomExercise(
                 id: UUID(),
@@ -233,11 +233,11 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     
     private func makeMixedCategoryExercises() -> [CustomExercise] {
         [
-            CustomExercise(id: UUID(), name: "Bench Press", category: "Chest"),
-            CustomExercise(id: UUID(), name: "Deadlift", category: "Back"),
-            CustomExercise(id: UUID(), name: "Squat", category: "Legs"),
-            CustomExercise(id: UUID(), name: "Curls", category: "Arms"),
-            CustomExercise(id: UUID(), name: "Overhead Press", category: "Shoulders")
+            CustomExercise(id: UUID(), name: "Bench Press", category: .chest),
+            CustomExercise(id: UUID(), name: "Deadlift", category: .back),
+            CustomExercise(id: UUID(), name: "Squat", category: .legs),
+            CustomExercise(id: UUID(), name: "Curls", category: .arms),
+            CustomExercise(id: UUID(), name: "Overhead Press", category: .shoulder)
         ]
     }
 }

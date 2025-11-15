@@ -11,15 +11,19 @@ import Foundation
 public struct CustomExercise: Equatable {
     public let id: UUID
     public let name: String
-    public var category: String
+    public var rawCategory: BodyCategory
     
-    public init(id: UUID, name: String, category: String) {
+    public init(id: UUID, name: String, category: BodyCategory) {
         self.id = id
         self.name = name
-        self.category = category
+        self.rawCategory = category
     }
 }
 
 extension CustomExercise: DisplayableExercise {
     public var isCustom: Bool { true }
+    
+    public var category: String {
+        rawCategory.localizedName
+    }
 }

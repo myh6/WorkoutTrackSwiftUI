@@ -55,7 +55,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     }
     
     func test_load_byID_returnsTheOnlyOneWithThatID() {
-        let testId = UUID(uuidString: "762D25FA-5659-4C2C-627D-9788B9F89EAF")!
+        let testId = UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
         let retrieved = PresavedExercisesLoader().loadExercises(by: .byID(testId))
         
         XCTAssertEqual(retrieved.count, 1)
@@ -85,23 +85,23 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     }
     
     func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInAscendingOrderIgnoringCases() {
-        let testCategory = "chest"
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory.uppercased(), sort: .name(ascending: true)))
+        let testCategory: BodyCategory = .chest
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: true)))
 
         XCTAssertEqual(retrieved.count, 16)
         retrieved.forEach {
-            XCTAssertEqual($0.category.lowercased(), testCategory.lowercased())
+            XCTAssertEqual($0.category, testCategory.localizedName)
         }
         XCTAssertTrue(retrieved.isInAscendingOrder())
     }
     
     func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInDescendingOrderIgnoringCases() {
-        let testCategory = "chest"
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory.uppercased(), sort: .name(ascending: false)))
+        let testCategory: BodyCategory = .chest
+        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: false)))
         
         XCTAssertEqual(retrieved.count, 16)
         retrieved.forEach {
-            XCTAssertEqual($0.category.lowercased(), testCategory.lowercased())
+            XCTAssertEqual($0.category, testCategory.localizedName)
         }
         XCTAssertTrue(retrieved.isInDescendingOrder())
     }
