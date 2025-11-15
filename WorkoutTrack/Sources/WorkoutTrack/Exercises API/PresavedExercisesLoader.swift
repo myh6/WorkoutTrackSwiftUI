@@ -7,9 +7,8 @@
 
 import Foundation
 
-struct PresavedExercisesLoader {
-    
-    func loadExercises(by query: ExerciseQuery) -> [DisplayableExercise] {
+struct PresavedExercisesLoader: ExerciseLoader {
+    func loadExercises(by query: ExerciseQuery) async throws -> [DisplayableExercise] {
         let all: [DisplayableExercise] = PresavedExercises.all
         switch query {
         case .all(let sorting):

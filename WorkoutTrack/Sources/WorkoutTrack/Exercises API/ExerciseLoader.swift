@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol ExerciseLoader {
-    func loadExercises() -> [DisplayableExercise]
+    func loadExercises(by query: ExerciseQuery) async throws -> [DisplayableExercise]
 }

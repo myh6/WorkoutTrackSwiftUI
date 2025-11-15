@@ -10,8 +10,8 @@ import XCTest
 
 final class PresavedExercisesLoaderTests: XCTestCase {
     
-    func test_loader_returnsAllPresavedExercises() {
-        let all = PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
+    func test_loader_returnsAllPresavedExercises() async throws {
+        let all = try await makeSUT().loadExercises(by: .all(sort: .none))
         
         XCTAssertEqual(all.count, 110)
         all.forEach {
@@ -19,52 +19,52 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         }
     }
     
-    func test_load_allWithoutSorting_returnsAllExercisesSortedByNameInDefault() {
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
+    func test_load_allWithoutSorting_returnsAllExercisesSortedByNameInDefault() async throws {
+        let retrieved = try await makeSUT().loadExercises(by: .all(sort: .none))
         let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
-    func test_load_allWithNameAscending_returnsAllExercisesSortedByNameInAscendingOrder() {
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .name(ascending: true)))
+    func test_load_allWithNameAscending_returnsAllExercisesSortedByNameInAscendingOrder() async throws {
+        let retrieved = try await makeSUT().loadExercises(by: .all(sort: .name(ascending: true)))
         let baseline = retrieved.sortedInNameAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
-    func test_load_allWithNameDescending_returnsAllExercisesSortedByNameInDescendingOrder() {
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .name(ascending: false)))
+    func test_load_allWithNameDescending_returnsAllExercisesSortedByNameInDescendingOrder() async throws {
+        let retrieved = try await makeSUT().loadExercises(by: .all(sort: .name(ascending: false)))
         let baseline = retrieved.sortedInNameDescendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
-    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInAscendingOrder() {
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .category(ascending: true)))
+    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInAscendingOrder() async throws {
+        let retrieved = try await makeSUT().loadExercises(by: .all(sort: .category(ascending: true)))
         let baseline = retrieved.sortedInCategoryAscendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
-    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInDescendingOrder() {
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .all(sort: .category(ascending: false)))
+    func test_load_allWithCategoryAscending_returnsAllExercisesSortedByCategoryInDescendingOrder() async throws {
+        let retrieved = try await makeSUT().loadExercises(by: .all(sort: .category(ascending: false)))
         let baseline = retrieved.sortedInCategoryDescendingOrder()
         
         assertSameIDs(inOrder: baseline, retrieved)
     }
     
-    func test_load_byID_returnsTheOnlyOneWithThatID() {
+    func test_load_byID_returnsTheOnlyOneWithThatID() async throws {
         let testId = UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byID(testId))
+        let retrieved = try await makeSUT().loadExercises(by: .byID(testId))
         
         XCTAssertEqual(retrieved.count, 1)
         XCTAssertEqual(retrieved[0].id, testId)
     }
     
-    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInAscedingOrder() {
+    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInAscedingOrder() async throws {
         let testName = "squat"
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byName(testName, sort: .name(ascending: true)))
+        let retrieved = try await makeSUT().loadExercises(by: .byName(testName, sort: .name(ascending: true)))
         
         XCTAssertEqual(retrieved.count, 4)
         retrieved.forEach {
@@ -73,9 +73,9 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertTrue(retrieved.isInAscendingOrder())
     }
     
-    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInDescendingOrder() {
+    func test_load_byName_returnsAllValidExercisesIgnoringCasesWithSimilarNameInDescendingOrder() async throws {
         let testName = "squat"
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byName(testName, sort: .name(ascending: false)))
+        let retrieved = try await makeSUT().loadExercises(by: .byName(testName, sort: .name(ascending: false)))
         
         XCTAssertEqual(retrieved.count, 4)
         retrieved.forEach {
@@ -84,9 +84,9 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertTrue(retrieved.isInDescendingOrder())
     }
     
-    func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInAscendingOrderIgnoringCases() {
+    func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInAscendingOrderIgnoringCases() async throws {
         let testCategory: BodyCategory = .chest
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: true)))
+        let retrieved = try await makeSUT().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: true)))
 
         XCTAssertEqual(retrieved.count, 16)
         retrieved.forEach {
@@ -95,9 +95,9 @@ final class PresavedExercisesLoaderTests: XCTestCase {
         XCTAssertTrue(retrieved.isInAscendingOrder())
     }
     
-    func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInDescendingOrderIgnoringCases() {
+    func test_load_byCategory_returnsAllExercisesFromTheSpecificedCategroyWithNameInDescendingOrderIgnoringCases() async throws {
         let testCategory: BodyCategory = .chest
-        let retrieved = PresavedExercisesLoader().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: false)))
+        let retrieved = try await makeSUT().loadExercises(by: .byCategory(testCategory, sort: .name(ascending: false)))
         
         XCTAssertEqual(retrieved.count, 16)
         retrieved.forEach {
@@ -107,6 +107,11 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     }
     
     //MARK: - Helpers
+    private func makeSUT() -> ExerciseLoader {
+        // No need to check for memory leaks since we used it as a statless struct.
+        return PresavedExercisesLoader()
+    }
+    
     private func assertSameIDs(inOrder expected: [DisplayableExercise], _ actual: [DisplayableExercise], file: StaticString = #file, line: UInt = #line) {
         XCTAssertEqual(expected.map(\.id), actual.map(\.id), file: file, line: line)
     }
