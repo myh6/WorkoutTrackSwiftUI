@@ -12,6 +12,7 @@ public enum ExerciseQuery {
     case byID(UUID)
     case byName(String, sort: ExerciseSort?)
     case byCategory(BodyCategory, sort: ExerciseSort?)
+    case onlyCustom(sort: ExerciseSort?)
 }
 
 public enum ExerciseSort {

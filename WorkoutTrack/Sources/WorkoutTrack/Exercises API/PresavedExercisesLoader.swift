@@ -24,6 +24,8 @@ struct PresavedExercisesLoader: ExerciseLoader {
             return all
                 .filter { $0.rawCategory == category }
                 .applyCustomSorting(sorting)
+        case .onlyCustom:
+            return []
         }
     }
     

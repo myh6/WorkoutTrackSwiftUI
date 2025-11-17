@@ -53,6 +53,20 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         XCTAssertEqual(loaded.count, presaved.count + 1)
     }
     
+    func test_loadExercise_onlyCustom_deliversNoPresavedExercise() async throws {
+        let sut = makeSUT()
+        let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
+        
+        try await sut.store.insert(custom)
+        let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
+        
+        XCTAssertEqual(loaded.count, 1)
+        let retrievedExercise = try XCTUnwrap(loaded.first)
+        XCTAssertEqual(retrievedExercise.id, custom.id)
+        XCTAssertEqual(retrievedExercise.name, custom.name)
+        XCTAssertEqual(retrievedExercise.category, custom.category)
+    }
+    
     //MARK: - Helpers
     private func makeSUT() -> DefaultExerciseCatalog {
         let container = try! ModelContainer(for: Schema([ExerciseEntity.self]), configurations: ModelConfiguration(isStoredInMemoryOnly: true))

@@ -55,6 +55,7 @@ extension ExerciseQuery {
         case .byID(_): return nil
         case .byName(_, let sort): return sort
         case .byCategory(_, let sort): return sort
+        case .onlyCustom(let sort): return sort
         }
     }
     
@@ -71,7 +72,7 @@ extension ExerciseQuery {
     
     var predicate: Predicate<ExerciseEntity>? {
         switch self {
-        case .all:
+        case .all, .onlyCustom:
             return #Predicate { _ in true }
         case .byID(let id):
             return #Predicate { $0.id == id }
