@@ -9,43 +9,6 @@ import XCTest
 @testable import WorkoutTrack
 import SwiftData
 
-protocol ExerciseSystem {
-    func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise]
-    func addExercise(_ exercise: CustomExercise) async throws
-    func removeExercise(_ exercise: CustomExercise) async throws
-}
-
-class DefaultExerciseSystem: ExerciseSystem {
-    private let loaders: [ExerciseLoader]
-    private let inserter: ExerciseInsertion
-    private let deleter: ExerciseDeletion
-    
-    init(loaders: [ExerciseLoader], inserter: ExerciseInsertion, deleter: ExerciseDeletion) {
-        self.loaders = loaders
-        self.inserter = inserter
-        self.deleter = deleter
-    }
-    
-    func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise] {
-        var loaded: [any DisplayableExercise] = []
-        
-        for loader in loaders {
-            let output = try await loader.loadExercises(by: query)
-            loaded.append(contentsOf: output)
-        }
-        
-        return loaded
-    }
-    
-    func addExercise(_ exercise: CustomExercise) async throws {
-        try await inserter.insert(exercise)
-    }
-    
-    func removeExercise(_ exercise: CustomExercise) async throws {
-        try await deleter.delete(exercise)
-    }
-}
-
 final class ExerciseCatalogIntegrationTests: XCTestCase {
     
     func test_loadExercises_deliversAllPresavedExercisesOnEmptyStore() async throws {
