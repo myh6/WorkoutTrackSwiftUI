@@ -12,6 +12,7 @@ import SwiftData
 protocol ExerciseSystem {
     func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise]
     func addExercise(_ exercise: CustomExercise) async throws
+    func removeExercise(_ exercise: CustomExercise) async throws
 }
 
 class DefaultExerciseSystem: ExerciseSystem {
@@ -38,6 +39,10 @@ class DefaultExerciseSystem: ExerciseSystem {
     
     func addExercise(_ exercise: CustomExercise) async throws {
         try await inserter.insert(exercise)
+    }
+    
+    func removeExercise(_ exercise: CustomExercise) async throws {
+        try await deleter.delete(exercise)
     }
 }
 
@@ -86,6 +91,17 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
 
         XCTAssertTrue(loaded.contains(where: { $0.id == custom.id }))
+    }
+    
+    func test_removeExercise_deletesExerciseFromStore() async throws {
+        let sut = makeSUT()
+        let custom = anyExercise()
+        
+        try await sut.addExercise(custom)
+        try await sut.removeExercise(custom)
+        
+        let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
+        XCTAssertTrue(loaded.isEmpty)
     }
     
     //MARK: - Helpers
