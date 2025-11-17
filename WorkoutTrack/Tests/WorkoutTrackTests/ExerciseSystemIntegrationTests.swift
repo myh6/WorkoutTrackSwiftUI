@@ -9,10 +9,15 @@ import XCTest
 @testable import WorkoutTrack
 import SwiftData
 
-class DefaultExerciseSystem {
-    let loaders: [ExerciseLoader]
-    let inserter: ExerciseInsertion
-    let deleter: ExerciseDeletion
+protocol ExerciseSystem {
+    func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise]
+    func addExercise(_ exercise: CustomExercise) async throws
+}
+
+class DefaultExerciseSystem: ExerciseSystem {
+    private let loaders: [ExerciseLoader]
+    private let inserter: ExerciseInsertion
+    private let deleter: ExerciseDeletion
     
     init(loaders: [ExerciseLoader], inserter: ExerciseInsertion, deleter: ExerciseDeletion) {
         self.loaders = loaders
@@ -29,6 +34,10 @@ class DefaultExerciseSystem {
         }
         
         return loaded
+    }
+    
+    func addExercise(_ exercise: CustomExercise) async throws {
+        try await inserter.insert(exercise)
     }
 }
 
@@ -48,7 +57,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
         let presaved = try await getAllPresavedExercises()
         
-        try await sut.inserter.insert(custom)
+        try await sut.addExercise(custom)
         let loaded = try await sut.loadExercises(by: .all(sort: .none)).map(\.id)
         
         XCTAssertTrue(loaded.contains(custom.id))
@@ -59,7 +68,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let sut = makeSUT()
         let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
         
-        try await sut.inserter.insert(custom)
+        try await sut.addExercise(custom)
         let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
         
         XCTAssertEqual(loaded.count, 1)
@@ -70,7 +79,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private func makeSUT() -> DefaultExerciseSystem {
+    private func makeSUT() -> ExerciseSystem {
         let container = try! ModelContainer(for: Schema([ExerciseEntity.self]), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         
         let store = SwiftDataExerciseStore(modelContainer: container)
