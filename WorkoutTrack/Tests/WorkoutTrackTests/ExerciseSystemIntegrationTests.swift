@@ -69,6 +69,24 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         XCTAssertEqual(loaded.count, presaved.count + 1)
     }
     
+    func test_loadExercises_respectsSortOrder() async throws {
+        let sut = makeSUT()
+        
+        let first = anyExercise(name: "Alpha", category: .chest)
+        let second = anyExercise(name: "Zeta", category: .abs)
+        
+        try await sut.addExercise(first)
+        try await sut.addExercise(second)
+        
+        let loadedName = try await sut.loadExercises(by: .onlyCustom(sort: .name(ascending: true))).map(\.name)
+
+        XCTAssertEqual(loadedName, ["Alpha", "Zeta"])
+        
+        let loadedCategory = try await sut.loadExercises(by: .onlyCustom(sort: .category(ascending: true))).map(\.category)
+        
+        XCTAssertEqual(loadedCategory, ["Abs", "Chest"])
+    }
+    
     func test_loadExercise_onlyCustom_deliversNoPresavedExercise() async throws {
         let sut = makeSUT()
         let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
