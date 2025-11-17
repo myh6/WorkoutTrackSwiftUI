@@ -78,6 +78,16 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         XCTAssertEqual(retrievedExercise.category, custom.category)
     }
     
+    func test_addExercise_persistsExerciseInStore() async throws {
+        let sut = makeSUT()
+        let custom = anyExercise()
+
+        try await sut.addExercise(custom)
+        let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
+
+        XCTAssertTrue(loaded.contains(where: { $0.id == custom.id }))
+    }
+    
     //MARK: - Helpers
     private func makeSUT() -> ExerciseSystem {
         let container = try! ModelContainer(for: Schema([ExerciseEntity.self]), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
