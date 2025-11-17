@@ -34,10 +34,9 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let sut = makeSUT()
         
         let loaded = try await sut.loadExercises(by: .all(sort: .none))
+        let expected = try await getAllPresavedExercises().map(\.id).sorted()
         
-        let expected = try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
-        
-        XCTAssertEqual(loaded.map(\.id).sorted(), expected.map(\.id).sorted())
+        XCTAssertEqual(loaded.map(\.id).sorted(), expected)
     }
     
     //MARK: - Helpers
@@ -48,5 +47,9 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let presaved = PresavedExercisesLoader()
         
         return DefaultExerciseCatalog(loaders: [presaved, store])
+    }
+    
+    private func getAllPresavedExercises() async throws -> [DisplayableExercise] {
+        return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
     }
 }
