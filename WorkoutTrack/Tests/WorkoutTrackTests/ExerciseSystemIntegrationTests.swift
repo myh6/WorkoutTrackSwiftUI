@@ -1,5 +1,5 @@
 //
-//  ExerciseCatalogIntegrationTests.swift
+//  ExerciseSystemIntegrationTests.swift
 //  WorkoutTrack
 //
 //  Created by Min-Yang Huang on 2025/11/15.
@@ -9,7 +9,7 @@ import XCTest
 @testable import WorkoutTrack
 import SwiftData
 
-class DefaultExerciseCatalog: ExerciseLoader {
+class DefaultExerciseSystem {
     let loaders: [ExerciseLoader]
     let inserter: ExerciseInsertion
     let deleter: ExerciseDeletion
@@ -70,13 +70,13 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private func makeSUT() -> DefaultExerciseCatalog {
+    private func makeSUT() -> DefaultExerciseSystem {
         let container = try! ModelContainer(for: Schema([ExerciseEntity.self]), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
         
         let store = SwiftDataExerciseStore(modelContainer: container)
         let presaved = PresavedExercisesLoader()
         
-        return DefaultExerciseCatalog(loaders: [presaved, store], inserter: store, deleter: store)
+        return DefaultExerciseSystem(loaders: [presaved, store], inserter: store, deleter: store)
     }
     
     private func getAllPresavedExercises() async throws -> [DisplayableExercise] {
