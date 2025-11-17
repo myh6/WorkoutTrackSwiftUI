@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ExerciseInsertion.swift
 //  WorkoutTrack
 //
 //  Created by Min-Yang Huang on 9/11/25.
@@ -7,8 +7,10 @@
 
 import Foundation
 
-public protocol ExerciseStore {
+public protocol ExerciseInsertion {
     func insert(_ exercise: CustomExercise) async throws
-    func retrieve(by query: ExerciseQuery) async throws -> [CustomExercise]
+}
+
+public protocol ExerciseDeletion {
     func delete(_ exercise: CustomExercise) async throws
 }

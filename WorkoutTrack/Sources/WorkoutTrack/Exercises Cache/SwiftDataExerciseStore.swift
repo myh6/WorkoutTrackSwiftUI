@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @ModelActor
-final actor SwiftDataExerciseStore: ExerciseStore {
+final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseDeletion {
     
     func insert(_ exercise: CustomExercise) throws {
         let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.rawCategory.rawValue)
@@ -17,7 +17,7 @@ final actor SwiftDataExerciseStore: ExerciseStore {
         try modelContext.save()
     }
     
-    func retrieve(by query: ExerciseQuery) throws -> [CustomExercise] {
+    func loadExercises(by query: ExerciseQuery) throws -> [DisplayableExercise] {
         var descriptor = FetchDescriptor<ExerciseEntity>()
         if let predicate = query.predicate {
             descriptor.predicate = predicate
@@ -39,11 +39,5 @@ final actor SwiftDataExerciseStore: ExerciseStore {
             modelContext.delete(entity)
             try modelContext.save()
         }
-    }
-}
-
-extension SwiftDataExerciseStore: ExerciseLoader {
-    func loadExercises(by query: ExerciseQuery) async throws -> [DisplayableExercise] {
-        try self.retrieve(by: query)
     }
 }

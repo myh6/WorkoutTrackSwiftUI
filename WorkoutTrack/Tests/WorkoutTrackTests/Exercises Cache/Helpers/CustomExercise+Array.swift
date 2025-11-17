@@ -6,6 +6,15 @@
 //
 
 @testable import WorkoutTrack
+import XCTest
+
+extension Array where Element == DisplayableExercise {
+    func asCustomExercises(file: StaticString = #file, line: UInt = #line) -> [CustomExercise] {
+        let casted = self.compactMap { $0 as? CustomExercise }
+        XCTAssertEqual(casted.count, self.count, "Failed to cast all elements to CustomExercise", file: file, line: line)
+        return casted
+    }
+}
 
 extension Array where Element == CustomExercise {
     func sortedByNameInAscendingOrder() -> [CustomExercise] {

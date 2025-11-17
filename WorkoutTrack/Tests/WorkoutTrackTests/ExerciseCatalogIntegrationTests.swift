@@ -11,11 +11,13 @@ import SwiftData
 
 class DefaultExerciseCatalog: ExerciseLoader {
     let loaders: [ExerciseLoader]
-    let store: ExerciseStore
+    let inserter: ExerciseInsertion
+    let deleter: ExerciseDeletion
     
-    init(loaders: [ExerciseLoader], store: ExerciseStore) {
+    init(loaders: [ExerciseLoader], inserter: ExerciseInsertion, deleter: ExerciseDeletion) {
         self.loaders = loaders
-        self.store = store
+        self.inserter = inserter
+        self.deleter = deleter
     }
     
     func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise] {
@@ -46,7 +48,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
         let presaved = try await getAllPresavedExercises()
         
-        try await sut.store.insert(custom)
+        try await sut.inserter.insert(custom)
         let loaded = try await sut.loadExercises(by: .all(sort: .none)).map(\.id)
         
         XCTAssertTrue(loaded.contains(custom.id))
@@ -57,7 +59,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let sut = makeSUT()
         let custom = anyExercise(id: UUID(), name: "Test curl", category: .arms)
         
-        try await sut.store.insert(custom)
+        try await sut.inserter.insert(custom)
         let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
         
         XCTAssertEqual(loaded.count, 1)
@@ -74,7 +76,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let store = SwiftDataExerciseStore(modelContainer: container)
         let presaved = PresavedExercisesLoader()
         
-        return DefaultExerciseCatalog(loaders: [presaved, store], store: store)
+        return DefaultExerciseCatalog(loaders: [presaved, store], inserter: store, deleter: store)
     }
     
     private func getAllPresavedExercises() async throws -> [DisplayableExercise] {

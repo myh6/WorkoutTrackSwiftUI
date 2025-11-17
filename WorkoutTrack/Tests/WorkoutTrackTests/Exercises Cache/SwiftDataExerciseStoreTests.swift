@@ -37,7 +37,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         
         try await sut.insert(anyExercise())
         
-        let retrieved = try await sut.retrieve(by: .all(sort: .none))
+        let retrieved = try await sut.loadExercises(by: .all(sort: .none))
         
         retrieved.forEach { XCTAssertTrue($0.isCustom) }
     }
@@ -169,7 +169,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         
         try await sut.insert(newExercise)
         
-        let retrieved = try await sut.retrieve(by: .all(sort: .none))
+        let retrieved = try await sut.loadExercises(by: .all(sort: .none)).asCustomExercises()
         
         XCTAssertEqual(retrieved.count, 6)
         XCTAssertTrue(retrieved.contains(newExercise))
@@ -211,6 +211,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     }
     
     //MARK: - Helpers
+    typealias ExerciseStore = ExerciseLoader & ExerciseInsertion & ExerciseDeletion
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> ExerciseStore {
         let schema = Schema([ExerciseEntity.self])
         let sut = try! SwiftDataExerciseStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
@@ -218,12 +219,12 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         return sut
     }
     
-    private func expect(_ sut: ExerciseStore, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
-        let retrieved = try await sut.retrieve(by: query)
+    private func expect(_ sut: ExerciseLoader, toRetrievedWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+        let retrieved = try await sut.loadExercises(by: query).asCustomExercises(file: file, line: line)
         XCTAssertEqual(expected, retrieved, file: file, line: line)
     }
     
-    private func expect(_ sut: ExerciseStore, toRetrievedTwiceWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
+    private func expect(_ sut: ExerciseLoader, toRetrievedTwiceWith expected: [CustomExercise], with query: ExerciseQuery, file: StaticString = #file, line: UInt = #line) async throws {
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
     }
@@ -232,7 +233,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         CustomExercise(id: id, name: name, category: category)
     }
     
-    private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseStore) async throws {
+    private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseInsertion) async throws {
         for exercise in exercises {
             try await store.insert(exercise)
         }
