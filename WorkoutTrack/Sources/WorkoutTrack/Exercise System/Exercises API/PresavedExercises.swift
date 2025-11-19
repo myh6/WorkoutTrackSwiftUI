@@ -8,6 +8,7 @@
 import Foundation
 
 public enum BodyCategory: String, CaseIterable {
+    // Note: These values should not be changed as we use the raw value (String) of these cases as the value for category in our database.
     case abs
     case arms
     case back
