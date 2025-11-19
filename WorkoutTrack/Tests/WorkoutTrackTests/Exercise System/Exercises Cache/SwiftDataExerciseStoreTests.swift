@@ -213,6 +213,16 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
     
+    func test_delete_doesNothingToNonExistingExercise() async throws {
+        let sut = makeSUT()
+        let savedExercise = anyExercise()
+        
+        try await sut.insert(savedExercise)
+        try await sut.delete(anyExercise())
+        
+        try await expect(sut, toRetrievedWith: [savedExercise], with: .all(sort: .none))
+    }
+    
     func test_delete_deletesPreviouslyInsertedExerciseInStore() async throws {
         let sut = makeSUT()
         let exercise = anyExercise()
