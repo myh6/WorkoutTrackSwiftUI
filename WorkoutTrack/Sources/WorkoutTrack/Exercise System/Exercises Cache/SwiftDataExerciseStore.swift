@@ -33,10 +33,7 @@ final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseD
     }
     
     func update(_ exercise: CustomExercise) async throws {
-        let targetId = exercise.id
-        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == targetId })
-        
-        if let entity = try modelContext.fetch(descriptor).first {
+        if let entity = try getExercise(from: exercise.id) {
             entity.name = exercise.name
             entity.category = exercise.rawCategory.rawValue
             try modelContext.save()
@@ -44,11 +41,18 @@ final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseD
     }
     
     func delete(_ exercise: CustomExercise) throws {
-        let targetId = exercise.id
-        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == targetId })
-        if let entity = try modelContext.fetch(descriptor).first {
+        if let entity = try getExercise(from: exercise.id) {
             modelContext.delete(entity)
             try modelContext.save()
         }
+    }
+}
+
+extension SwiftDataExerciseStore {
+    private func getExercise(from id: UUID) throws -> ExerciseEntity? {
+        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate {
+            $0.id == id
+        })
+        return try modelContext.fetch(descriptor).first
     }
 }
