@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @ModelActor
-final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseDeletion {
+final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseDeletion, ExerciseUpdate {
     
     func insert(_ exercise: CustomExercise) throws {
         let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.rawCategory.rawValue)
@@ -30,6 +30,10 @@ final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseD
         }
         
         return try modelContext.fetch(descriptor).toModels()
+    }
+    
+    func update(_ exercise: CustomExercise) async throws {
+        
     }
     
     func delete(_ exercise: CustomExercise) throws {

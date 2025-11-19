@@ -14,3 +14,7 @@ public protocol ExerciseInsertion {
 public protocol ExerciseDeletion {
     func delete(_ exercise: CustomExercise) async throws
 }
+
+public protocol ExerciseUpdate {
+    func update(_ exercise: CustomExercise) async throws
+}

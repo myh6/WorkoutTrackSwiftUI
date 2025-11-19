@@ -175,6 +175,14 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         XCTAssertTrue(retrieved.contains(newExercise))
     }
     
+    func test_update_hasNoSideEffectsOnEmptyStore() async throws {
+        let sut = makeSUT()
+        
+        try await sut.update(anyExercise())
+        
+        try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
+    }
+    
     func test_delete_hasNoSideEffectsInEmptyStore() async throws {
         let sut = makeSUT()
         
@@ -211,7 +219,7 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    typealias ExerciseStore = ExerciseLoader & ExerciseInsertion & ExerciseDeletion
+    typealias ExerciseStore = ExerciseLoader & ExerciseInsertion & ExerciseDeletion & ExerciseUpdate
     private func makeSUT(file: StaticString = #file, line: UInt = #line) -> ExerciseStore {
         let schema = Schema([ExerciseEntity.self])
         let sut = try! SwiftDataExerciseStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
