@@ -194,6 +194,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [randomExercise], with: .all(sort: .none))
     }
     
+    func test_update_updatesPreviouslyInsertedExerciseInStore() async throws {
+        let sut = makeSUT()
+        let exercise = anyExercise(id: UUID(), name: "Random Name", category: .abs)
+        let updatedExercise = anyExercise(id: exercise.id, name: "Updated name", category: .arms)
+        
+        try await sut.insert(exercise)
+        try await sut.update(updatedExercise)
+        
+        try await expect(sut, toRetrievedWith: [updatedExercise], with: .all(sort: .none))
+    }
+    
     func test_delete_hasNoSideEffectsInEmptyStore() async throws {
         let sut = makeSUT()
         

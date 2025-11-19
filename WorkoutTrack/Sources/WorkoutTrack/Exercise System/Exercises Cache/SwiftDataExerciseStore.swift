@@ -33,7 +33,14 @@ final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseD
     }
     
     func update(_ exercise: CustomExercise) async throws {
+        let targetId = exercise.id
+        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == targetId })
         
+        if let entity = try modelContext.fetch(descriptor).first {
+            entity.name = exercise.name
+            entity.category = exercise.rawCategory.rawValue
+            try modelContext.save()
+        }
     }
     
     func delete(_ exercise: CustomExercise) throws {
