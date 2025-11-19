@@ -183,6 +183,17 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: [], with: .all(sort: .none))
     }
     
+    func test_update_doesNothingToNonExistingExercise() async throws {
+        let sut = makeSUT()
+        let updateExercise = anyExercise()
+        let randomExercise = anyExercise()
+        
+        try await sut.insert(randomExercise)
+        try await sut.update(updateExercise)
+        
+        try await expect(sut, toRetrievedWith: [randomExercise], with: .all(sort: .none))
+    }
+    
     func test_delete_hasNoSideEffectsInEmptyStore() async throws {
         let sut = makeSUT()
         
