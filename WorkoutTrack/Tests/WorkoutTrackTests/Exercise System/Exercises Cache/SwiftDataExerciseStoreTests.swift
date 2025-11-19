@@ -229,10 +229,6 @@ final class SwiftDataExerciseStoreTests: XCTestCase {
         try await expect(sut, toRetrievedWith: expected, with: query, file: file, line: line)
     }
     
-    private func anyExercise(id: UUID = UUID(), name: String = "any exercise", category: BodyCategory = .other) -> CustomExercise {
-        CustomExercise(id: id, name: name, category: category)
-    }
-    
     private func batchInsert(_ exercises: [CustomExercise], to store: ExerciseInsertion) async throws {
         for exercise in exercises {
             try await store.insert(exercise)

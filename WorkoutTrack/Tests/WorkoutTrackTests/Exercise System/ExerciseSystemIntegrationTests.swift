@@ -98,8 +98,4 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
     private func getAllPresavedExercises() async throws -> [DisplayableExercise] {
         return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none))
     }
-    
-    private func anyExercise(id: UUID = UUID(), name: String = "any name", category: BodyCategory = .abs) -> CustomExercise {
-        return CustomExercise(id: id, name: name, category: category)
-    }
 }

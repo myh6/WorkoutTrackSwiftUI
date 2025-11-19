@@ -20,4 +20,8 @@ extension XCTestCase {
     func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0.0, isFinished: Bool = false, order: Int = 0) -> WorkoutSetDTO {
         WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
     }
+    
+    func anyExercise(id: UUID = UUID(), name: String = "any name", category: BodyCategory = .abs) -> CustomExercise {
+        return CustomExercise(id: id, name: name, category: category)
+    }
 }

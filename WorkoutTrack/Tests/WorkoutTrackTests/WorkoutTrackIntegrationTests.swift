@@ -60,8 +60,4 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
             )
         return try ModelContainer(for: ExerciseEntity.self, WorkoutEntry.self, WorkoutSession.self, WorkoutSet.self, configurations: config)
     }
-    
-    private func anyExercise(id: UUID = UUID(), name: String = "any name", category: BodyCategory = .abs) -> CustomExercise {
-        return CustomExercise(id: id, name: name, category: category)
-    }
 }
