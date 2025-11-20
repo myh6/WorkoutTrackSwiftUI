@@ -25,6 +25,10 @@ extension WorkoutTrackService {
     func deleteExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.removeExercise(exercise)
     }
+    
+    func updateExercise(_ exercise: CustomExercise) async throws {
+        try await self.exercise.updateExercise(exercise)
+    }
 }
 
 extension WorkoutTrackService {

@@ -37,6 +37,25 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertTrue(retrieved.isEmpty)
     }
     
+    func test_updateExercise_doesNotAffectStoredEntry() async throws {
+        let sut = try makeSUT()
+        let initialExercise = anyExercise(name: "Random exercise", category: .arms)
+        let entry = anyEntry(exercise: initialExercise.id, sets: [anySet()])
+        let randomEntry = anyEntry(createdAt: Date().adding(minutes: 2))
+        let updatedExercise = anyExercise(id: initialExercise.id, name: "Updated Exercise", category: .abs)
+        let query = QueryBuilder()
+            .containsExercises([initialExercise.id])
+            .build()
+        
+        try await sut.addCustomExercise(initialExercise)
+        try await sut.addEntry([entry, randomEntry], to: anySession())
+        try await sut.updateExercise(updatedExercise)
+        
+        let retrieved = try await sut.retrieveSessions(by: query).flatMap(\.entries)
+        let firstEntry = try XCTUnwrap(retrieved.first)
+        XCTAssertEqual(firstEntry.exerciseID, initialExercise.id)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
         let modelContainer = try makeTestModelContianer()
