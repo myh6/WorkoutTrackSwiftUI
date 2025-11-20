@@ -20,6 +20,19 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         XCTAssertNil(retrieved)
     }
+    
+    func test_getExerciseName_deliversNameWithMatchingID() async throws {
+        let sut = try makeSUT()
+        let pushUpId = UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
+        let custom = anyExercise(name: "Random Exercise", category: .abs)
+        
+        try await sut.addCustomExercise(custom)
+        let presaved = try await sut.getExerciseName(from: pushUpId)
+        let retrievedCustom = try await sut.getExerciseName(from: custom.id)
+        
+        XCTAssertEqual(presaved, "Push-Up")
+        XCTAssertEqual(retrievedCustom, custom.name)
+    }
 
     func test_addCustomExercise_andUseInWorkoutSession() async throws {
         let sut = try makeSUT()
