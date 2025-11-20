@@ -44,8 +44,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let exerciseStore = SwiftDataExerciseStore(modelContainer: modelContainer)
         let exerciseSystem = DefaultExerciseSystem(
             loaders: [PresavedExercisesLoader(), exerciseStore],
-            inserter: exerciseStore,
-            deleter: exerciseStore
+            io: exerciseStore
         )
         let service = WorkoutTrackService(exercise: exerciseSystem, workoutTrack: workoutStore)
         trackForMemoryLeaks(service, file: file, line: line)

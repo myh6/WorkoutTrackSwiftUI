@@ -85,6 +85,20 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         XCTAssertTrue(loaded.isEmpty)
     }
     
+    func test_updateExercise_modifiesCustomExercise() async throws {
+        let sut = makeSUT()
+        let exercise = anyExercise(name: "random exercise")
+        let updatedExdercise = anyExercise(id: exercise.id, name: "Updated exercise", category: .glutes)
+        
+        try await sut.addExercise(exercise)
+        try await sut.updateExercise(updatedExdercise)
+        
+        let loaded = try await sut.loadExercises(by: .onlyCustom(sort: .none))
+        let first = try XCTUnwrap(loaded.first)
+        XCTAssertEqual(first.name, updatedExdercise.name)
+        XCTAssertEqual(first.category, updatedExdercise.category)
+    }
+    
     //MARK: - Helpers
     private func makeSUT() -> ExerciseSystem {
         let container = try! ModelContainer(for: Schema([ExerciseEntity.self]), configurations: ModelConfiguration(isStoredInMemoryOnly: true))
@@ -92,7 +106,7 @@ final class ExerciseCatalogIntegrationTests: XCTestCase {
         let store = SwiftDataExerciseStore(modelContainer: container)
         let presaved = PresavedExercisesLoader()
         
-        return DefaultExerciseSystem(loaders: [presaved, store], inserter: store, deleter: store)
+        return DefaultExerciseSystem(loaders: [presaved, store], io: store)
     }
     
     private func getAllPresavedExercises() async throws -> [DisplayableExercise] {

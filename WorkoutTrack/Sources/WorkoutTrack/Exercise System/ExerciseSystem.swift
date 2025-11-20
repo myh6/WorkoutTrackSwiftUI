@@ -10,17 +10,21 @@ public protocol ExerciseSystem {
     func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise]
     func addExercise(_ exercise: CustomExercise) async throws
     func removeExercise(_ exercise: CustomExercise) async throws
+    func updateExercise(_ exercise: CustomExercise) async throws
 }
 
+public typealias ExerciseIO = ExerciseInsertion & ExerciseDeletion & ExerciseUpdate
 public class DefaultExerciseSystem: ExerciseSystem {
     private let loaders: [ExerciseLoader]
     private let inserter: ExerciseInsertion
     private let deleter: ExerciseDeletion
+    private let updater: ExerciseUpdate
     
-    public init(loaders: [ExerciseLoader], inserter: ExerciseInsertion, deleter: ExerciseDeletion) {
+    public init(loaders: [ExerciseLoader], io: ExerciseIO) {
         self.loaders = loaders
-        self.inserter = inserter
-        self.deleter = deleter
+        self.inserter = io
+        self.deleter = io
+        self.updater = io
     }
     
     public func loadExercises(by query: ExerciseQuery) async throws -> [any DisplayableExercise] {
@@ -40,5 +44,9 @@ public class DefaultExerciseSystem: ExerciseSystem {
     
     public func removeExercise(_ exercise: CustomExercise) async throws {
         try await deleter.delete(exercise)
+    }
+    
+    public func updateExercise(_ exercise: CustomExercise) async throws {
+        try await updater.update(exercise)
     }
 }
