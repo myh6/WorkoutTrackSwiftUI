@@ -10,6 +10,16 @@ import XCTest
 import SwiftData
 
 final class WorkoutTrackIntegrationTests: XCTestCase {
+    
+    func test_getExerciseName_deliversNilWhenNoMatchingID() async throws {
+        let sut = try makeSUT()
+        let id = UUID()
+        
+        try await sut.addCustomExercise(anyExercise())
+        let retrieved = try await sut.getExerciseName(from: id)
+        
+        XCTAssertNil(retrieved)
+    }
 
     func test_addCustomExercise_andUseInWorkoutSession() async throws {
         let sut = try makeSUT()

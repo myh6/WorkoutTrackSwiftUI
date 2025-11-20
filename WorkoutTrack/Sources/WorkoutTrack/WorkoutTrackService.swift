@@ -18,6 +18,10 @@ class WorkoutTrackService {
 }
 
 extension WorkoutTrackService {
+    func getExerciseName(from id: UUID) async throws -> String? {
+        return try await exercise.loadExercises(by: .byID(id)).first?.name
+    }
+    
     func addCustomExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.addExercise(exercise)
     }
