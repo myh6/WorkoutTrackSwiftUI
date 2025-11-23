@@ -154,6 +154,20 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertTrue(retrieved.isEmpty)
     }
     
+    func test_deleteEntry_removesEntryAndItsSets() async throws {
+        let sut = try makeSUT()
+        let deletedEntry = anyEntry(exercise: getPushUpID(), sets: [anySet(), anySet(), anySet(), anySet()])
+        let randomA = try await getRandomPresavedExerciseId(), randomB = try await getRandomPresavedExerciseId()
+        let otherEntry = [anyEntry(exercise: randomA), anyEntry(exercise: randomB)]
+        
+        try await sut.addEntry([deletedEntry] + otherEntry, to: anySession())
+        try await sut.deleteEntry(deletedEntry)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        XCTAssertEqual(retrieved, otherEntry)
+        XCTAssertTrue(retrieved.flatMap(\.sets).isEmpty)
+    }
+    
     func test_deleteSet_removesOnlyTargetedSet() async throws {
         let sut = try makeSUT()
         let deletedSet = anySet()
@@ -193,5 +207,9 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     private func getPushUpID() -> UUID {
         UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
+    }
+    
+    private func getRandomPresavedExerciseId() async throws -> UUID {
+        return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none)).randomElement()!.id
     }
 }
