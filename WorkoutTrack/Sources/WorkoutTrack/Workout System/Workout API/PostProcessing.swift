@@ -12,6 +12,7 @@ public enum PostProcessing: Equatable {
     case containsExercises([UUID])
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
+    case filterEntries([UUID])
     case filterSets([UUID])
 }
 
@@ -29,6 +30,10 @@ extension PostProcessing {
         case .onlyIncludeExercises(let ids):
             return { session in
                 Self.onlyIncludeExercises(ids: ids, in: session)
+            }
+        case .filterEntries(let ids):
+            return { session in
+                Self.onlyIncludeEntries(ids: ids, in: session)
             }
         case .filterSets(let ids):
             return { session in
@@ -79,6 +84,19 @@ extension PostProcessing {
                 date: session.date,
                 entries: session.entries.filter {
                     ids.contains($0.exerciseID)
+                }
+            )
+        }
+        .filter { !$0.entries.isEmpty }
+    }
+    
+    private static func onlyIncludeEntries(ids: [UUID], in sessions: [WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+        sessions.map { session in
+            WorkoutSessionDTO(
+                id: session.id,
+                date: session.date,
+                entries: session.entries.filter {
+                    ids.contains($0.id)
                 }
             )
         }

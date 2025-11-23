@@ -70,7 +70,13 @@ public struct QueryBuilder {
         return copy
     }
     
-    public func filterSet(_ ids: [UUID]) -> Self {
+    func filterEntry(_ ids: [UUID]) -> Self {
+        var copy = self
+        copy.postProcess = createArrayIfNeeded(postProcess) + [.filterEntries(ids)]
+        return copy
+    }
+    
+    func filterSet(_ ids: [UUID]) -> Self {
         var copy = self
         copy.postProcess = createArrayIfNeeded(postProcess) + [.filterSets(ids)]
         return copy

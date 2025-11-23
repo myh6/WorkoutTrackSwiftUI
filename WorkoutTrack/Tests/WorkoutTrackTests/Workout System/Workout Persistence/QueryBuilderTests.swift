@@ -5,7 +5,7 @@
 //  Created by Min-Yang Huang on 2025/10/19.
 //
 
-import WorkoutTrack
+@testable import WorkoutTrack
 import XCTest
 
 final class QueryBuilderTests: XCTestCase {
@@ -60,6 +60,7 @@ final class QueryBuilderTests: XCTestCase {
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
             .filterSet(setsIds)
+            .filterEntry(ids)
             .build()
         
         XCTAssertDescriptionOnlyHas(\.postProcessing, equalTo: [
@@ -67,7 +68,8 @@ final class QueryBuilderTests: XCTestCase {
             .containsExercises(containIDs),
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
-            .filterSets(setsIds)
+            .filterSets(setsIds),
+            .filterEntries(ids),
         ], in: descriptor)
     }
     
