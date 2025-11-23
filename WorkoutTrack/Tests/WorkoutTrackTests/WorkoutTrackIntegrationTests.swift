@@ -124,18 +124,6 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(firstEntry.exerciseID, initialExercise.id)
     }
     
-    func test_deleteSession_removesSessionAndItsEntries() async throws {
-        let sut = try makeSUT()
-        let session = anySession()
-        let entry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
-        
-        try await sut.addEntry([entry], to: session)
-        try await sut.deleteSession(session)
-        
-        let retrieved = try await sut.retrieveSessions(by: .none)
-        XCTAssertTrue(retrieved.isEmpty)
-    }
-    
     func test_deleteExercise_deletesSubsequentWorkoutEntry() async throws {
         let sut = try makeSUT()
         let deletedExercise = anyExercise(name: "Random Exercise")
@@ -152,6 +140,18 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
         XCTAssertEqual(retrieved.count, 3)
         XCTAssertFalse(retrieved.map(\.id).contains(deletedExercise.id))
+    }
+    
+    func test_deleteSession_removesSessionAndItsEntries() async throws {
+        let sut = try makeSUT()
+        let session = anySession()
+        let entry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
+        
+        try await sut.addEntry([entry], to: session)
+        try await sut.deleteSession(session)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none)
+        XCTAssertTrue(retrieved.isEmpty)
     }
     
     func test_deleteSet_removesOnlyTargetedSet() async throws {
