@@ -49,6 +49,12 @@ extension WorkoutTrackService {
         try await self.workoutTrack.retrieve(query: query)
     }
     
+    func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
+        for session in sessions {
+            try await self.workoutTrack.insert(session)
+        }
+    }
+    
     func addEntry(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) async throws {
         for entry in entries {
             let existedExercise = try await exercise.loadExercises(by: .byID(entry.exerciseID))
