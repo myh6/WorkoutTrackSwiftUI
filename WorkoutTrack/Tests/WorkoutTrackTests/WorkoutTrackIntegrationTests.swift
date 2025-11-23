@@ -154,6 +154,20 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertFalse(retrieved.map(\.id).contains(deletedExercise.id))
     }
     
+    func test_deleteSet_removesOnlyTargetedSet() async throws {
+        let sut = try makeSUT()
+        let deletedSet = anySet()
+        let sets = [anySet(order: 0), anySet(order: 1)]
+        let entry = anyEntry(exercise: getPushUpID(), sets: sets + [deletedSet])
+        
+        try await sut.addEntry([entry], to: anySession())
+        try await sut.deleteSet(deletedSet)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        
+        XCTAssertEqual(retrieved, sets)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
         let modelContainer = try makeTestModelContianer()

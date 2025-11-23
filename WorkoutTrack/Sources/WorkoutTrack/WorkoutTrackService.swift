@@ -81,4 +81,14 @@ extension WorkoutTrackService {
             try await workoutTrack.delete(retrieved)
         }
     }
+    
+    func deleteSet(_ set: WorkoutSetDTO) async throws {
+        let query = QueryBuilder()
+            .filterSet([set.id])
+            .build()
+        
+        if let retrieved = try await workoutTrack.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).first {
+            try await workoutTrack.delete(retrieved)
+        }
+    }
 }
