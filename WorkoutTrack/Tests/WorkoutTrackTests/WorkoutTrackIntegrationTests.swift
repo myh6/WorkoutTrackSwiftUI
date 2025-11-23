@@ -48,6 +48,20 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrievedEntry.exerciseID, exercise.id)
     }
     
+    func test_addEntry_ignoresEntriesWithUnknownExerciseID() async throws {
+        let sut = try makeSUT()
+        let knownExercise = anyExercise()
+        let entry = [anyEntry(exercise: knownExercise.id), anyEntry(), anyEntry(exercise: knownExercise.id), anyEntry()]
+        
+        try await sut.addCustomExercise(knownExercise)
+        try await sut.addEntry(entry, to: anySession())
+        
+        let retrieved = try await sut.retrieveSessions(by: nil).flatMap(\.entries)
+        print(retrieved)
+        XCTAssertEqual(retrieved.count, 2)
+        XCTAssertTrue(retrieved.allSatisfy { $0.exerciseID == knownExercise.id })
+    }
+    
     func test_addEntry_forDeletedExercise_shouldBeSkipped() async throws {
         let sut = try makeSUT()
         let exercise = anyExercise()
