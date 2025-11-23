@@ -30,8 +30,10 @@ extension PostProcessing {
             return { session in
                 Self.onlyIncludeExercises(ids: ids, in: session)
             }
-        case .filterSets:
-            return { _ in [] }
+        case .filterSets(let ids):
+            return { session in
+                Self.onlyIncludeSets(ids: ids, in: session)
+            }
         }
     }
     
