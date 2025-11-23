@@ -71,4 +71,14 @@ extension WorkoutTrackService {
         guard let firstEntry = entry.first else { return }
         try await workoutTrack.insert(sets, to: firstEntry)
     }
+    
+    func deleteSession(_ session: WorkoutSessionDTO) async throws {
+        let query = QueryBuilder()
+            .filterSession(session.id)
+            .build()
+        
+        if let retrieved = try await workoutTrack.retrieve(query: query).first {
+            try await workoutTrack.delete(retrieved)
+        }
+    }
 }
