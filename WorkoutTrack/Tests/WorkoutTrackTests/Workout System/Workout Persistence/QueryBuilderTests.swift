@@ -51,7 +51,6 @@ final class QueryBuilderTests: XCTestCase {
     
     func test_build_postProcessing_createsDescriptorWithCorrectPostProcessing() {
         let ids = [UUID(), UUID(), UUID()]
-        let setsIds = [UUID(), UUID()]
         let containIDs = [UUID(), UUID(), UUID()]
         
         let descriptor = QueryBuilder()
@@ -59,8 +58,6 @@ final class QueryBuilderTests: XCTestCase {
             .containsExercises(containIDs)
             .onlyIncludFinishedSets()
             .onlyIncludExercises(ids)
-            .filterSet(setsIds)
-            .filterEntry(ids)
             .build()
         
         XCTAssertDescriptionOnlyHas(\.postProcessing, equalTo: [
@@ -68,8 +65,6 @@ final class QueryBuilderTests: XCTestCase {
             .containsExercises(containIDs),
             .onlyIncludFinishedSets,
             .onlyIncludeExercises(ids),
-            .filterSets(setsIds),
-            .filterEntries(ids),
         ], in: descriptor)
     }
     

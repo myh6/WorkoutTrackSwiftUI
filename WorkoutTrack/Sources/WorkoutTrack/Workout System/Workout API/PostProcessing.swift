@@ -12,8 +12,6 @@ public enum PostProcessing: Equatable {
     case containsExercises([UUID])
     case onlyIncludFinishedSets
     case onlyIncludeExercises([UUID])
-    case filterEntries([UUID])
-    case filterSets([UUID])
 }
 
 extension PostProcessing {
@@ -30,14 +28,6 @@ extension PostProcessing {
         case .onlyIncludeExercises(let ids):
             return { session in
                 Self.onlyIncludeExercises(ids: ids, in: session)
-            }
-        case .filterEntries(let ids):
-            return { session in
-                Self.onlyIncludeEntries(ids: ids, in: session)
-            }
-        case .filterSets(let ids):
-            return { session in
-                Self.onlyIncludeSets(ids: ids, in: session)
             }
         }
     }

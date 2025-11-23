@@ -260,36 +260,4 @@ final class WorkoutDataStoreFilteringUseCasesTests: WorkoutDataStoreTests {
 
         try await expect(sut, toRetrieve: expected, withQuery: descriptor)
     }
-    
-    func test_retrieve_filterEntryReturnsAllEntriesThatMatchTheIDs() async throws {
-        let sut = makeSUT()
-        let idA = UUID(),
-            idB = UUID()
-        let entryA = anyEntry(id: idA), entryB = anyEntry(id: idB), entryC = anyEntry()
-        
-        let descriptor = QueryBuilder()
-            .filterEntry([idA, idB])
-            .build()
-        
-        try await sut.insert([entryA, entryC], to: anySession())
-        try await sut.insert([entryB], to: anySession())
-        
-        try await expect(sut, toRetrieveEntry: [entryA, entryB], withQuery: descriptor)
-    }
-    
-    func test_retrieve_filterSetsReturnsAllSetsThatMatchTheIDs() async throws {
-        let sut = makeSUT()
-        let idA = UUID(),
-            idB = UUID()
-        let setA = anySet(id: idA, order: 0),
-            setB = anySet(id: idB, order: 1),
-            setC = anySet(order: 2)
-        let descriptor = QueryBuilder()
-            .filterSet([idA, idB])
-            .build()
-        
-        try await sut.insert([anyEntry(sets: [setA, setB, setC])], to: anySession())
-        
-        try await expect(sut, toRetrieveSets: [setA, setB], withQuery: descriptor)
-    }
 }

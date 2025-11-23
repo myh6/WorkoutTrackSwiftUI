@@ -64,31 +64,14 @@ extension WorkoutTrackService {
     }
     
     func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) async throws {
-        let query = QueryBuilder()
-            .filterEntry([entry.id])
-            .build()
-        let entry = try await workoutTrack.retrieve(query: query).flatMap(\.entries)
-        guard let firstEntry = entry.first else { return }
-        try await workoutTrack.insert(sets, to: firstEntry)
+        try await workoutTrack.insert(sets, to: entry)
     }
     
     func deleteSession(_ session: WorkoutSessionDTO) async throws {
-        let query = QueryBuilder()
-            .filterSession(session.id)
-            .build()
-        
-        if let retrieved = try await workoutTrack.retrieve(query: query).first {
-            try await workoutTrack.delete(retrieved)
-        }
+        try await workoutTrack.delete(session)
     }
     
     func deleteSet(_ set: WorkoutSetDTO) async throws {
-        let query = QueryBuilder()
-            .filterSet([set.id])
-            .build()
-        
-        if let retrieved = try await workoutTrack.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).first {
-            try await workoutTrack.delete(retrieved)
-        }
+        try await workoutTrack.delete(set)
     }
 }

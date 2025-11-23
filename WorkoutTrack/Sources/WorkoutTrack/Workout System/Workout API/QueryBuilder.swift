@@ -70,18 +70,6 @@ public struct QueryBuilder {
         return copy
     }
     
-    func filterEntry(_ ids: [UUID]) -> Self {
-        var copy = self
-        copy.postProcess = createArrayIfNeeded(postProcess) + [.filterEntries(ids)]
-        return copy
-    }
-    
-    func filterSet(_ ids: [UUID]) -> Self {
-        var copy = self
-        copy.postProcess = createArrayIfNeeded(postProcess) + [.filterSets(ids)]
-        return copy
-    }
-    
     public func build() -> SessionQueryDescriptor {
         return SessionQueryDescriptor(
             sessionId: sessionId,
