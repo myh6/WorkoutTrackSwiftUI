@@ -28,6 +28,15 @@ extension WorkoutTrackService {
     
     func deleteExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.removeExercise(exercise)
+        
+        let query = QueryBuilder()
+            .containsExercises([exercise.id])
+            .onlyIncludExercises([exercise.id])
+            .build()
+        let entries = try await self.workoutTrack.retrieve(query: query).flatMap(\.entries)
+        for entry in entries {
+            try await self.workoutTrack.delete(entry)
+        }
     }
     
     func updateExercise(_ exercise: CustomExercise) async throws {

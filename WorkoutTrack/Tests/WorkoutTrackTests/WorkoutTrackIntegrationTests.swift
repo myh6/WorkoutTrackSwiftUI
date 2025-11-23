@@ -79,6 +79,24 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(firstEntry.exerciseID, initialExercise.id)
     }
     
+    func test_deleteExercise_deletesSubsequentWorkoutEntry() async throws {
+        let sut = try makeSUT()
+        let deletedExercise = anyExercise(name: "Random Exercise")
+        let persistedExercise = anyExercise()
+        let entry = [anyEntry(exercise: deletedExercise.id, sets: [anySet(), anySet(), anySet()]), anyEntry(exercise: deletedExercise.id)]
+        let otherEntry = [anyEntry(exercise: persistedExercise.id), anyEntry(exercise: persistedExercise.id), anyEntry(exercise: persistedExercise.id)]
+        
+        try await sut.addCustomExercise(deletedExercise)
+        try await sut.addCustomExercise(persistedExercise)
+        try await sut.addEntry(otherEntry + entry, to: anySession())
+        
+        try await sut.deleteExercise(deletedExercise)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        XCTAssertEqual(retrieved.count, 3)
+        XCTAssertFalse(retrieved.map(\.id).contains(deletedExercise.id))
+    }
+    
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
         let modelContainer = try makeTestModelContianer()
