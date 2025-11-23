@@ -83,6 +83,28 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertTrue(retrieved.isEmpty)
     }
     
+    func test_addSetsToEntry_ignoreSetsIfEntryDoesNotExist() async throws {
+        let sut = try makeSUT()
+        let sets = [anySet(order: 0), anySet(order: 1)]
+        
+        try await sut.addSets(sets, to: anyEntry())
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        XCTAssertTrue(retrieved.isEmpty)
+    }
+    
+    func test_addSetsToEntry_andRetrieveIt() async throws {
+        let sut = try makeSUT()
+        let entry = anyEntry(exercise: getPushUpID(), sets: [])
+        let sets = [anySet(order: 0), anySet(order: 1)]
+        
+        try await sut.addEntry([entry], to: anySession())
+        try await sut.addSets(sets, to: entry)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        XCTAssertEqual(retrieved, sets)
+    }
+    
     func test_updateExercise_doesNotAffectStoredEntry() async throws {
         let sut = try makeSUT()
         let initialExercise = anyExercise(name: "Random exercise", category: .arms)

@@ -62,4 +62,13 @@ extension WorkoutTrackService {
             try await self.workoutTrack.insert([entry], to: session)
         }
     }
+    
+    func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) async throws {
+        let query = QueryBuilder()
+            .filterEntry([entry.id])
+            .build()
+        let entry = try await workoutTrack.retrieve(query: query).flatMap(\.entries)
+        guard let firstEntry = entry.first else { return }
+        try await workoutTrack.insert(sets, to: firstEntry)
+    }
 }
