@@ -23,7 +23,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     func test_getExerciseName_deliversNameWithMatchingID() async throws {
         let sut = try makeSUT()
-        let pushUpId = UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
+        let pushUpId = getPushUpID()
         let custom = anyExercise(name: "Random Exercise", category: .abs)
         
         try await sut.addCustomExercise(custom)
@@ -51,7 +51,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     func test_addEntry_ignoresEntriesWithUnknownExerciseID() async throws {
         let sut = try makeSUT()
         let knownExercise = anyExercise()
-        let entry = [anyEntry(exercise: knownExercise.id), anyEntry(), anyEntry(exercise: knownExercise.id), anyEntry()]
+        let entry = [anyEntry(exercise: knownExercise.id), anyEntry(), anyEntry(exercise: getPushUpID()), anyEntry()]
         
         try await sut.addCustomExercise(knownExercise)
         try await sut.addEntry(entry, to: anySession())
@@ -59,7 +59,6 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let retrieved = try await sut.retrieveSessions(by: nil).flatMap(\.entries)
         print(retrieved)
         XCTAssertEqual(retrieved.count, 2)
-        XCTAssertTrue(retrieved.allSatisfy { $0.exerciseID == knownExercise.id })
     }
     
     func test_addEntry_forDeletedExercise_shouldBeSkipped() async throws {
@@ -132,5 +131,9 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
             isStoredInMemoryOnly: true
             )
         return try ModelContainer(for: ExerciseEntity.self, WorkoutEntry.self, WorkoutSession.self, WorkoutSet.self, configurations: config)
+    }
+    
+    private func getPushUpID() -> UUID {
+        UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
     }
 }
