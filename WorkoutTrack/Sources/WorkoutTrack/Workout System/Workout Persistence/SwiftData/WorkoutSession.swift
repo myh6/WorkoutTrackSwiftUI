@@ -79,4 +79,8 @@ extension WorkoutSession {
             return entry
         }
     }
+    
+    func hasSameExercise(id: UUID) -> WorkoutEntry? {
+        return entries.filter { $0.exerciseID == id }.first
+    }
 }

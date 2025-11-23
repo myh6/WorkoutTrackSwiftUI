@@ -129,7 +129,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let deletedExercise = anyExercise(name: "Random Exercise")
         let persistedExercise = anyExercise()
         let entry = [anyEntry(exercise: deletedExercise.id, sets: [anySet(), anySet(), anySet()]), anyEntry(exercise: deletedExercise.id)]
-        let otherEntry = [anyEntry(exercise: persistedExercise.id), anyEntry(exercise: persistedExercise.id), anyEntry(exercise: persistedExercise.id)]
+        let otherEntry = [anyEntry(exercise: persistedExercise.id)]
         
         try await sut.addCustomExercise(deletedExercise)
         try await sut.addCustomExercise(persistedExercise)
@@ -138,7 +138,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.deleteExercise(deletedExercise)
         
         let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
-        XCTAssertEqual(retrieved.count, 3)
+        XCTAssertEqual(retrieved, otherEntry)
         XCTAssertFalse(retrieved.map(\.id).contains(deletedExercise.id))
     }
     
