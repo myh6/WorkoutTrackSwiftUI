@@ -82,50 +82,6 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
         try await expect(sut, toRetrieveEntry: [entry])
     }
     
-    func test_insertEntry_mergesSetsIfEntriesHaveTheSameExerciseInTheSameSession() async throws {
-        let sut = makeSUT()
-        let exerciseId = UUID()
-        let entry1 = anyEntry(exercise: exerciseId, sets: [anySet()])
-        let entry2 = anyEntry(exercise: exerciseId, sets: [anySet()])
-        let sameSession = anySession()
-        
-        try await sut.insert([entry1], to: sameSession)
-        try await sut.insert([entry2], to: sameSession)
-        
-        try await expect(sut, toRetrieveEntry: [mergeEntriesToOne(entry1, entry2)])
-    }
-    
-    private func mergeEntriesToOne(_ entries: WorkoutEntryDTO...) -> WorkoutEntryDTO {
-        let mergedSets = entries.flatMap(\.sets)
-            .enumerated()
-            .map { index, set in
-                WorkoutSetDTO(
-                    id: set.id,
-                    reps: set.reps,
-                    weight: set.weight,
-                    isFinished: set.isFinished,
-                    order: index)
-            }
-        let base = entries[0]
-        return WorkoutEntryDTO(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
-    }
-    
-    func test_insertEntry_canHaveTheSameExerciseIdButInDifferentSession() async throws {
-        let sut = makeSUT()
-        let exerciseId = UUID()
-        let sessionA = anySession(date: Date.distantPast, entries: [
-            anyEntry(exercise: exerciseId)
-        ])
-        let sessionB = anySession(entries: [
-            anyEntry(exercise: exerciseId)
-        ])
-        
-        try await sut.insert(sessionA)
-        try await sut.insert(sessionB)
-        
-        try await expect(sut, toRetrieve: [sessionA, sessionB])
-    }
-    
     func test_insertSets_toNonExistingEntryDoesNothing() async throws {
         let sut = makeSUT()
         

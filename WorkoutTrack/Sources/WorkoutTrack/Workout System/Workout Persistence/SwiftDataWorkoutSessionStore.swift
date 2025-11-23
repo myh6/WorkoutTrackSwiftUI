@@ -47,13 +47,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
             return
         }
         
-        for entry in entries {
-            if let existingEntry = existingSession.hasSameExercise(id: entry.exerciseID) {
-                try insert(entry.sets, to: existingEntry.dto)
-            } else {
-                insert(entry, in: existingSession)
-            }
-        }
+        entries.forEach { insert($0, in: existingSession) }
         try modelContext.save()
     }
     

@@ -63,7 +63,12 @@ extension WorkoutTrackService {
         for entry in entries {
             let existedExercise = try await exercise.loadExercises(by: .byID(entry.exerciseID))
             guard !existedExercise.isEmpty else { continue }
-            try await self.workoutTrack.insert([entry], to: session)
+            
+            if let sameExerciseEntry = try await sameExerciseWithin(session: session.id, exercise: entry.exerciseID) {
+                try await workoutTrack.insert(entry.sets, to: sameExerciseEntry)
+            } else {
+                try await workoutTrack.insert([entry], to: session)
+            }
         }
     }
     
@@ -92,5 +97,18 @@ extension WorkoutTrackService {
             .build()
         
         return try await workoutTrack.retrieve(query: query).first
+    }
+    
+    private func sameExerciseWithin(session: UUID, exercise: UUID) async throws -> WorkoutEntryDTO? {
+        let query = QueryBuilder()
+            .filterSession(session)
+            .containsExercises([exercise])
+            .build()
+        
+        return try await workoutTrack
+            .retrieve(query: query)
+            .flatMap(\.entries)
+            .filter { $0.exerciseID == exercise }
+            .first
     }
 }

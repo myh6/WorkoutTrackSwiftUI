@@ -51,8 +51,8 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     func test_addSessions_onSameDay_mergesEntriesIntoExistingSession() async throws {
         let sut = try makeSUT()
         let date = Date()
-        let oldEntries = [anyEntry()]
-        let newEntries = [anyEntry(), anyEntry()]
+        let oldEntries = [anyEntry(createdAt: date)]
+        let newEntries = [anyEntry(createdAt: date.adding(minutes: 1)), anyEntry(createdAt: date.adding(minutes: 2))]
         let oldSession = anySession(date: date, entries: oldEntries)
         let newSession = anySession(date: date.adding(minutes: 40), entries: newEntries)
         
@@ -88,6 +88,37 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         let retrieved = try await sut.retrieveSessions(by: nil)
         XCTAssertTrue(retrieved.isEmpty)
+    }
+    
+    func test_addEntry_mergesSetsIfEntriesHaveTheSameExerciseInTheSameSession() async throws {
+        let sut = try makeSUT()
+        let exerciseId = getPushUpID()
+        let entry1 = anyEntry(exercise: exerciseId, sets: [anySet()])
+        let entry2 = anyEntry(exercise: exerciseId, sets: [anySet()])
+        let sameSession = anySession()
+        
+        try await sut.addEntry([entry1], to: sameSession)
+        try await sut.addEntry([entry2], to: sameSession)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        XCTAssertEqual(retrieved, [mergeEntriesToOne(entry1, entry2)])
+    }
+    
+    func test_addEntry_canHaveTheSameExerciseIdButInDifferentSession() async throws {
+        let sut = try makeSUT()
+        let exerciseId = getPushUpID()
+        let sessionA = anySession(date: Date.distantPast, entries: [
+            anyEntry(exercise: exerciseId)
+        ])
+        let sessionB = anySession(entries: [
+            anyEntry(exercise: exerciseId)
+        ])
+        
+        try await sut.addSessions([sessionA])
+        try await sut.addSessions([sessionB])
+        
+        let retrieved = try await sut.retrieveSessions(by: .none)
+        XCTAssertEqual(retrieved, [sessionA, sessionB])
     }
     
     func test_addSetsToEntry_ignoreSetsIfEntryDoesNotExist() async throws {
@@ -210,6 +241,21 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
             isStoredInMemoryOnly: true
             )
         return try ModelContainer(for: ExerciseEntity.self, WorkoutEntry.self, WorkoutSession.self, WorkoutSet.self, configurations: config)
+    }
+    
+    private func mergeEntriesToOne(_ entries: WorkoutEntryDTO...) -> WorkoutEntryDTO {
+        let mergedSets = entries.flatMap(\.sets)
+            .enumerated()
+            .map { index, set in
+                WorkoutSetDTO(
+                    id: set.id,
+                    reps: set.reps,
+                    weight: set.weight,
+                    isFinished: set.isFinished,
+                    order: index)
+            }
+        let base = entries[0]
+        return WorkoutEntryDTO(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
     }
     
     private func getPushUpID() -> UUID {
