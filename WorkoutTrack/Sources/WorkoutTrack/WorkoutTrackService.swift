@@ -51,7 +51,11 @@ extension WorkoutTrackService {
     
     func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
         for session in sessions {
-            try await self.workoutTrack.insert(session)
+            if let sameDaySession = try await getSessionOnSameDay(date: session.date) {
+                try await workoutTrack.insert(session.entries, to: sameDaySession)
+            } else {
+                try await self.workoutTrack.insert(session)
+            }
         }
     }
     
@@ -77,5 +81,16 @@ extension WorkoutTrackService {
     
     func deleteSet(_ set: WorkoutSetDTO) async throws {
         try await workoutTrack.delete(set)
+    }
+}
+
+extension WorkoutTrackService {
+    private func getSessionOnSameDay(date: Date) async throws -> WorkoutSessionDTO? {
+        let range = date.startOfDay()...date.endOfDay()
+        let query = QueryBuilder()
+            .filterDateRange(range)
+            .build()
+        
+        return try await workoutTrack.retrieve(query: query).first
     }
 }

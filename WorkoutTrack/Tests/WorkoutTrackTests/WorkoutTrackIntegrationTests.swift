@@ -48,14 +48,21 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrievedEntry.exerciseID, exercise.id)
     }
     
-    func test_addSessions_andRetrievIt() async throws {
+    func test_addSessions_onSameDay_mergesEntriesIntoExistingSession() async throws {
         let sut = try makeSUT()
-        let sessions = [anySession(), anySession(), anySession(), anySession()]
+        let date = Date()
+        let oldEntries = [anyEntry()]
+        let newEntries = [anyEntry(), anyEntry()]
+        let oldSession = anySession(date: date, entries: oldEntries)
+        let newSession = anySession(date: date.adding(minutes: 40), entries: newEntries)
         
-        try await sut.addSessions(sessions)
+        try await sut.addSessions([oldSession])
+        try await sut.addSessions([newSession])
+        
+        let expected = anySession(id: oldSession.id, date: oldSession.date, entries: oldEntries + newEntries)
         
         let retrieved = try await sut.retrieveSessions(by: .none)
-        XCTAssertEqual(retrieved, sessions)
+        XCTAssertEqual(retrieved, [expected])
     }
     
     func test_addEntry_ignoresEntriesWithUnknownExerciseID() async throws {
@@ -181,7 +188,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         XCTAssertEqual(retrieved, sets)
     }
-    
+       
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
         let modelContainer = try makeTestModelContianer()

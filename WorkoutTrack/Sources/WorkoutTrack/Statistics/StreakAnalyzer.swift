@@ -12,7 +12,7 @@ public struct StreakAnalyzer {
         var result: [Date: Bool] = [:]
         
         for session in workouts {
-            let day = calendar.startOfDay(for: session.date)
+            let day = session.date.startOfDay(using: calendar)
             result[day] = true
         }
         
