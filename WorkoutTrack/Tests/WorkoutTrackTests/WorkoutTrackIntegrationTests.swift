@@ -190,7 +190,31 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
         XCTAssertEqual(retrieved, [newEntry])
-    }    
+    }
+    
+    func test_updateEntry_changesToExistedEntryWithSameExercise_throwCustomError() async throws {
+        let sut = try makeSUT()
+        let customExercise = anyExercise()
+        let presavedEntry = anyEntry(exercise: customExercise.id, sets: [anySet()])
+        let session = anySession()
+        let updateEntry = anyEntry(exercise: getPushUpID(), sets: [anySet()], createdAt: Date().adding(seconds: 10))
+        
+        try await sut.addCustomExercise(customExercise)
+        try await sut.addEntry([presavedEntry], to: session)
+        try await sut.addEntry([updateEntry], to: session)
+        
+        let newEntry = anyEntry(id: updateEntry.id, exercise: customExercise.id, sets: updateEntry.sets, createdAt: updateEntry.createdAt, order: updateEntry.order)
+        
+        do {
+            try await sut.updateEntry(newEntry, within: session)
+            XCTFail("Expect to throw error due to duplicate exercise within same session but didn't")
+        } catch {
+            XCTAssertEqual(error as? WorkoutTrackError, .duplicateExerciseInSession)
+        }
+        
+        let retrived = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        XCTAssertEqual(retrived, [presavedEntry, updateEntry])
+    }
     // TODO: - Extract the reorder logic from implementation to integration root. Keep the impelmentation free from application logic.
     
     func test_deleteExercise_deletesSubsequentWorkoutEntry() async throws {

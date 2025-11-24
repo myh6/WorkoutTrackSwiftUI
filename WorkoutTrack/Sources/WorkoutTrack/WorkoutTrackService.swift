@@ -81,6 +81,9 @@ extension WorkoutTrackService {
     }
     
     func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
+        if let sameExerciseEntry = try await sameExerciseWithin(session: session.id, exercise: entry.exerciseID), sameExerciseEntry.id != entry.id {
+            throw WorkoutTrackError.duplicateExerciseInSession
+        }
         try await workoutTrack.update(entry, withinSession: session.id)
     }
     
@@ -119,4 +122,8 @@ extension WorkoutTrackService {
             .filter { $0.exerciseID == exercise }
             .first
     }
+}
+
+enum WorkoutTrackError: Error, Equatable {
+    case duplicateExerciseInSession
 }
