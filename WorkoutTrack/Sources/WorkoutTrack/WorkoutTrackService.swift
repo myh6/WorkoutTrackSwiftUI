@@ -87,6 +87,10 @@ extension WorkoutTrackService {
         try await workoutTrack.update(entry, withinSession: session.id)
     }
     
+    func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO) async throws {
+        try await workoutTrack.update(set, withinEntry: entry.id)
+    }
+    
     func deleteSession(_ session: WorkoutSessionDTO) async throws {
         try await workoutTrack.delete(session)
     }
