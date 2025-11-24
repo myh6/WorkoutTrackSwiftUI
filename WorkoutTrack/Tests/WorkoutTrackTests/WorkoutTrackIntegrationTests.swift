@@ -178,6 +178,19 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrieved, [newSession])
     }
     
+    func test_updateEntry_changesEntryPropertiesWithoutChangingSessionAndSets() async throws {
+        let sut = try makeSUT()
+        let randomExercise = try await getRandomPresavedExerciseId()
+        let entry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
+        let session = anySession(entries: [entry])
+        let newEntry = anyEntry(id: entry.id, exercise: randomExercise, sets: entry.sets)
+        
+        try await sut.addSessions([session])
+        try await sut.updateEntry(newEntry, within: session)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        XCTAssertEqual(retrieved, [newEntry])
+    }    
     // TODO: - Extract the reorder logic from implementation to integration root. Keep the impelmentation free from application logic.
     
     func test_deleteExercise_deletesSubsequentWorkoutEntry() async throws {
