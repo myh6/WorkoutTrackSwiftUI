@@ -42,7 +42,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addCustomExercise(exercise)
         try await sut.addEntry([entry], to: anySession())
         
-        let retrieved = try await sut.retrieveSessions(by: nil).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: nil).mapToAllEntries()
         XCTAssertEqual(retrieved.count, 1)
         let retrievedEntry = try XCTUnwrap(retrieved.first)
         XCTAssertEqual(retrievedEntry.exerciseID, exercise.id)
@@ -73,8 +73,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addCustomExercise(knownExercise)
         try await sut.addEntry(entry, to: anySession())
         
-        let retrieved = try await sut.retrieveSessions(by: nil).flatMap(\.entries)
-        print(retrieved)
+        let retrieved = try await sut.retrieveSessions(by: nil).mapToAllEntries()
         XCTAssertEqual(retrieved.count, 2)
     }
     
@@ -100,7 +99,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([entry1], to: sameSession)
         try await sut.addEntry([entry2], to: sameSession)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         XCTAssertEqual(retrieved, [mergeEntriesToOne(entry1, entry2)])
     }
     
@@ -127,7 +126,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         try await sut.addSets(sets, to: anyEntry())
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         XCTAssertTrue(retrieved.isEmpty)
     }
     
@@ -139,7 +138,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([entry], to: anySession())
         try await sut.addSets(sets, to: entry)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         XCTAssertEqual(retrieved, sets)
     }
     
@@ -157,7 +156,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([entry, randomEntry], to: anySession())
         try await sut.updateExercise(updatedExercise)
         
-        let retrieved = try await sut.retrieveSessions(by: query).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: query).mapToAllEntries()
         let firstEntry = try XCTUnwrap(retrieved.first)
         XCTAssertEqual(firstEntry.exerciseID, initialExercise.id)
     }
@@ -186,7 +185,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addSessions([session])
         try await sut.updateEntry(newEntry, within: session)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         XCTAssertEqual(retrieved, [newEntry])
     }
     
@@ -210,7 +209,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
             XCTAssertEqual(error as? WorkoutTrackError, .duplicateExerciseInSession)
         }
         
-        let retrived = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrived = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         XCTAssertEqual(retrived, [presavedEntry, updateEntry])
     }
     
@@ -236,7 +235,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let newEntryA = anyEntry(id: entryA.id, exercise: entryA.exerciseID, sets: entryA.sets, createdAt: entryA.createdAt, order: 1)
         let newEntryB = anyEntry(id: entryB.id, exercise: entryB.exerciseID, sets: entryB.sets, createdAt: entryB.createdAt, order: 2)
         
-        let allEntries = try await sut.retrieveSessions(by: descriptor).flatMap(\.entries)
+        let allEntries = try await sut.retrieveSessions(by: descriptor).mapToAllEntries()
         XCTAssertEqual(allEntries.map(\.order), [0, 1, 2])
         XCTAssertEqual(allEntries, [updatedEntry, newEntryA, newEntryB])
     }
@@ -257,7 +256,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let updatedEntry = anyEntry(id: entryId, exercise: newExerciseId, order: 1)
         try await sut.updateEntry(updatedEntry, within: savedSession)
         
-        let result = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let result = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         let retrievedEntry = try XCTUnwrap(result.first)
         XCTAssertEqual(retrievedEntry.id, entryId)
         XCTAssertEqual(retrievedEntry.exerciseID, newExerciseId)
@@ -274,7 +273,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([entry], to: session)
         try await sut.updateSet(newSet, within: entry, and: session.id)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         XCTAssertEqual(retrieved, [newSet])
     }
     
@@ -338,7 +337,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         
         try await sut.deleteExercise(deletedExercise)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         XCTAssertEqual(retrieved, otherEntry)
         XCTAssertFalse(retrieved.map(\.id).contains(deletedExercise.id))
     }
@@ -364,7 +363,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([deletedEntry] + otherEntry, to: anySession())
         try await sut.deleteEntry(deletedEntry)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllEntries()
         XCTAssertEqual(retrieved, otherEntry)
         XCTAssertTrue(retrieved.flatMap(\.sets).isEmpty)
     }
@@ -378,7 +377,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         try await sut.addEntry([entry], to: anySession())
         try await sut.deleteSet(deletedSet)
         
-        let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         
         XCTAssertEqual(retrieved, sets)
     }
