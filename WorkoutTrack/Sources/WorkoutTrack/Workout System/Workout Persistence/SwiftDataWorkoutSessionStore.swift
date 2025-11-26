@@ -51,17 +51,10 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
         try modelContext.save()
     }
     
-    /// Inserts new sets into the given entry and automaticaly assigns their order based on the existing sets count
-    /// The `order` value passed in DTOs is ignored.
     func insert(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) throws {
         guard let existingEntry = try getEntryFromContext(id: entry.id) else { return }
-        
-        let existingIDs = Set(existingEntry.sets.map(\.id))
-        let newSets = sets.filter { !existingIDs.contains($0.id) }
-        let startingOrder = (existingEntry.sets.map(\.order).max() ?? -1) + 1
-        let orderedSet = existingEntry.assignOrder(to: newSets, startingAt: startingOrder)
-        
-        orderedSet.forEach { setDTO in
+
+        sets.forEach { setDTO in
             let set = WorkoutSet(dto: setDTO)
             set.entry = existingEntry
             modelContext.insert(set)

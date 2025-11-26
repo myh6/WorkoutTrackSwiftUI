@@ -124,7 +124,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let sut = try makeSUT()
         let sets = [anySet(order: 0), anySet(order: 1)]
         
-        try await sut.addSets(sets, to: anyEntry())
+        try await sut.addSets(sets, to: anyEntry(), within: UUID())
         
         let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         XCTAssertTrue(retrieved.isEmpty)
@@ -136,10 +136,38 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let sets = [anySet(order: 0), anySet(order: 1)]
         
         try await sut.addEntry([entry], to: anySession())
-        try await sut.addSets(sets, to: entry)
+        try await sut.addSets(sets, to: entry, within: UUID())
         
         let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
         XCTAssertEqual(retrieved, sets)
+    }
+    
+    func test_addSets_assignsOrderBasedOnExistingSetsCount() async throws {
+        let sut = try makeSUT()
+        let entry = anyEntry(sets: [anySet(), anySet(), anySet()])
+        let newSet = [anySet(), anySet()]
+        let session = anySession(entries: [entry])
+        
+        try await sut.addSessions([session])
+        try await sut.addSets(newSet, to: entry, within: session.id)
+        
+        let retrievedOrder = try await sut.retrieveSessions(by: .none).mapToAllSets().map(\.order)
+        
+        XCTAssertEqual(retrievedOrder, [0, 1, 2, 3, 4])
+    }
+    
+    func test_addSets_overwritesPreviousOrdersWithSequentialValues() async throws {
+        let sut = try makeSUT()
+        let entry = anyEntry(sets: [anySet(order: 5), anySet(order: 10)])
+        let session = anySession(entries: [entry])
+        try await sut.addSessions([session])
+        
+        let newSets = [anySet(), anySet()]
+        try await sut.addSets(newSets, to: entry, within: session.id)
+        
+        let allOrders = try await sut.retrieveSessions(by: .none).mapToAllSets().map(\.order)
+        
+        XCTAssertEqual(allOrders, [0, 1, 2, 3])
     }
     
     func test_updateExercise_doesNotAffectStoredEntry() async throws {

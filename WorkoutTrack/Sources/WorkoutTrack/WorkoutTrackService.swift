@@ -65,15 +65,23 @@ extension WorkoutTrackService {
             guard !existedExercise.isEmpty else { continue }
             
             if let sameExerciseEntry = try await sameExerciseWithin(session: session.id, exercise: entry.exerciseID) {
-                try await workoutTrack.insert(entry.sets, to: sameExerciseEntry)
+                try await addSets(entry.sets, to: sameExerciseEntry, within: session.id)
             } else {
                 try await workoutTrack.insert([entry], to: session)
             }
         }
     }
     
-    func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) async throws {
-        try await workoutTrack.insert(sets, to: entry)
+    /// Inserts new sets into the given entry and automaticaly assigns their order based on the existing sets count
+    /// The `order` value passed in DTOs is ignored.
+    func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO, within session: UUID) async throws {
+        let allSet = try await allSet(within: entry.id, and: session)
+        
+        let existingsIDs = Set(allSet.map(\.id))
+        let newSets = sets.filter { !existingsIDs.contains($0.id) }
+        let startingOrder = (allSet.map(\.order).max() ?? -1) + 1
+        let orderedSet = assignOrder(to: newSets, startingAt: startingOrder)
+        try await workoutTrack.insert(orderedSet, to: entry)
     }
     
     func updateSession(_ session: WorkoutSessionDTO) async throws {
@@ -171,6 +179,17 @@ extension WorkoutTrackService {
         
         return newItems.enumerated().map { index, item in
             item.reordered(to: index)
+        }
+    }
+    
+    private func assignOrder(to sets: [WorkoutSetDTO], startingAt base: Int = 0) -> [WorkoutSetDTO] {
+        sets.enumerated().map { offset, set in
+            WorkoutSetDTO(
+                id: set.id,
+                reps: set.reps,
+                weight: set.weight,
+                isFinished: set.isFinished,
+                order: base + offset)
         }
     }
 }

@@ -100,37 +100,10 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
         try await sut.insert(anySession(entries: [entry]))
         try await sut.insert([newSet], to: entry)
         
-        let expectedSet = [presavedSet, anySet(id: newSet.id, reps: newSet.reps, weight: newSet.weight, isFinished: newSet.isFinished, order: 1)]
+        let expectedSet = [presavedSet, anySet(id: newSet.id, reps: newSet.reps, weight: newSet.weight, isFinished: newSet.isFinished)]
         let expectedEntry = anyEntry(id: entry.id, exercise: entry.exerciseID, sets: expectedSet, createdAt: entry.createdAt, order: entry.order)
         
         try await expect(sut, toRetrieveEntry: [expectedEntry])
-    }
-    
-    func test_insertSets_assignsOrderBasedOnExistingSetsCount() async throws {
-        let sut = makeSUT()
-        let entry = anyEntry(sets: [anySet(), anySet(), anySet()])
-        let newSet = [anySet(), anySet()]
-        
-        try await sut.insert(anySession(entries: [entry]))
-        try await sut.insert(newSet, to: entry)
-        
-        let retrievedOrder = try await retrievedOrder(from: sut)
-        
-        XCTAssertEqual(retrievedOrder, [0, 1, 2, 3, 4])
-    }
-    
-    func test_insertSets_overwritesPreviousOrdersWithSequentialValues() async throws {
-        let sut = makeSUT()
-        let entry = anyEntry(sets: [anySet(order: 5), anySet(order: 10)])
-        let session = anySession(entries: [entry])
-        try await sut.insert(session)
-        
-        let newSets = [anySet(), anySet()]
-        try await sut.insert(newSets, to: entry)
-        
-        let allOrders = try await retrievedOrder(from: sut)
-        
-        XCTAssertEqual(allOrders, [0, 1, 2, 3])
     }
     
     func test_insertSets_doesNotCreateDuplcicateSetsOnReinsertion() async throws {
@@ -149,9 +122,5 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
     //MARK: - Helpers
     private func appendingEntries(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) -> WorkoutSessionDTO {
         WorkoutSessionDTO(id: session.id, date: session.date, entries: session.entries + entries)
-    }
-    
-    private func retrievedOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
-        return try await sut.retrieve(query: query).flatMap(\.entries).flatMap(\.sets).map(\.order)
     }
 }

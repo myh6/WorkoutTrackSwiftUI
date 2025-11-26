@@ -146,21 +146,4 @@ final class WorkoutDataStoreUpdateUseCasesTests: WorkoutDataStoreTests {
         
         try await expect(sut, toRetrieveSets: [updatedSet])
     }
-    
-    //MARK: - Helpers
-    private func retrieveEntry(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutEntryDTO] {
-        return try await sut.retrieve(query: query).flatMap(\.entries)
-    }
-    
-    private func retrieveEntryOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
-        return try await retrieveEntry(from: sut, with: query).map(\.order)
-    }
-    
-    private func retrieveSet(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [WorkoutSetDTO] {
-        return try await retrieveEntry(from: sut, with: query).flatMap(\.sets)
-    }
-    
-    private func retrieveSetOrder(from sut: WorkoutSessionStore, with query: SessionQueryDescriptor? = nil) async throws -> [Int] {
-        return try await retrieveSet(from: sut, with: query).map(\.order)
-    }
 }
