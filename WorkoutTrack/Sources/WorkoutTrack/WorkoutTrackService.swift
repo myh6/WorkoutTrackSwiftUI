@@ -89,7 +89,7 @@ extension WorkoutTrackService {
         }
         
         try await reorderAndUpdate(existing: allEntry, moving: entry, rerder: reorder) {
-            try await workoutTrack.update($0, withinSession: session.id)
+            try await workoutTrack.update($0)
         }
     }
     
@@ -97,7 +97,7 @@ extension WorkoutTrackService {
         let allSet = try await allSet(within: entry.id, and: session)
         guard allSet.hasSet(id: set.id) else { return }
         try await reorderAndUpdate(existing: allSet, moving: set, rerder: reorder) {
-            try await workoutTrack.update($0, withinEntry: entry.id)
+            try await workoutTrack.update($0)
         }
     }
     

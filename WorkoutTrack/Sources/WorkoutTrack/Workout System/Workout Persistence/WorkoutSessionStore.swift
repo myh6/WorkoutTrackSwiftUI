@@ -23,7 +23,7 @@ public protocol WorkoutSessionStore {
     
     //MARK: - Update
     func update(_ session: WorkoutSessionDTO) async throws
-    func update(_ entry: WorkoutEntryDTO, withinSession id: UUID) async throws
-    func update(_ set: WorkoutSetDTO, withinEntry id: UUID) async throws
+    func update(_ entry: WorkoutEntryDTO) async throws
+    func update(_ set: WorkoutSetDTO) async throws
 }
 
