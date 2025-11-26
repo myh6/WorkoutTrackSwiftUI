@@ -161,9 +161,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let firstEntry = try XCTUnwrap(retrieved.first)
         XCTAssertEqual(firstEntry.exerciseID, initialExercise.id)
     }
-    
-    // TODO: - Update for session, entry, set
-    
+        
     func test_updateSession_changesSessionPropertiesWithoutChangingEntries() async throws {
         let sut = try makeSUT()
         let entry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
@@ -216,19 +214,116 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrived, [presavedEntry, updateEntry])
     }
     
+    func test_updateEntry_updatesAllOtherOrdersWhenUpdatingOrderValue() async throws {
+        let sut = try makeSUT()
+        let entryId = UUID()
+        
+        let entryA = anyEntry(order: 0)
+        let entryB = anyEntry(order: 1)
+        let entryC = anyEntry(id: entryId, order: 2)
+        let session = anySession(entries: [entryA, entryB, entryC])
+        
+        let descriptor = QueryBuilder()
+            .sort(by: .entryCustomOrder)
+            .build()
+        
+        try await sut.addSessions([session])
+        
+        let updatedEntry = anyEntry(id: entryId, order: 0)
+        
+        try await sut.updateEntry(updatedEntry, within: session)
+        // Entry A & Entry B should automatically adjust its order value
+        let newEntryA = anyEntry(id: entryA.id, exercise: entryA.exerciseID, sets: entryA.sets, createdAt: entryA.createdAt, order: 1)
+        let newEntryB = anyEntry(id: entryB.id, exercise: entryB.exerciseID, sets: entryB.sets, createdAt: entryB.createdAt, order: 2)
+        
+        let allEntries = try await sut.retrieveSessions(by: descriptor).flatMap(\.entries)
+        XCTAssertEqual(allEntries.map(\.order), [0, 1, 2])
+        XCTAssertEqual(allEntries, [updatedEntry, newEntryA, newEntryB])
+    }
+    
+    func test_updateEntry_doesNotChangeOrderValueWhenThereIsOnlyOneEntry() async throws {
+        let sut = try makeSUT()
+        
+        let entryId = UUID()
+        let newExerciseId = UUID()
+        
+        let savedSession = anySession(entries: [
+            anyEntry(id: entryId, exercise: UUID(), order: 0)
+        ])
+        
+        try await sut.addSessions([savedSession])
+        
+        // Should not update the order when there's only one entry within a session
+        let updatedEntry = anyEntry(id: entryId, exercise: newExerciseId, order: 1)
+        try await sut.updateEntry(updatedEntry, within: savedSession)
+        
+        let result = try await sut.retrieveSessions(by: .none).flatMap(\.entries)
+        let retrievedEntry = try XCTUnwrap(result.first)
+        XCTAssertEqual(retrievedEntry.id, entryId)
+        XCTAssertEqual(retrievedEntry.exerciseID, newExerciseId)
+        XCTAssertEqual(retrievedEntry.order, 0)
+    }
+    
     func test_updateSet_changesSetPropertyWithoutChangingSessionAndEntry() async throws {
         let sut = try makeSUT()
         let oldSet = anySet(isFinished: false)
         let newSet = anySet(id: oldSet.id, isFinished: true)
         let entry = anyEntry(exercise: getPushUpID(), sets: [oldSet])
+        let session = anySession(entries: [entry])
         
-        try await sut.addEntry([entry], to: anySession())
-        try await sut.updateSet(newSet, within: entry)
+        try await sut.addEntry([entry], to: session)
+        try await sut.updateSet(newSet, within: entry, and: session.id)
         
         let retrieved = try await sut.retrieveSessions(by: .none).flatMap(\.entries).flatMap(\.sets)
         XCTAssertEqual(retrieved, [newSet])
     }
-    // TODO: - Extract the reorder logic from implementation to integration root. Keep the impelmentation free from application logic.
+    
+    func test_updateSet_updatesAllOthersOrderValueWhenUpdatingOrder() async throws {
+        let sut = try makeSUT()
+        let setId = UUID()
+        
+        let setA = anySet(order: 0)
+        let setB = anySet(order: 1)
+        let setC = anySet(id: setId, order: 2)
+        let entry = anyEntry(sets: [
+            setA, setB, setC
+        ])
+        let session = anySession(entries: [entry])
+        
+        try await sut.addSessions([session])
+        
+        let updatedSet = anySet(id: setId, order: 0)
+        
+        try await sut.updateSet(updatedSet, within: entry, and: session.id)
+        // Set A & Set B should automatically adjust its order value
+        let newSetA = anySet(id: setA.id, reps: setA.reps, weight: setA.weight, isFinished: setA.isFinished, order: 1)
+        let newSetB = anySet(id: setB.id, reps: setB.reps, weight: setB.weight, isFinished: setB.isFinished, order: 2)
+        
+        let allSets = try await sut.retrieveSessions(by: .none).mapToAllSets()
+        XCTAssertEqual(allSets.map(\.order), [0, 1, 2])
+        XCTAssertEqual(allSets, [updatedSet, newSetA, newSetB])
+    }
+    
+    func test_updateSet_doesNotChangeOrderValueWhenThereIsOnlyOneSet() async throws {
+        let sut = try makeSUT()
+        
+        let setId = UUID()
+        let entry = anyEntry(sets: [anySet(id: setId, isFinished: false, order: 0)])
+        let savedSession = anySession(entries: [entry])
+        
+        try await sut.addSessions([savedSession])
+        
+        // Change the order to 1 (default is 0)
+        let updatedSet = anySet(id: setId, isFinished: true, order: 1)
+        
+        try await sut.updateSet(updatedSet, within: entry, and: savedSession.id)
+        // Should still be zero (zero-index based)
+        let result = try await sut.retrieveSessions(by: .none).mapToAllSets()
+        let retrievedSet = try XCTUnwrap(result.first)
+        XCTAssertEqual(retrievedSet.id, setId)
+        XCTAssertEqual(retrievedSet.isFinished, true)
+        XCTAssertEqual(retrievedSet.order, 0)
+    }
     
     func test_deleteExercise_deletesSubsequentWorkoutEntry() async throws {
         let sut = try makeSUT()
@@ -332,5 +427,15 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     private func getRandomPresavedExerciseId() async throws -> UUID {
         return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none)).randomElement()!.id
+    }
+}
+
+extension Array where Element == WorkoutSessionDTO {
+    func mapToAllEntries() -> [WorkoutEntryDTO] {
+        flatMap(\.entries)
+    }
+    
+    func mapToAllSets() -> [WorkoutSetDTO] {
+        flatMap(\.entries).flatMap(\.sets)
     }
 }

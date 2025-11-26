@@ -81,14 +81,24 @@ extension WorkoutTrackService {
     }
     
     func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
-        if let sameExerciseEntry = try await sameExerciseWithin(session: session.id, exercise: entry.exerciseID), sameExerciseEntry.id != entry.id {
+        let allEntry = try await allEntry(within: session.id)
+        
+        guard allEntry.hasEntry(id: entry.id) else { return }
+        if let sameExercise = allEntry.hasExercise(id: entry.exerciseID), sameExercise.id != entry.id {
             throw WorkoutTrackError.duplicateExerciseInSession
         }
-        try await workoutTrack.update(entry, withinSession: session.id)
+        
+        try await reorderAndUpdate(existing: allEntry, moving: entry, rerder: reorder) {
+            try await workoutTrack.update($0, withinSession: session.id)
+        }
     }
     
-    func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO) async throws {
-        try await workoutTrack.update(set, withinEntry: entry.id)
+    func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO, and session: UUID) async throws {
+        let allSet = try await allSet(within: entry.id, and: session)
+        guard allSet.hasSet(id: set.id) else { return }
+        try await reorderAndUpdate(existing: allSet, moving: set, rerder: reorder) {
+            try await workoutTrack.update($0, withinEntry: entry.id)
+        }
     }
     
     func deleteSession(_ session: WorkoutSessionDTO) async throws {
@@ -126,8 +136,61 @@ extension WorkoutTrackService {
             .filter { $0.exerciseID == exercise }
             .first
     }
+    
+    private func allEntry(within session: UUID) async throws -> [WorkoutEntryDTO] {
+        let query = QueryBuilder()
+            .filterSession(session)
+            .build()
+        return try await workoutTrack.retrieve(query: query).flatMap(\.entries)
+    }
+    
+    private func allSet(within entry: UUID, and session: UUID) async throws -> [WorkoutSetDTO] {
+        return try await allEntry(within: session)
+            .filter { $0.id == entry }
+            .flatMap(\.sets)
+    }
+    
+    private func reorderAndUpdate<T: Identifiable>(
+        existing: [T],
+        moving updated: T,
+        rerder: ([T], T) -> [T],
+        apply: (T) async throws -> Void
+    ) async rethrows {
+        let reordered = rerder(existing, updated)
+        for item in reordered {
+            try await apply(item)
+        }
+    }
+    
+    private func reorder<T: Orderable>(_ items: [T], moving updated: T) -> [T] {
+        var newItems = items
+            .filter { $0.id != updated.id }
+            .sorted { $0.order < $1.order }
+        
+        newItems.insert(updated, at: min(updated.order, newItems.count))
+        
+        return newItems.enumerated().map { index, item in
+            item.reordered(to: index)
+        }
+    }
 }
 
 enum WorkoutTrackError: Error, Equatable {
     case duplicateExerciseInSession
+}
+
+extension Array where Element == WorkoutEntryDTO {
+    func hasEntry(id: UUID) -> Bool {
+        return map(\.id).contains(id)
+    }
+    
+    func hasExercise(id: UUID) -> WorkoutEntryDTO? {
+        return filter({ $0.exerciseID == id }).first
+    }
+}
+
+extension Array where Element == WorkoutSetDTO {
+    func hasSet(id: UUID) -> Bool {
+        return map(\.id).contains(id)
+    }
 }

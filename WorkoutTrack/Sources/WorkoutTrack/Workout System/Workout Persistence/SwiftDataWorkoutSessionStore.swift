@@ -101,32 +101,14 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     }
     
     func update(_ entry: WorkoutEntryDTO, withinSession id: UUID) throws {
-        guard
-            let existingSession = try getSessionFromContext(id: id),
-            existingSession.entries.map(\.id).contains(entry.id)
-        else { return }
-        
-        let existingEntries = existingSession.entries.map(\.dto).sorted(by: { $0.order < $1.order })
-        
-        try reorderAndUpdate(existing: existingEntries, moving: entry, rerder: reorder) {
-            try update($0)
-        }
-        
+        guard let existing = try getEntryFromContext(id: entry.id) else { return }
+        existing.update(from: entry, in: modelContext)
         try modelContext.save()
     }
     
     func update(_ set: WorkoutSetDTO, withinEntry id: UUID) throws {
-        guard
-            let existingEntry = try getEntryFromContext(id: id),
-            existingEntry.sets.map(\.id).contains(set.id)
-        else { return }
-        
-        let existingSets = existingEntry.sets.map(\.dto)
-
-        try reorderAndUpdate(existing: existingSets, moving: set, rerder: reorder) {
-            try update($0)
-        }
-        
+        guard let existing = try getSetFromContext(id: set.id) else { return }
+        existing.update(from: set, in: modelContext)
         try modelContext.save()
     }
 }
@@ -185,42 +167,6 @@ extension SwiftDataWorkoutSessionStore {
             postProcessing.reduce(session) { result, post in
                 post.transform(result)
             }
-        }
-    }
-    
-    private func reorder<T: Orderable>(_ items: [T], moving updated: T) -> [T] {
-        var newItems = items
-            .filter { $0.id != updated.id }
-            .sorted { $0.order < $1.order }
-        
-        newItems.insert(updated, at: min(updated.order, newItems.count))
-        
-        return newItems.enumerated().map { index, item in
-            item.reordered(to: index)
-        }
-    }
-    
-    private func update(_ entry: WorkoutEntryDTO) throws {
-        guard let existing = try getEntryFromContext(id: entry.id) else { return }
-        existing.update(from: entry, in: modelContext)
-        try modelContext.save()
-    }
-    
-    private func update(_ set: WorkoutSetDTO) throws {
-        guard let existing = try getSetFromContext(id: set.id) else { return }
-        existing.update(from: set, in: modelContext)
-        try modelContext.save()
-    }
-    
-    private func reorderAndUpdate<T: Identifiable>(
-        existing: [T],
-        moving updated: T,
-        rerder: ([T], T) -> [T],
-        apply: (T) throws -> Void
-    ) rethrows {
-        let reordered = rerder(existing, updated)
-        for item in reordered {
-            try apply(item)
         }
     }
 }
