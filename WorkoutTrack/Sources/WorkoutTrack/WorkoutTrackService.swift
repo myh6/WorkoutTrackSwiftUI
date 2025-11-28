@@ -52,8 +52,7 @@ extension WorkoutTrackService {
     func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
         for session in sessions {
             if let sameDaySession = try await getSessionOnSameDay(date: session.date) {
-                // TODO: - Reuse addEntry to avoid missing checks
-                try await workoutTrack.insert(session.entries, to: sameDaySession)
+                try await addEntry(session.entries, to: sameDaySession)
             } else {
                 try await self.workoutTrack.insert(session.normalizedSetOrder())
             }

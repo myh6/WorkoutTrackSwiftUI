@@ -51,8 +51,9 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     func test_addSessions_onSameDay_mergesEntriesIntoExistingSession() async throws {
         let sut = try makeSUT()
         let date = Date()
-        let oldEntries = [anyEntry(createdAt: date)]
-        let newEntries = [anyEntry(createdAt: date.adding(minutes: 1)), anyEntry(createdAt: date.adding(minutes: 2))]
+        let randomExercise = try await getRandomPresavedExerciseId()
+        let oldEntries = [anyEntry(exercise: getPushUpID(), createdAt: date)]
+        let newEntries = [anyEntry(exercise: randomExercise, createdAt: date.adding(minutes: 1))]
         let oldSession = anySession(date: date, entries: oldEntries)
         let newSession = anySession(date: date.adding(minutes: 40), entries: newEntries)
         
