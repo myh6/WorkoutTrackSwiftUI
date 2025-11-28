@@ -85,12 +85,15 @@ extension WorkoutTrackService {
     }
     
     func updateSession(_ session: WorkoutSessionDTO) async throws {
-        try await workoutTrack.update(session)
+        try await updateSessionMetadataOnly(session)
+        for entry in session.entries {
+            try await updateEntry(entry, within: session)
+        }
     }
     
     func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
         let allEntry = try await allEntry(within: session.id)
-        
+        print("all entries' exercise ID \(allEntry.count) in session (\(session.id)): \(allEntry.map(\.id))")
         guard allEntry.hasEntry(id: entry.id) else { return }
         if let sameExercise = allEntry.hasExercise(id: entry.exerciseID), sameExercise.id != entry.id {
             throw WorkoutTrackError.duplicateExerciseInSession
@@ -132,6 +135,18 @@ extension WorkoutTrackService {
         return try await workoutTrack.retrieve(query: query).first
     }
     
+    private func updateSessionMetadataOnly(_ new: WorkoutSessionDTO) async throws {
+        let query = QueryBuilder()
+            .filterSession(new.id)
+            .build()
+        guard let existing = try await workoutTrack.retrieve(query: query).first else { return }
+        let updated = WorkoutSessionDTO(
+            id: existing.id,
+            date: new.date,
+            entries: existing.entries)
+        try await workoutTrack.update(updated)
+    }
+    
     private func sameExerciseWithin(session: UUID, exercise: UUID) async throws -> WorkoutEntryDTO? {
         let query = QueryBuilder()
             .filterSession(session)
@@ -149,7 +164,9 @@ extension WorkoutTrackService {
         let query = QueryBuilder()
             .filterSession(session)
             .build()
-        return try await workoutTrack.retrieve(query: query).flatMap(\.entries)
+        let output = try await workoutTrack.retrieve(query: query)
+        print("Retrieved session \(session): \(output)")
+        return output.flatMap(\.entries)
     }
     
     private func allSet(within entry: UUID, and session: UUID) async throws -> [WorkoutSetDTO] {

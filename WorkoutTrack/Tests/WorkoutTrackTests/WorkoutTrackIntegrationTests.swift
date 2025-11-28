@@ -218,6 +218,24 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrieved, [newSession])
     }
     
+    func test_updateSession_changesToExistedEntryWithSameExercise_throwCustomError() async throws {
+        let sut = try makeSUT()
+        let randomExercise = try await getRandomPresavedExerciseId()
+        let entry = anyEntry(exercise: randomExercise)
+        let oldEntry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
+        let oldSession = anySession(entries: [entry, oldEntry])
+        let newEntry = anyEntry(id: oldEntry.id, exercise: entry.exerciseID, sets: [anySet()])
+        let newSession = anySession(id: oldSession.id, date: Date().adding(days: -2), entries: [entry, newEntry])
+        
+        try await sut.addSessions([oldSession])
+        do {
+            try await sut.updateSession(newSession)
+            XCTFail("Expect the update to fail because we don't want to allow the same exercise in a session twice.")
+        } catch {
+            XCTAssertEqual(error as? WorkoutTrackError, .duplicateExerciseInSession)
+        }
+    }
+    
     func test_updateEntry_changesEntryPropertiesWithoutChangingSessionAndSets() async throws {
         let sut = try makeSUT()
         let randomExercise = try await getRandomPresavedExerciseId()
