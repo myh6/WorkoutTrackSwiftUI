@@ -236,6 +236,23 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         }
     }
     
+    func test_updateSession_changesToExistedSetOrder_updatesAllSetOrder() async throws {
+        let sut = try makeSUT()
+        let setA = anySet(order: 0), setB = anySet(order: 1)
+        let entry = anyEntry(exercise: getPushUpID(), sets: [setA, setB])
+        let session = anySession(entries: [entry])
+        
+        let newSetA = anySet(id: setA.id, order: 1), newSetB = anySet(id: setB.id, order: 0)
+        let newEntry = anyEntry(id: entry.id, exercise: entry.exerciseID, sets: [newSetA, newSetB])
+        let newSession = anySession(id: session.id, entries: [newEntry])
+        
+        try await sut.addSessions([session])
+        try await sut.updateSession(newSession)
+        
+        let retrieved = try await sut.retrieveSessions(by: .none).mapToAllSets()
+        XCTAssertEqual(retrieved, [newSetB, newSetA])
+    }
+    
     func test_updateEntry_changesEntryPropertiesWithoutChangingSessionAndSets() async throws {
         let sut = try makeSUT()
         let randomExercise = try await getRandomPresavedExerciseId()
