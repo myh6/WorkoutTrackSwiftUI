@@ -57,27 +57,15 @@ public struct WorkoutEntryDTO: Equatable, Identifiable {
 extension WorkoutEntry {
     convenience init(dto: WorkoutEntryDTO) {
         self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [], createdAt: dto.createdAt, order: dto.order)
-        self.sets = assignOrder(to: dto.sets, startingAt: 0)
-            .map { setDTO in
-                let set = WorkoutSet(dto: setDTO)
-                set.entry = self
-                return set
-            }
+        self.sets = dto.sets.map { setDTO in
+            let set = WorkoutSet(dto: setDTO)
+            set.entry = self
+            return set
+        }
     }
     
     var dto: WorkoutEntryDTO {
         WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto).sorted { $0.order < $1.order }, createdAt: createdAt, order: order)
-    }
-    
-    func assignOrder(to sets: [WorkoutSetDTO], startingAt base: Int = 0) -> [WorkoutSetDTO] {
-        sets.enumerated().map { offset, set in
-            WorkoutSetDTO(
-                id: set.id,
-                reps: set.reps,
-                weight: set.weight,
-                isFinished: set.isFinished,
-                order: base + offset)
-        }
     }
     
     func update(from dto: WorkoutEntryDTO, in context: ModelContext) {

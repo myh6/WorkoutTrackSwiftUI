@@ -52,9 +52,10 @@ extension WorkoutTrackService {
     func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
         for session in sessions {
             if let sameDaySession = try await getSessionOnSameDay(date: session.date) {
+                // TODO: - Reuse addEntry to avoid missing checks
                 try await workoutTrack.insert(session.entries, to: sameDaySession)
             } else {
-                try await self.workoutTrack.insert(session)
+                try await self.workoutTrack.insert(session.normalizedSetOrder())
             }
         }
     }
@@ -67,7 +68,7 @@ extension WorkoutTrackService {
             if let sameExerciseEntry = try await sameExerciseWithin(session: session.id, exercise: entry.exerciseID) {
                 try await addSets(entry.sets, to: sameExerciseEntry, within: session.id)
             } else {
-                try await workoutTrack.insert([entry], to: session)
+                try await workoutTrack.insert([entry.normalizedSetOrder()], to: session)
             }
         }
     }
@@ -211,5 +212,33 @@ extension Array where Element == WorkoutEntryDTO {
 extension Array where Element == WorkoutSetDTO {
     func hasSet(id: UUID) -> Bool {
         return map(\.id).contains(id)
+    }
+}
+
+extension WorkoutEntryDTO {
+    private func withSets(_ sets: [WorkoutSetDTO]) -> WorkoutEntryDTO {
+        WorkoutEntryDTO(id: self.id, exerciseID: self.exerciseID, sets: sets, createdAt: self.createdAt, order: self.order)
+    }
+    
+    func normalizedSetOrder() -> WorkoutEntryDTO {
+        let normalizedSets = sets.enumerated().map { index, set in
+            WorkoutSetDTO(id: set.id,
+                          reps: set.reps,
+                          weight: set.weight,
+                          isFinished: set.isFinished,
+                          order: index)
+        }
+        return withSets(normalizedSets)
+    }
+}
+
+extension WorkoutSessionDTO {
+    func withEntries(_ entries: [WorkoutEntryDTO]) -> WorkoutSessionDTO {
+        WorkoutSessionDTO(id: self.id, date: self.date, entries: entries)
+    }
+    
+    func normalizedSetOrder() -> WorkoutSessionDTO {
+        let entries = entries.map { $0.normalizedSetOrder() }
+        return withEntries(entries)
     }
 }

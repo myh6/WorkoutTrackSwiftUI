@@ -65,6 +65,20 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         XCTAssertEqual(retrieved, [expected])
     }
     
+    func test_addSessions_setsShouldStartFromZeroIfEntriesHaveSet() async throws {
+        let sut = try makeSUT()
+        let randomPresavedExercise = try await getRandomPresavedExerciseId()
+        let entryA = anyEntry(exercise: randomPresavedExercise, sets: [anySet(order: 5), anySet(order: 10)])
+        let entryB = anyEntry(exercise: getPushUpID(), sets: [anySet()])
+        let session = anySession(entries: [entryA, entryB])
+        
+        try await sut.addSessions([session])
+        
+        let retrieved = try await sut.retrieveSessions(by: nil).mapToAllEntries()
+        XCTAssertEqual(retrieved[0].sets.map(\.order), [0, 1])
+        XCTAssertEqual(retrieved[1].sets.map(\.order), [0])
+    }
+    
     func test_addEntry_ignoresEntriesWithUnknownExerciseID() async throws {
         let sut = try makeSUT()
         let knownExercise = anyExercise()
