@@ -463,21 +463,8 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         return WorkoutEntryDTO(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
     }
     
-    private func getPushUpID() -> UUID {
-        UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
-    }
-    
     private func getRandomPresavedExerciseId() async throws -> UUID {
         return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none)).randomElement()!.id
     }
-}
-
-extension Array where Element == WorkoutSessionDTO {
-    func mapToAllEntries() -> [WorkoutEntryDTO] {
-        flatMap(\.entries)
-    }
     
-    func mapToAllSets() -> [WorkoutSetDTO] {
-        flatMap(\.entries).flatMap(\.sets)
-    }
 }

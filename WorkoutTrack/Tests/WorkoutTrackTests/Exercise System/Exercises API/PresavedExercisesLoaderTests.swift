@@ -55,7 +55,7 @@ final class PresavedExercisesLoaderTests: XCTestCase {
     }
     
     func test_load_byID_returnsTheOnlyOneWithThatID() async throws {
-        let testId = UUID(uuidString: "5FBF70AE-30AC-F9A2-FF1F-D6A322FE1485")!
+        let testId = getPushUpID()
         let retrieved = try await makeSUT().loadExercises(by: .byID(testId))
         
         XCTAssertEqual(retrieved.count, 1)
