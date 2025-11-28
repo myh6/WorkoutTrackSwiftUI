@@ -16,7 +16,7 @@ class WorkoutTrackService {
         self.workoutTrack = workoutTrack
     }
 }
-
+//MARK: - Exercise
 extension WorkoutTrackService {
     func getExerciseName(from id: UUID) async throws -> String? {
         return try await exercise.loadExercises(by: .byID(id)).first?.name
@@ -43,7 +43,7 @@ extension WorkoutTrackService {
         try await self.exercise.updateExercise(exercise)
     }
 }
-
+//MARK: - Workout Records
 extension WorkoutTrackService {
     func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutSessionDTO] {
         try await self.workoutTrack.retrieve(query: query)
@@ -196,48 +196,4 @@ extension WorkoutTrackService {
 
 enum WorkoutTrackError: Error, Equatable {
     case duplicateExerciseInSession
-}
-
-extension Array where Element == WorkoutEntryDTO {
-    func hasEntry(id: UUID) -> Bool {
-        return map(\.id).contains(id)
-    }
-    
-    func hasExercise(id: UUID) -> WorkoutEntryDTO? {
-        return filter({ $0.exerciseID == id }).first
-    }
-}
-
-extension Array where Element == WorkoutSetDTO {
-    func hasSet(id: UUID) -> Bool {
-        return map(\.id).contains(id)
-    }
-}
-
-extension WorkoutEntryDTO {
-    private func withSets(_ sets: [WorkoutSetDTO]) -> WorkoutEntryDTO {
-        WorkoutEntryDTO(id: self.id, exerciseID: self.exerciseID, sets: sets, createdAt: self.createdAt, order: self.order)
-    }
-    
-    func normalizedSetOrder() -> WorkoutEntryDTO {
-        let normalizedSets = sets.enumerated().map { index, set in
-            WorkoutSetDTO(id: set.id,
-                          reps: set.reps,
-                          weight: set.weight,
-                          isFinished: set.isFinished,
-                          order: index)
-        }
-        return withSets(normalizedSets)
-    }
-}
-
-extension WorkoutSessionDTO {
-    func withEntries(_ entries: [WorkoutEntryDTO]) -> WorkoutSessionDTO {
-        WorkoutSessionDTO(id: self.id, date: self.date, entries: entries)
-    }
-    
-    func normalizedSetOrder() -> WorkoutSessionDTO {
-        let entries = entries.map { $0.normalizedSetOrder() }
-        return withEntries(entries)
-    }
 }

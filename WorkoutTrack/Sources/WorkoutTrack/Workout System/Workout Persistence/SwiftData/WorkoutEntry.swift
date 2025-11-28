@@ -38,22 +38,6 @@ final class WorkoutEntry {
     }
 }
 
-public struct WorkoutEntryDTO: Equatable, Identifiable {
-    public let id: UUID
-    public let exerciseID: UUID
-    public let sets: [WorkoutSetDTO]
-    public let createdAt: Date
-    public let order: Int
-    
-    public init(id: UUID, exerciseID: UUID, sets: [WorkoutSetDTO], createdAt: Date, order: Int) {
-        self.id = id
-        self.exerciseID = exerciseID
-        self.sets = sets
-        self.createdAt = createdAt
-        self.order = order
-    }
-}
-
 extension WorkoutEntry {
     convenience init(dto: WorkoutEntryDTO) {
         self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [], createdAt: dto.createdAt, order: dto.order)

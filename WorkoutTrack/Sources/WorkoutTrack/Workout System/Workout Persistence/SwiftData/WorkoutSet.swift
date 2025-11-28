@@ -36,22 +36,6 @@ final class WorkoutSet {
     }
 }
 
-public struct WorkoutSetDTO: Equatable, Identifiable {
-    public let id: UUID
-    public let reps: Int
-    public let weight: Double
-    public let isFinished: Bool
-    public let order: Int
-    
-    public init(id: UUID, reps: Int, weight: Double, isFinished: Bool, order: Int) {
-        self.id = id
-        self.reps = reps
-        self.weight = weight
-        self.isFinished = isFinished
-        self.order = order
-    }
-}
-
 extension WorkoutSet {
     convenience init(dto: WorkoutSetDTO) {
         self.init(id: dto.id, reps: dto.reps, weight: dto.weight, isFinished: dto.isFinished, order: dto.order, entry: nil)

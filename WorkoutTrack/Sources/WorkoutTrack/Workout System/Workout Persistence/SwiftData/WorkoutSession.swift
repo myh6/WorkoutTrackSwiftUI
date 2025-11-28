@@ -27,19 +27,6 @@ final class WorkoutSession {
     }
 }
 
-public struct WorkoutSessionDTO: Equatable {
-    public let id: UUID
-    public let date: Date
-    public let entries: [WorkoutEntryDTO]
-    
-    public init(id: UUID, date: Date, entries: [WorkoutEntryDTO]) {
-        self.id = id
-        self.date = date
-        self.entries = entries
-    }
-}
-
-
 extension WorkoutSession {
     convenience init(dto: WorkoutSessionDTO) {
         self.init(id: dto.id, date: dto.date, entries: [])
@@ -78,9 +65,5 @@ extension WorkoutSession {
             entry.session = self
             return entry
         }
-    }
-    
-    func hasSameExercise(id: UUID) -> WorkoutEntry? {
-        return entries.filter { $0.exerciseID == id }.first
     }
 }
