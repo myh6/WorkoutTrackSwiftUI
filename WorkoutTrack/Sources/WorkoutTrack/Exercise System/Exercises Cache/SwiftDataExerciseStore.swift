@@ -1,0 +1,58 @@
+//
+//  SwiftDataExerciseStore.swift
+//  WorkoutTrack
+//
+//  Created by Min-Yang Huang on 2025/10/3.
+//
+
+import Foundation
+import SwiftData
+
+@ModelActor
+final actor SwiftDataExerciseStore: ExerciseLoader, ExerciseInsertion, ExerciseDeletion, ExerciseUpdate {
+    
+    func insert(_ exercise: CustomExercise) throws {
+        let entity = ExerciseEntity(id: exercise.id, name: exercise.name, category: exercise.rawCategory.rawValue)
+        modelContext.insert(entity)
+        try modelContext.save()
+    }
+    
+    func loadExercises(by query: ExerciseQuery) throws -> [DisplayableExercise] {
+        var descriptor = FetchDescriptor<ExerciseEntity>()
+        if let predicate = query.predicate {
+            descriptor.predicate = predicate
+        }
+        
+        if let sort = query.sortDescriptor {
+            descriptor.sortBy = [sort]
+        } else {
+            descriptor.sortBy = [SortDescriptor(\.name, order: .forward)]
+        }
+        
+        return try modelContext.fetch(descriptor).toModels()
+    }
+    
+    func update(_ exercise: CustomExercise) async throws {
+        if let entity = try getExercise(from: exercise.id) {
+            entity.name = exercise.name
+            entity.category = exercise.rawCategory.rawValue
+            try modelContext.save()
+        }
+    }
+    
+    func delete(_ exercise: CustomExercise) throws {
+        if let entity = try getExercise(from: exercise.id) {
+            modelContext.delete(entity)
+            try modelContext.save()
+        }
+    }
+}
+
+extension SwiftDataExerciseStore {
+    private func getExercise(from id: UUID) throws -> ExerciseEntity? {
+        let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate {
+            $0.id == id
+        })
+        return try modelContext.fetch(descriptor).first
+    }
+}
