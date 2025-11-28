@@ -38,7 +38,6 @@ final class WorkoutDataStoreFilteringUseCasesTests: WorkoutDataStoreTests {
             .build()
         
         for session in [validSession, oneSecondLess, oneDayLater] {
-            print(session.date)
             try await sut.insert(session)
         }
         

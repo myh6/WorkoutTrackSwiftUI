@@ -22,7 +22,6 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
             descriptor.sortBy = sort
         }
         var retrieved = try modelContext.fetch(descriptor).map(\.dto)
-        print("Retrieved in SwiftDataWorkoutSessionStore: \(retrieved)")
         if let postProcess {
             retrieved = postProcess(retrieved)
         }

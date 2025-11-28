@@ -93,7 +93,6 @@ extension WorkoutTrackService {
     
     func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
         let allEntry = try await allEntry(within: session.id)
-        print("all entries' exercise ID \(allEntry.count) in session (\(session.id)): \(allEntry.map(\.id))")
         guard allEntry.hasEntry(id: entry.id) else { return }
         if let sameExercise = allEntry.hasExercise(id: entry.exerciseID), sameExercise.id != entry.id {
             throw WorkoutTrackError.duplicateExerciseInSession
@@ -164,9 +163,7 @@ extension WorkoutTrackService {
         let query = QueryBuilder()
             .filterSession(session)
             .build()
-        let output = try await workoutTrack.retrieve(query: query)
-        print("Retrieved session \(session): \(output)")
-        return output.flatMap(\.entries)
+        return try await workoutTrack.retrieve(query: query).flatMap(\.entries)
     }
     
     private func allSet(within entry: UUID, and session: UUID) async throws -> [WorkoutSetDTO] {
