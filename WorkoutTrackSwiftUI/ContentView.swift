@@ -11,7 +11,7 @@ import WorkoutTrack
 struct ContentView: View {
     var body: some View {
         VStack {
-            CustomButton {}
+            
         }
         .padding()
     }
