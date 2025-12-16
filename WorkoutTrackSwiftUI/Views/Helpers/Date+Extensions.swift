@@ -43,6 +43,13 @@ extension Date {
         }
         return range.count
     }
+    
+    func startOfWeek(in calendar: Calendar) -> Date {
+        let startOfDay = calendar.startOfDay(for: self)
+        let weekday = calendar.component(.weekday, from: startOfDay)
+        let daysToSubtract = (weekday - calendar.firstWeekday + 7) % 7
+        return calendar.date(byAdding: .day, value: -daysToSubtract, to: startOfDay) ?? startOfDay
+    }
 }
 
 private let dateFormatterMonthYear: DateFormatter = {

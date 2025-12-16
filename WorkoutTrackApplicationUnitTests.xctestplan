@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "2D74EE9A-0F53-497F-84D4-02EFAE1F0ED6",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:WorkoutTrackSwiftUI.xcodeproj",
+        "identifier" : "0F83CBBA2EF119910020C2BA",
+        "name" : "WorkoutTrackApplicationUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

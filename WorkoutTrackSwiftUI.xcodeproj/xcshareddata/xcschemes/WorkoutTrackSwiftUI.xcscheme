@@ -30,7 +30,7 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <TestPlans>
          <TestPlanReference
-            reference = "container:WorkoutTrackSwiftUI.xctestplan"
+            reference = "container:WorkoutTrackApplicationUnitTests.xctestplan"
             default = "YES">
          </TestPlanReference>
       </TestPlans>
@@ -54,6 +54,17 @@
                BlueprintIdentifier = "0F5436002E55AE790008F071"
                BuildableName = "WorkoutTrackSwiftUIUITests.xctest"
                BlueprintName = "WorkoutTrackSwiftUIUITests"
+               ReferencedContainer = "container:WorkoutTrackSwiftUI.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "0F83CBBA2EF119910020C2BA"
+               BuildableName = "WorkoutTrackApplicationUnitTests.xctest"
+               BlueprintName = "WorkoutTrackApplicationUnitTests"
                ReferencedContainer = "container:WorkoutTrackSwiftUI.xcodeproj">
             </BuildableReference>
          </TestableReference>
