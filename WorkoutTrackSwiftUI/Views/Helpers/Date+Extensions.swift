@@ -57,6 +57,11 @@ extension Date {
             calendar.date(byAdding: .day, value: $0, to: start)
         }
     }
+    
+    func startOfMonth(in calendar: Calendar) -> Date {
+        let comps = calendar.dateComponents([.year, .month], from: self)
+        return calendar.date(from: comps) ?? self
+    }
 }
 
 private let dateFormatterMonthYear: DateFormatter = {

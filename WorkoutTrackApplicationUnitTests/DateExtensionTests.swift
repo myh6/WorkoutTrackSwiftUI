@@ -40,9 +40,21 @@ struct DateExtensionTests {
             #expect(calendar.isDate(week[i], inSameDayAs: epxected))
         }
     }
+    
+    @Test
+    func startOfMonth_returnsFirstDayOfMonth() {
+        let calendar = makeCalendar()
+        
+        let date = calendar.date(from: DateComponents(year: 2025, month: 12, day: 15))!
+        let start = date.startOfMonth(in: calendar)
+        
+        let expected = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        
+        #expect(calendar.isDate(start, inSameDayAs: expected))
+    }
 
     //MARK: - Helpers
-    private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int) -> Calendar {
+    private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int = 1) -> Calendar {
         var calendar = Calendar(identifier: identifier)
         calendar.locale = locale
         calendar.timeZone = timeZone
