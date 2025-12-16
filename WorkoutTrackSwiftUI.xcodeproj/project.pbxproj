@@ -22,6 +22,7 @@
 
 /* Begin PBXFileReference section */
 		0F08789A2E55FE2300F664F4 /* WorkoutTrack.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; name = WorkoutTrack.xctestplan; path = WorkoutTrack/WorkoutTrack.xctestplan; sourceTree = "<group>"; };
+		0F0A23302EF11691000D1813 /* WorkoutTrackSwiftUI.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = file; path = WorkoutTrackSwiftUI.xctestplan; sourceTree = "<group>"; };
 		0F5435EA2E55AE770008F071 /* WorkoutTrackSwiftUI.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutTrackSwiftUI.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5435F72E55AE790008F071 /* WorkoutTrackSwiftUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WorkoutTrackSwiftUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0F5436162E55B0650008F071 /* WorkoutTrack */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = WorkoutTrack; sourceTree = "<group>"; };
@@ -57,6 +58,7 @@
 		0F5435E12E55AE770008F071 = {
 			isa = PBXGroup;
 			children = (
+				0F0A23302EF11691000D1813 /* WorkoutTrackSwiftUI.xctestplan */,
 				0F08789A2E55FE2300F664F4 /* WorkoutTrack.xctestplan */,
 				0F5436162E55B0650008F071 /* WorkoutTrack */,
 				0F5435EC2E55AE770008F071 /* WorkoutTrackSwiftUI */,
