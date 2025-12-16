@@ -50,6 +50,13 @@ extension Date {
         let daysToSubtract = (weekday - calendar.firstWeekday + 7) % 7
         return calendar.date(byAdding: .day, value: -daysToSubtract, to: startOfDay) ?? startOfDay
     }
+    
+    func weekDates(in calendar: Calendar) -> [Date] {
+        let start = startOfWeek(in: calendar)
+        return (0..<7).compactMap {
+            calendar.date(byAdding: .day, value: $0, to: start)
+        }
+    }
 }
 
 private let dateFormatterMonthYear: DateFormatter = {
