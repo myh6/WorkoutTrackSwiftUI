@@ -45,12 +45,45 @@ struct DateExtensionTests {
     func startOfMonth_returnsFirstDayOfMonth() {
         let calendar = makeCalendar()
         
-        let date = calendar.date(from: DateComponents(year: 2025, month: 12, day: 15))!
+        let date = getDecember15th(calendar)
         let start = date.startOfMonth(in: calendar)
         
         let expected = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
         
         #expect(calendar.isDate(start, inSameDayAs: expected))
+    }
+    
+    @Test
+    func monthModel_december2025_sundayFirstCalendar() {
+        let calendar = makeCalendar(firstWeekday: 1) // Sunday
+        let date = getDecember15th(calendar)
+        
+        let model = date.monthModel(in: calendar)
+        
+        // December 2025 has 31 days
+        #expect(model.days.count == 31)
+        // December 1, 2025 is a Monday. Sunday-first calendar -> 1 leading empty cell.
+        #expect(model.leadingEmptyCount == 1)
+        
+        let expectedFirstDay = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        
+        #expect(calendar.isDate(model.days.first!, inSameDayAs: expectedFirstDay))
+     }
+    
+    @Test
+    func monthModel_leadingEmptyCount_matchesKnownCalendarFacts() {
+        let cases: [(year: Int, month: Int, firstWeekday: Int, expectedLeading: Int)] = [
+            (2025, 12, 1, 1), // Sunday-first -> 1 leading empty
+            (2025, 12, 2, 0), // Monday-first -> 0 leading empty
+        ]
+        
+        for testCase in cases {
+            let calendar = makeCalendar(firstWeekday: testCase.firstWeekday)
+            let date = getDecember15th(calendar)
+            let model = date.monthModel(in: calendar)
+            
+            #expect(model.leadingEmptyCount == testCase.expectedLeading)
+        }
     }
 
     //MARK: - Helpers
@@ -60,5 +93,9 @@ struct DateExtensionTests {
         calendar.timeZone = timeZone
         calendar.firstWeekday = firstWeekday
         return calendar
+    }
+    
+    private func getDecember15th(_ calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: 2025, month: 12, day: 15))!
     }
 }

@@ -62,6 +62,23 @@ extension Date {
         let comps = calendar.dateComponents([.year, .month], from: self)
         return calendar.date(from: comps) ?? self
     }
+    
+    func monthModel(in calendar: Calendar) -> CalendarMonthModel {
+        let start = startOfMonth(in: calendar)
+        let range = calendar.range(of: .day, in: .month, for: start) ?? (1..<1)
+        let days = range.compactMap { day in
+            calendar.date(byAdding: .day, value: day - 1, to: start)
+        }
+        
+        let weekdayOfFirst = calendar.component(.weekday, from: start)
+        let leadingEmpty = (weekdayOfFirst - calendar.firstWeekday + 7) % 7
+        return CalendarMonthModel(days: days, leadingEmptyCount: leadingEmpty)
+    }
+}
+
+struct CalendarMonthModel {
+    let days: [Date]
+    let leadingEmptyCount: Int
 }
 
 private let dateFormatterMonthYear: DateFormatter = {
