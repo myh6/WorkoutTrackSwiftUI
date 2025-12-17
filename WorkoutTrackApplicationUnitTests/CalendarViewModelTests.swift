@@ -62,6 +62,18 @@ struct CalendarViewModelTests {
         #expect(calendar.isDate(vm.anchorDate, inSameDayAs: expected))
     }
     
+    @Test
+    @MainActor
+    func weekDates_exposesSevenDatesFromAnchor() throws {
+        let calendar = makeCalendar(firstWeekday: 2) // Monday
+        let anchor = getDecember10th(calendar)
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: anchor, selectedDate: anchor)
+        
+        let dates = vm.weekDates
+        
+        try #require(dates.count == 7)
+        #expect(calendar.component(.weekday, from: dates.first!) == 2)
+    }
     //MARK: - Helpers
     private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int = 1) -> Calendar {
         var calendar = Calendar(identifier: identifier)
@@ -69,5 +81,9 @@ struct CalendarViewModelTests {
         calendar.timeZone = timeZone
         calendar.firstWeekday = firstWeekday
         return calendar
+    }
+    
+    private func getDecember10th(_ calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: 2025, month: 12, day: 10))!
     }
 }

@@ -25,6 +25,10 @@ final class CalendarViewModel: ObservableObject {
         self.anchorDate = anchorDate
     }
     
+    var weekDates: [Date] {
+        anchorDate.weekDates(in: calendar)
+    }
+    
     func moveNext() {
         move(by: 1)
     }
