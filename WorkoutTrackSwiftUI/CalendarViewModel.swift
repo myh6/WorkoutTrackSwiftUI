@@ -53,7 +53,8 @@ final class CalendarViewModel: ObservableObject {
         switch newMode {
         case .weekly:
             anchorDate = selectedDate.startOfWeek(in: calendar)
-        case .monthly: break
+        case .monthly:
+            anchorDate = selectedDate.startOfMonth(in: calendar)
         }
     }
     

@@ -112,6 +112,23 @@ struct CalendarViewModelTests {
     
     @Test
     @MainActor
+    func setMode_toMonthly_updateMode_andSnapsAnchorToSelectedDatesMonth() {
+        let calendar = makeCalendar(firstWeekday: 1) // Sunday
+        let anchor = calendar.date(from: DateComponents(year: 2025, month: 12, day: 20))!
+        let selected = getDecember10th(calendar)
+        
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: anchor, selectedDate: selected)
+        
+        vm.setMode(.monthly)
+        
+        #expect(vm.mode == .monthly)
+        
+        let expectedWeekStart = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        #expect(calendar.isDate(vm.anchorDate, inSameDayAs: expectedWeekStart))
+    }
+    
+    @Test
+    @MainActor
     func titleText_usesMonthYear() {
         let calendar = makeCalendar()
         let date = getDecember10th(calendar)
