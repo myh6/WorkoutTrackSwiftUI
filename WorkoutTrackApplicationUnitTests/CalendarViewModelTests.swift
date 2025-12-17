@@ -74,6 +74,24 @@ struct CalendarViewModelTests {
         try #require(dates.count == 7)
         #expect(calendar.component(.weekday, from: dates.first!) == 2)
     }
+    
+    @Test
+    @MainActor
+    func monthModel_exposesCorrectDaysAndLeadingEmptyCount() throws {
+        let calendar = makeCalendar(firstWeekday: 1) // Sunday
+        let anchor = getDecember10th(calendar)
+        let vm = CalendarViewModel(calendar: calendar, mode: .monthly, anchorDate: anchor, selectedDate: anchor)
+        
+        let model = vm.monthModel
+        
+        #expect(model.days.count == 31)
+        #expect(model.leadingEmptyCount == 1) // December 1, 2025 is Monday --> 1 leading blank for Sunday
+        
+        let expectedFirstDay = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        try #require(model.days.first != nil)
+        #expect(calendar.isDate(model.days.first!, inSameDayAs: expectedFirstDay))
+    }
+    
     //MARK: - Helpers
     private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int = 1) -> Calendar {
         var calendar = Calendar(identifier: identifier)
