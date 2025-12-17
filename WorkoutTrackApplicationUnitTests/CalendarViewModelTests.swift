@@ -134,8 +134,14 @@ struct CalendarViewModelTests {
         let date = getDecember10th(calendar)
         let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: date, selectedDate: date)
         
-        let title = vm.titleText
-        #expect(title == "December 2025")
+        let weeklyTitle = vm.titleText
+        #expect(weeklyTitle == "December 2025")
+        
+        vm.setMode(.monthly)
+        
+        let monthlyTitle = vm.titleText
+        print(vm.anchorDate)
+        #expect(monthlyTitle == "December 2025")
     }
     
     //MARK: - Helpers

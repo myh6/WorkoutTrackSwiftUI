@@ -74,6 +74,19 @@ extension Date {
         let leadingEmpty = (weekdayOfFirst - calendar.firstWeekday + 7) % 7
         return CalendarMonthModel(days: days, leadingEmptyCount: leadingEmpty)
     }
+    
+    func monthYearTitle(in calendar: Calendar) -> String {
+        var style = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone)
+            .month(.wide)
+            .year()
+            
+        
+        if let locale = calendar.locale {
+            style = style.locale(locale)
+        }
+        
+        return formatted(style)
+    }
 }
 
 struct CalendarMonthModel {
