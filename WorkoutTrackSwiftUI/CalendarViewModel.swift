@@ -15,6 +15,7 @@ final class CalendarViewModel: ObservableObject {
     }
     
     @Published var anchorDate: Date
+    @Published var selectedDate: Date
     @Published var mode: Mode
     
     private let calendar: Calendar
@@ -23,6 +24,7 @@ final class CalendarViewModel: ObservableObject {
         self.calendar = calendar
         self.mode = mode
         self.anchorDate = anchorDate
+        self.selectedDate = selectedDate
     }
     
     var weekDates: [Date] {
@@ -43,6 +45,16 @@ final class CalendarViewModel: ObservableObject {
     
     func movePrevious() {
         move(by: -1)
+    }
+    
+    func setMode(_ newMode: Mode) {
+        mode = newMode
+        
+        switch newMode {
+        case .weekly:
+            anchorDate = selectedDate.startOfWeek(in: calendar)
+        case .monthly: break
+        }
     }
     
     private func move(by delta: Int) {
