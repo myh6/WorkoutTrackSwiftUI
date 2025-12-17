@@ -34,7 +34,7 @@ final class CalendarViewModel: ObservableObject {
         case .weekly:
             anchorDate = calendar.date(byAdding: .day, value: 7 * delta, to: anchorDate) ?? anchorDate
         default:
-            break
+            anchorDate = calendar.date(byAdding: .month, value: delta, to: anchorDate) ?? anchorDate
         }
     }
 }
