@@ -29,11 +29,15 @@ final class CalendarViewModel: ObservableObject {
         move(by: 1)
     }
     
+    func movePrevious() {
+        move(by: -1)
+    }
+    
     private func move(by delta: Int) {
         switch mode {
         case .weekly:
             anchorDate = calendar.date(byAdding: .day, value: 7 * delta, to: anchorDate) ?? anchorDate
-        default:
+        case .monthly:
             anchorDate = calendar.date(byAdding: .month, value: delta, to: anchorDate) ?? anchorDate
         }
     }

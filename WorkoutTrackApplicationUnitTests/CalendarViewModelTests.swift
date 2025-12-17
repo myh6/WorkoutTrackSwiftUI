@@ -25,6 +25,19 @@ struct CalendarViewModelTests {
     
     @Test
     @MainActor
+    func movePrevious_inWeeklyMode_rewindsAnchorBySevenDays() {
+        let calendar = makeCalendar()
+        let anchor = calendar.date(from: DateComponents(year: 2025, month: 12, day: 10))!
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: anchor, selectedDate: anchor)
+        
+        vm.movePrevious()
+        
+        let expected = calendar.date(byAdding: .day, value: -7, to: anchor)!
+        #expect(calendar.isDate(vm.anchorDate, inSameDayAs: expected))
+    }
+    
+    @Test
+    @MainActor
     func moveNext_inMonthlyMode_advancesAnchorByOneMonth() {
         let calendar = makeCalendar()
         let anchor = calendar.date(from: DateComponents(year: 2025, month: 12, day: 10))!
