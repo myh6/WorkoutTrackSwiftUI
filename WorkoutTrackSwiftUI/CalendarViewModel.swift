@@ -33,6 +33,10 @@ final class CalendarViewModel: ObservableObject {
         anchorDate.monthModel(in: calendar)
     }
     
+    var titleText: String {
+        anchorDate.monthYeraTitle
+    }
+    
     func moveNext() {
         move(by: 1)
     }

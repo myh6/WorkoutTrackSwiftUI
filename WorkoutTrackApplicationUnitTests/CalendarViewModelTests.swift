@@ -92,6 +92,17 @@ struct CalendarViewModelTests {
         #expect(calendar.isDate(model.days.first!, inSameDayAs: expectedFirstDay))
     }
     
+    @Test
+    @MainActor
+    func titleText_usesMonthYear() {
+        let calendar = makeCalendar()
+        let date = getDecember10th(calendar)
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: date, selectedDate: date)
+        
+        let title = vm.titleText
+        #expect(title == "December 2025")
+    }
+    
     //MARK: - Helpers
     private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int = 1) -> Calendar {
         var calendar = Calendar(identifier: identifier)
