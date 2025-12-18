@@ -64,6 +64,23 @@ struct CalendarViewModelTests {
     
     @Test
     @MainActor
+    func selectDate_inWeeklyMode_updatesSelectedDate_andSnapsAnchorToSelectedDatesWeek() {
+        let calendar = makeCalendar(firstWeekday: 2) // Monday
+        let anchor = getDecember10th(calendar)
+        let newDate = calendar.date(from: DateComponents(year: 2025, month: 12, day: 12))!
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: anchor, selectedDate: anchor)
+        
+        vm.selectDate(newDate)
+        
+        #expect(vm.selectedDate == newDate)
+        
+        // December 12, 2025 is Friday --> Monday-first week start should be on December 8th
+        let expectedWeekStart = calendar.date(from: DateComponents(year: 2025, month: 12, day: 8))!
+        #expect(calendar.isDate(vm.anchorDate, inSameDayAs: expectedWeekStart))
+    }
+    
+    @Test
+    @MainActor
     func weekDates_exposesSevenDatesFromAnchor() throws {
         let calendar = makeCalendar(firstWeekday: 2) // Monday
         let anchor = getDecember10th(calendar)
@@ -105,7 +122,7 @@ struct CalendarViewModelTests {
         
         #expect(vm.mode == .weekly)
         
-        // December 10, 2025 is Wednesday --> Monday-first week start should be on December 7th
+        // December 10, 2025 is Wednesday --> Monday-first week start should be on December 8th
         let expectedWeekStart = calendar.date(from: DateComponents(year: 2025, month: 12, day: 8))!
         #expect(calendar.isDate(vm.anchorDate, inSameDayAs: expectedWeekStart))
     }

@@ -47,6 +47,17 @@ final class CalendarViewModel: ObservableObject {
         move(by: -1)
     }
     
+    func selectDate(_ newDate: Date) {
+        selectedDate = newDate
+        
+        switch mode {
+        case .weekly:
+            anchorDate = selectedDate.startOfWeek(in: calendar)
+        case .monthly:
+            break
+        }
+    }
+    
     func setMode(_ newMode: Mode) {
         mode = newMode
         
