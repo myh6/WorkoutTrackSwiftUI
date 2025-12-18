@@ -31,6 +31,11 @@ final class CalendarViewModel: ObservableObject {
         anchorDate.weekDates(in: calendar)
     }
     
+    /// Alwasy start with Sunday
+    var weekdaySymbols: [String] {
+        calendar.veryShortWeekdaySymbols
+    }
+    
     var monthModel: CalendarMonthModel {
         anchorDate.monthModel(in: calendar)
     }

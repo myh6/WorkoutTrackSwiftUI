@@ -110,6 +110,19 @@ struct CalendarViewModelTests {
     
     @Test
     @MainActor
+    func weekdaySymbols_exposesShortWeekdayNamesAlwaysStartsWithSundayRegardlessOfFirstWeekday() throws {
+        let calendar = makeCalendar(firstWeekday: 2) // Monday
+        let date = getDecember10th(calendar)
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: date, selectedDate: date)
+        
+        let symbols = vm.weekdaySymbols
+        
+        try #require(symbols.count == 7)
+        #expect(symbols == ["S", "M", "T", "W", "T", "F", "S"])
+    }
+    
+    @Test
+    @MainActor
     func monthModel_exposesCorrectDaysAndLeadingEmptyCount() throws {
         let calendar = makeCalendar(firstWeekday: 1) // Sunday
         let anchor = getDecember10th(calendar)
