@@ -50,24 +50,18 @@ final class CalendarViewModel: ObservableObject {
     func selectDate(_ newDate: Date) {
         selectedDate = newDate
         
-        switch mode {
-        case .weekly:
-            anchorDate = selectedDate.startOfWeek(in: calendar)
-        case .monthly:
-            break
-        }
+        updateAnchor(by: mode)
     }
     
     func setMode(_ newMode: Mode) {
         mode = newMode
         
-        switch newMode {
-        case .weekly:
-            anchorDate = selectedDate.startOfWeek(in: calendar)
-        case .monthly:
-            anchorDate = selectedDate.startOfMonth(in: calendar)
-        }
+        updateAnchor(by: newMode)
     }
+}
+
+// MARK: - Helpers
+extension CalendarViewModel {
     
     private func move(by delta: Int) {
         switch mode {
@@ -77,4 +71,14 @@ final class CalendarViewModel: ObservableObject {
             anchorDate = calendar.date(byAdding: .month, value: delta, to: anchorDate) ?? anchorDate
         }
     }
+    
+    private func updateAnchor(by mode: Mode) {
+        switch mode {
+        case .weekly:
+            anchorDate = selectedDate.startOfWeek(in: calendar)
+        case .monthly:
+            anchorDate = selectedDate.startOfMonth(in: calendar)
+        }
+    }
+    
 }
