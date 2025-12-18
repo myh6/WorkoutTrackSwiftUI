@@ -63,6 +63,10 @@ final class CalendarViewModel: ObservableObject {
         
         updateAnchor(by: newMode)
     }
+    
+    func isSelected(_ date: Date) -> Bool {
+        return calendar.isDate(date, inSameDayAs: selectedDate)
+    }
 }
 
 // MARK: - Helpers

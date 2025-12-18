@@ -97,6 +97,21 @@ struct CalendarViewModelTests {
     
     @Test
     @MainActor
+    func isSelected_returnsTrueForSameDaysAsSelectedDate() throws {
+        let calendar = makeCalendar()
+        let anchor = getDecember10th(calendar)
+        let selected = calendar.date(from: DateComponents(year: 2025, month: 12, day: 12))!
+        let vm = CalendarViewModel(calendar: calendar, mode: .weekly, anchorDate: anchor, selectedDate: selected)
+        
+        let otherDate = calendar.date(from: DateComponents(year: 2025, month: 12, day: 1))!
+        
+        #expect(vm.isSelected(otherDate) == false)
+        #expect(vm.isSelected(anchor) == false)
+        #expect(vm.isSelected(selected) == true)
+    }
+    
+    @Test
+    @MainActor
     func weekDates_exposesSevenDatesFromAnchor() throws {
         let calendar = makeCalendar(firstWeekday: 2) // Monday
         let anchor = getDecember10th(calendar)
