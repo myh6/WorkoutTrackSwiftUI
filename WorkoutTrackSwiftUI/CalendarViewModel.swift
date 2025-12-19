@@ -7,12 +7,21 @@
 
 import Foundation
 
+enum Mode: CaseIterable {
+    case weekly, monthly
+    
+    var title: String {
+        switch self {
+        case .weekly:
+            return "week"
+        case .monthly:
+            return "month"
+        }
+    }
+}
+
 @MainActor
 final class CalendarViewModel: ObservableObject {
-    
-    enum Mode {
-        case weekly, monthly
-    }
     
     @Published var anchorDate: Date
     @Published var selectedDate: Date

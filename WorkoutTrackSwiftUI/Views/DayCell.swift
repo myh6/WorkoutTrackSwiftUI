@@ -14,6 +14,8 @@ struct DayCell: View {
     let accentColor: Color
     let onTap: (Date) -> Void
     
+    let selectionNamespace: Namespace.ID
+    
     private var weekdayText: String {
         date.formatted(.dateTime.weekday(.narrow)).uppercased()
     }
@@ -73,27 +75,38 @@ struct DayCell: View {
         if isSelected {
             RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(accentColor)
+                .matchedGeometryEffect(id: "selection", in: selectionNamespace)
         } else { Color.clear }
     }
 }
 
-#Preview() {
-    HStack {
-        // date with no data
-        DayCell(date: Date(), isSelected: false, hasData: false, accentColor: .accentColor, onTap: { _ in })
-        // date with data
-        DayCell(date: Date(), isSelected: false, hasData: true, accentColor: .accentColor) { _ in }
-        // selected date with no data
-        DayCell(date: Date(), isSelected: true, hasData: false, accentColor: .accentColor, onTap: { _ in })
-        // selected date with data
-        DayCell(date: Date(), isSelected: true, hasData: true, accentColor: .accentColor, onTap: { _ in })
-        
-        DayCell(date: Date(), isSelected: false, hasData: true, accentColor: .accentColor) { _ in }
-        // selected date with no data
-        DayCell(date: Date(), isSelected: false, hasData: false, accentColor: .accentColor, onTap: { _ in })
-        // selected date with data
-        DayCell(date: Date(), isSelected: false, hasData: true, accentColor: .accentColor, onTap: { _ in })
+
+#Preview("With data") {
+    DayCellPreviewWrapper(hasData: true)
+        .preferredColorScheme(.light)
+}
+
+#Preview("With no data") {
+    DayCellPreviewWrapper(hasData: false)
+        .preferredColorScheme(.light)
+}
+
+private struct DayCellPreviewWrapper: View {
+    @Namespace private var selectionNamespace
+    
+    private var hasData: Bool
+    init(hasData: Bool) {
+        self.hasData = hasData
     }
-    .padding()
-    .preferredColorScheme(.light)
+    
+    var body: some View {
+        HStack(spacing: 8) {
+            DayCell(date: Date(), isSelected: false, hasData: hasData, accentColor: .accentColor, onTap: { _ in }, selectionNamespace: selectionNamespace)
+            
+            DayCell(date: Date(), isSelected: true, hasData: hasData, accentColor: .accentColor, onTap: { _ in }, selectionNamespace: selectionNamespace)
+            
+            DayCell(date: Date(), isSelected: false, hasData: hasData, accentColor: .accentColor, onTap: { _ in }, selectionNamespace: selectionNamespace)
+        }
+        .padding()
+    }
 }
