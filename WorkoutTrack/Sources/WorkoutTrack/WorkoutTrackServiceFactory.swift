@@ -5,6 +5,7 @@
 //  Created by Min-Yang Huang on 2025/12/21.
 //
 
+import Foundation
 import SwiftData
 
 public final class WorkoutTrackServiceFactory {
@@ -12,12 +13,15 @@ public final class WorkoutTrackServiceFactory {
     
     private let container: ModelContainer
     
-    public init(storage: Storage) throws {
+    public init(storage: Storage, storeURL: URL? = nil) throws {
         let config: ModelConfiguration = {
             switch storage {
             case .inMemory:
                 return ModelConfiguration("WorkoutTrackModel", isStoredInMemoryOnly: true)
             case .persistent:
+                if let storeURL {
+                    return ModelConfiguration("WorkoutTrackModel", url: storeURL)
+                }
                 return ModelConfiguration("WorkoutTrackModel")
             }
         }()
