@@ -6,8 +6,7 @@
 //
 
 import XCTest
-@testable import WorkoutTrack
-import SwiftData
+import WorkoutTrack
 
 final class WorkoutTrackIntegrationTests: XCTestCase {
     
@@ -51,7 +50,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     func test_addSessions_onSameDay_mergesEntriesIntoExistingSession() async throws {
         let sut = try makeSUT()
         let date = Date()
-        let randomExercise = try await getRandomPresavedExerciseId()
+        let randomExercise = try await sut.getRandomPresavedExerciseId()
         let oldEntries = [anyEntry(exercise: getPushUpID(), createdAt: date)]
         let newEntries = [anyEntry(exercise: randomExercise, createdAt: date.adding(minutes: 1))]
         let oldSession = anySession(date: date, entries: oldEntries)
@@ -68,7 +67,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     func test_addSessions_setsShouldStartFromZeroIfEntriesHaveSet() async throws {
         let sut = try makeSUT()
-        let randomPresavedExercise = try await getRandomPresavedExerciseId()
+        let randomPresavedExercise = try await sut.getRandomPresavedExerciseId()
         let entryA = anyEntry(exercise: randomPresavedExercise, sets: [anySet(order: 5), anySet(order: 10)])
         let entryB = anyEntry(exercise: getPushUpID(), sets: [anySet()])
         let session = anySession(entries: [entryA, entryB])
@@ -220,7 +219,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     func test_updateSession_changesToExistedEntryWithSameExercise_throwCustomError() async throws {
         let sut = try makeSUT()
-        let randomExercise = try await getRandomPresavedExerciseId()
+        let randomExercise = try await sut.getRandomPresavedExerciseId()
         let entry = anyEntry(exercise: randomExercise)
         let oldEntry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
         let oldSession = anySession(entries: [entry, oldEntry])
@@ -255,7 +254,7 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     
     func test_updateEntry_changesEntryPropertiesWithoutChangingSessionAndSets() async throws {
         let sut = try makeSUT()
-        let randomExercise = try await getRandomPresavedExerciseId()
+        let randomExercise = try await sut.getRandomPresavedExerciseId()
         let entry = anyEntry(exercise: getPushUpID(), sets: [anySet()])
         let session = anySession(entries: [entry])
         let newEntry = anyEntry(id: entry.id, exercise: randomExercise, sets: entry.sets)
@@ -435,7 +434,8 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     func test_deleteEntry_removesEntryAndItsSets() async throws {
         let sut = try makeSUT()
         let deletedEntry = anyEntry(exercise: getPushUpID(), sets: [anySet(), anySet(), anySet(), anySet()])
-        let randomA = try await getRandomPresavedExerciseId(), randomB = try await getRandomPresavedExerciseId()
+        let randomA = try await sut.getRandomPresavedExerciseId(),
+            randomB = try await sut.getRandomPresavedExerciseId()
         let otherEntry = [anyEntry(exercise: randomA), anyEntry(exercise: randomB)]
         
         try await sut.addEntry([deletedEntry] + otherEntry, to: anySession())
@@ -462,25 +462,9 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
        
     //MARK: - Helpers
     private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
-        let modelContainer = try makeTestModelContianer()
-        let workoutStore = SwiftDataWorkoutSessionStore(modelContainer: modelContainer)
-        let exerciseStore = SwiftDataExerciseStore(modelContainer: modelContainer)
-        let exerciseSystem = DefaultExerciseSystem(
-            loaders: [PresavedExercisesLoader(), exerciseStore],
-            io: exerciseStore
-        )
-        let service = WorkoutTrackService(exercise: exerciseSystem, workoutTrack: workoutStore)
+        let service = try WorkoutTrackServiceFactory(storage: .inMemory).makeService()
         trackForMemoryLeaks(service, file: file, line: line)
         return service
-    }
-    
-    
-    private func makeTestModelContianer() throws -> ModelContainer {
-        let config = ModelConfiguration(
-            "WorkoutTrackModel",
-            isStoredInMemoryOnly: true
-            )
-        return try ModelContainer(for: ExerciseEntity.self, WorkoutEntry.self, WorkoutSession.self, WorkoutSet.self, configurations: config)
     }
     
     private func mergeEntriesToOne(_ entries: WorkoutEntryDTO...) -> WorkoutEntryDTO {
@@ -497,9 +481,4 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         let base = entries[0]
         return WorkoutEntryDTO(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
     }
-    
-    private func getRandomPresavedExerciseId() async throws -> UUID {
-        return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none)).randomElement()!.id
-    }
-    
 }

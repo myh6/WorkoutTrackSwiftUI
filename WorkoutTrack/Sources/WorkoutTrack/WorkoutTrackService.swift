@@ -7,7 +7,7 @@
 
 import Foundation
 
-class WorkoutTrackService {
+public class WorkoutTrackService {
     private let exercise: ExerciseSystem
     private let workoutTrack: WorkoutSessionStore
     
@@ -18,15 +18,15 @@ class WorkoutTrackService {
 }
 //MARK: - Exercise
 extension WorkoutTrackService {
-    func getExerciseName(from id: UUID) async throws -> String? {
+    public func getExerciseName(from id: UUID) async throws -> String? {
         return try await exercise.loadExercises(by: .byID(id)).first?.name
     }
     
-    func addCustomExercise(_ exercise: CustomExercise) async throws {
+    public func addCustomExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.addExercise(exercise)
     }
     
-    func deleteExercise(_ exercise: CustomExercise) async throws {
+    public func deleteExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.removeExercise(exercise)
         
         let query = QueryBuilder()
@@ -39,17 +39,17 @@ extension WorkoutTrackService {
         }
     }
     
-    func updateExercise(_ exercise: CustomExercise) async throws {
+    public func updateExercise(_ exercise: CustomExercise) async throws {
         try await self.exercise.updateExercise(exercise)
     }
 }
 //MARK: - Workout Records
 extension WorkoutTrackService {
-    func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutSessionDTO] {
+    public func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutSessionDTO] {
         try await self.workoutTrack.retrieve(query: query)
     }
     
-    func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
+    public func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
         for session in sessions {
             if let sameDaySession = try await getSessionOnSameDay(date: session.date) {
                 try await addEntry(session.entries, to: sameDaySession)
@@ -59,7 +59,7 @@ extension WorkoutTrackService {
         }
     }
     
-    func addEntry(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) async throws {
+    public func addEntry(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) async throws {
         for entry in entries {
             let existedExercise = try await exercise.loadExercises(by: .byID(entry.exerciseID))
             guard !existedExercise.isEmpty else { continue }
@@ -74,7 +74,7 @@ extension WorkoutTrackService {
     
     /// Inserts new sets into the given entry and automaticaly assigns their order based on the existing sets count
     /// The `order` value passed in DTOs is ignored.
-    func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO, within session: UUID) async throws {
+    public func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO, within session: UUID) async throws {
         let allSet = try await allSet(within: entry.id, and: session)
         
         let existingsIDs = Set(allSet.map(\.id))
@@ -84,14 +84,14 @@ extension WorkoutTrackService {
         try await workoutTrack.insert(orderedSet, to: entry)
     }
     
-    func updateSession(_ session: WorkoutSessionDTO) async throws {
+    public func updateSession(_ session: WorkoutSessionDTO) async throws {
         try await updateSessionMetadataOnly(session)
         for entry in session.entries {
             try await updateEntry(entry, within: session)
         }
     }
     
-    func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
+    public func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
         let allEntry = try await allEntry(within: session.id)
         guard allEntry.hasEntry(id: entry.id) else { return }
         if let sameExercise = allEntry.hasExercise(id: entry.exerciseID), sameExercise.id != entry.id {
@@ -103,7 +103,7 @@ extension WorkoutTrackService {
         }
     }
     
-    func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO, and session: UUID) async throws {
+    public func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO, and session: UUID) async throws {
         let allSet = try await allSet(within: entry.id, and: session)
         guard allSet.hasSet(id: set.id) else { return }
         try await reorderAndUpdate(existing: allSet, moving: set, rerder: reorder) {
@@ -111,15 +111,15 @@ extension WorkoutTrackService {
         }
     }
     
-    func deleteSession(_ session: WorkoutSessionDTO) async throws {
+    public func deleteSession(_ session: WorkoutSessionDTO) async throws {
         try await workoutTrack.delete(session)
     }
     
-    func deleteEntry(_ entry: WorkoutEntryDTO) async throws {
+    public func deleteEntry(_ entry: WorkoutEntryDTO) async throws {
         try await workoutTrack.delete(entry)
     }
     
-    func deleteSet(_ set: WorkoutSetDTO) async throws {
+    public func deleteSet(_ set: WorkoutSetDTO) async throws {
         try await workoutTrack.delete(set)
     }
 }
@@ -208,6 +208,6 @@ extension WorkoutTrackService {
     }
 }
 
-enum WorkoutTrackError: Error, Equatable {
+public enum WorkoutTrackError: Error, Equatable {
     case duplicateExerciseInSession
 }

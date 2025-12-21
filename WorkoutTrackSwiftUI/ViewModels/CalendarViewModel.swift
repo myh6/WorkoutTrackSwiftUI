@@ -1,0 +1,102 @@
+//
+//  CalendarViewModel.swift
+//  WorkoutTrackSwiftUI
+//
+//  Created by Min-Yang Huang on 2025/12/16.
+//
+
+import Foundation
+
+enum Mode: CaseIterable {
+    case weekly, monthly
+    
+    var title: String {
+        switch self {
+        case .weekly:
+            return "week"
+        case .monthly:
+            return "month"
+        }
+    }
+}
+
+@MainActor
+final class CalendarViewModel: ObservableObject {
+    
+    @Published var anchorDate: Date
+    @Published var selectedDate: Date
+    @Published var mode: Mode
+    
+    private let calendar: Calendar
+    
+    init(calendar: Calendar, mode: Mode, anchorDate: Date, selectedDate: Date) {
+        self.calendar = calendar
+        self.mode = mode
+        self.anchorDate = anchorDate
+        self.selectedDate = selectedDate
+    }
+    
+    var weekDates: [Date] {
+        anchorDate.weekDates(in: calendar)
+    }
+    
+    /// Alwasy start with Sunday
+    var weekdaySymbols: [String] {
+        calendar.veryShortWeekdaySymbols
+    }
+    
+    var monthModel: CalendarMonthModel {
+        anchorDate.monthModel(in: calendar)
+    }
+    
+    var titleText: String {
+        anchorDate.monthYearTitle(in: calendar)
+    }
+    
+    func moveNext() {
+        move(by: 1)
+    }
+    
+    func movePrevious() {
+        move(by: -1)
+    }
+    
+    func selectDate(_ newDate: Date) {
+        selectedDate = newDate
+        
+        updateAnchor(by: mode)
+    }
+    
+    func setMode(_ newMode: Mode) {
+        mode = newMode
+        
+        updateAnchor(by: newMode)
+    }
+    
+    func isSelected(_ date: Date) -> Bool {
+        return calendar.isDate(date, inSameDayAs: selectedDate)
+    }
+}
+
+// MARK: - Helpers
+extension CalendarViewModel {
+    
+    private func move(by delta: Int) {
+        switch mode {
+        case .weekly:
+            anchorDate = calendar.date(byAdding: .day, value: 7 * delta, to: anchorDate) ?? anchorDate
+        case .monthly:
+            anchorDate = calendar.date(byAdding: .month, value: delta, to: anchorDate) ?? anchorDate
+        }
+    }
+    
+    private func updateAnchor(by mode: Mode) {
+        switch mode {
+        case .weekly:
+            anchorDate = selectedDate.startOfWeek(in: calendar)
+        case .monthly:
+            anchorDate = selectedDate.startOfMonth(in: calendar)
+        }
+    }
+    
+}
