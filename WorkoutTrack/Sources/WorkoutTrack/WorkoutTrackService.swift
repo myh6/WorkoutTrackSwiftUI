@@ -7,7 +7,7 @@
 
 import Foundation
 
-public class WorkoutTrackService {
+public class WorkoutTrackService: WorkoutTracking {
     private let exercise: ExerciseSystem
     private let workoutTrack: WorkoutSessionStore
     

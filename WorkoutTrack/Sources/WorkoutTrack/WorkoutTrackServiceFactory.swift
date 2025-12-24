@@ -31,7 +31,7 @@ public final class WorkoutTrackServiceFactory {
             configurations: config)
     }
     
-    public func makeService() -> WorkoutTrackService {
+    public func makeService() -> WorkoutTracking {
         let workoutStore = SwiftDataWorkoutSessionStore(modelContainer: container)
         let exerciseStore = SwiftDataExerciseStore(modelContainer: container)
         let exerciseSystem = DefaultExerciseSystem(

@@ -8,7 +8,7 @@
 import Foundation
 @testable import WorkoutTrack
 
-extension WorkoutTrackService {
+extension WorkoutTracking {
     func getRandomPresavedExerciseId() async throws -> UUID {
         return try await PresavedExercisesLoader().loadExercises(by: .all(sort: .none)).randomElement()!.id
     }

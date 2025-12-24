@@ -461,9 +461,9 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
     }
        
     //MARK: - Helpers
-    private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTrackService {
+    private func makeSUT(file: StaticString = #file, line: UInt = #line) throws -> WorkoutTracking {
         let service = try WorkoutTrackServiceFactory(storage: .inMemory).makeService()
-        trackForMemoryLeaks(service, file: file, line: line)
+        trackForMemoryLeaks(service as! WorkoutTrackService, file: file, line: line)
         return service
     }
     
