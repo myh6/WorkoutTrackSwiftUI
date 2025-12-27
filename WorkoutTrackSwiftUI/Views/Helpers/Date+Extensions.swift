@@ -8,25 +8,8 @@
 import Foundation
 
 extension Date {
-    var startOfDay: Date {
-        Calendar.current.startOfDay(for: self)
-    }
-    
     func isSameDay(as other: Date, in calendar: Calendar = .current) -> Bool {
         calendar.isDate(self, inSameDayAs: other)
-    }
-    
-    var startOfMonth: Date {
-        let calendar = Calendar.current
-        let comps = calendar.dateComponents([.year, .month], from: self)
-        return calendar.date(from: comps) ?? self
-    }
-    
-    var startOfWeek: Date {
-        let calendar = Calendar.current
-        let weekday = calendar.component(.weekday, from: self)
-        let daysToSubtrack = (weekday - calendar.firstWeekday + 7) % 7
-        return calendar.date(byAdding: .day, value: -daysToSubtrack, to: self.startOfDay) ?? self.startOfDay
     }
     
     func addingDays(_ days: Int, in calendar: Calendar = .current) -> Date {
@@ -42,6 +25,16 @@ extension Date {
             return 0
         }
         return range.count
+    }
+    
+    func startOfDay(in calendar: Calendar) -> Date {
+        calendar.startOfDay(for: self)
+    }
+    
+    func dayRange(in calendar: Calendar) -> ClosedRange<Date> {
+        let start = calendar.startOfDay(for: self)
+        let end = self.addingDays(1, in: calendar).addingTimeInterval(-1)
+        return start...end
     }
     
     func startOfWeek(in calendar: Calendar) -> Date {
