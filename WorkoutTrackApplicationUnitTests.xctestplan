@@ -9,7 +9,15 @@
     }
   ],
   "defaultOptions" : {
-
+    "codeCoverage" : {
+      "targets" : [
+        {
+          "containerPath" : "container:WorkoutTrackSwiftUI.xcodeproj",
+          "identifier" : "0F5435E92E55AE770008F071",
+          "name" : "WorkoutTrackSwiftUI"
+        }
+      ]
+    }
   },
   "testTargets" : [
     {
