@@ -31,6 +31,21 @@ struct WorkoutDayViewModelTests {
         #expect(range.upperBound == expectedUpper)
     }
     
+    @Test
+    func load_setsStateToEmpty_whenServiceReturnsNoSessions() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        spy.stubSessions([])
+        
+        #expect(sut.state == .idle)
+        
+        try await sut.load()
+        
+        #expect(sut.state == .empty)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
@@ -40,6 +55,11 @@ struct WorkoutDayViewModelTests {
     
     private class WorkoutServiceSpy: WorkoutTracking {
         private(set) var receivedQuery: SessionQueryDescriptor?
+        private var stubbedSessions: [WorkoutSessionDTO] = []
+        
+        func stubSessions(_ sessions: [WorkoutSessionDTO]) {
+            stubbedSessions = sessions
+        }
         
         func getExerciseName(from id: UUID) async throws -> String? {
             return nil
@@ -56,7 +76,7 @@ struct WorkoutDayViewModelTests {
         
         func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSessionDTO] {
             receivedQuery = query
-            return []
+            return stubbedSessions
         }
         
         func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
