@@ -74,6 +74,26 @@ struct WorkoutDayViewModelTests {
         }
     }
     
+    @Test
+    func load_setsStateToLoading_whileAwaitingService() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        spy.suspendNextRetrieval(true)
+        
+        let task = Task {
+            await sut.load()
+        }
+        await Task.yield()
+        
+        #expect(sut.state == .loading)
+        
+        spy.completeRetrievalContinuation(with: [])
+        _ = await task.value
+        
+        #expect(sut.state == .empty)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
@@ -85,6 +105,22 @@ struct WorkoutDayViewModelTests {
         private(set) var receivedQuery: SessionQueryDescriptor?
         private var stubbedSessions: [WorkoutSession] = []
         private var stubbedRetrievalError: Error?
+        private var shouldSuspend = false
+        private var retrievalContinunation: CheckedContinuation<[WorkoutSession], Error>?
+        
+        func suspendNextRetrieval(_ val: Bool) {
+            shouldSuspend = val
+        }
+        
+        func completeRetrievalContinuation(with sessions: [WorkoutSession]) {
+            retrievalContinunation?.resume(returning: sessions)
+            retrievalContinunation = nil
+        }
+        
+        func completeRetrievalContinuation(with error: Error) {
+            retrievalContinunation?.resume(throwing: error)
+            retrievalContinunation = nil
+        }
         
         func stubSessions(_ sessions: [WorkoutSession]) {
             stubbedSessions = sessions
@@ -112,6 +148,12 @@ struct WorkoutDayViewModelTests {
             
             if let stubbedRetrievalError {
                 throw stubbedRetrievalError
+            }
+            
+            if shouldSuspend {
+                return try await withCheckedThrowingContinuation { cont in
+                    self.retrievalContinunation = cont
+                }
             } else {
                 return stubbedSessions
             }

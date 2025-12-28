@@ -15,10 +15,10 @@ class WorkoutDayViewModel: ObservableObject {
     private let calendar: Calendar
     
     enum State: Equatable {
-        case idle, empty, loaded, failed(String)
+        case idle, empty, loading, loaded, failed(String)
     }
     
-    private(set) var state: State = .idle
+    @Published private(set) var state: State = .idle
     
     init(selectedDate: Date, service: WorkoutTracking, calendar: Calendar) {
         self.selectedDate = selectedDate
@@ -27,6 +27,7 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     func load() async {
+        state = .loading
         let query = QueryBuilder()
             .filterDateRange(selectedDate.dayRange(in: calendar))
             .build()
