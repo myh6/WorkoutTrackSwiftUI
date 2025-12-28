@@ -16,7 +16,6 @@ struct WorkoutDayViewModelTests {
     func load_queryServiceWithSelectedDateDayRange() async throws {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
-        
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         
         try await sut.load()
@@ -35,7 +34,6 @@ struct WorkoutDayViewModelTests {
     func load_setsStateToEmpty_whenServiceReturnsNoSessions() async throws {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
-        
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         spy.stubSessions([])
         
@@ -44,6 +42,20 @@ struct WorkoutDayViewModelTests {
         try await sut.load()
         
         #expect(sut.state == .empty)
+    }
+    
+    @Test
+    func load_setsStateToLoaded_whenServiceReturnsSessions() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        spy.stubSessions([anySession()])
+        
+        #expect(sut.state == .idle)
+        
+        try await sut.load()
+        
+        #expect(sut.state == .loaded)
     }
     
     //MARK: - Helpers
