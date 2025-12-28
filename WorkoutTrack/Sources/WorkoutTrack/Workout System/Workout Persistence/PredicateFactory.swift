@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 struct PredicateFactory {
-    static func getPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
+    static func getPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSessionEntity> {
         if #available(macOS 14.4, iOS 17.4, *) {
             return newPredicate(id, date)
         } else {
@@ -18,9 +18,9 @@ struct PredicateFactory {
     }
     
     @available(macOS 14.4, iOS 17.4, *)
-    private static func newPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
-        var idPredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
-        var datePredicate: Predicate<WorkoutSession> = #Predicate { _ in true }
+    private static func newPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSessionEntity> {
+        var idPredicate: Predicate<WorkoutSessionEntity> = #Predicate { _ in true }
+        var datePredicate: Predicate<WorkoutSessionEntity> = #Predicate { _ in true }
         
         if let id {
             idPredicate = #Predicate { $0.id == id }
@@ -35,13 +35,13 @@ struct PredicateFactory {
             }
         }
         
-        return #Predicate<WorkoutSession> { session in
+        return #Predicate<WorkoutSessionEntity> { session in
             idPredicate.evaluate(session) && datePredicate.evaluate(session)
         }
     }
     
     // TODO: - Haven't covered all the possible predicates.
-    private static func legacyPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSession> {
+    private static func legacyPredicate(_ id: UUID?, _ date: ClosedRange<Date>?) -> Predicate<WorkoutSessionEntity> {
         switch (id, date) {
         case (let id?, nil):
             return #Predicate { $0.id == id }

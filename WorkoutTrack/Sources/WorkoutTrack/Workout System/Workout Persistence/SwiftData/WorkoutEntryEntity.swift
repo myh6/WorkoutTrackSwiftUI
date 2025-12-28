@@ -9,14 +9,14 @@ import Foundation
 import SwiftData
 
 @Model
-final class WorkoutEntry {
+final class WorkoutEntryEntity {
     @Attribute(.unique) var id: UUID
     var exerciseID: UUID
 
-    var session: WorkoutSession?
+    var session: WorkoutSessionEntity?
 
-    @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.entry)
-    var sets: [WorkoutSet]
+    @Relationship(deleteRule: .cascade, inverse: \WorkoutSetEntity.entry)
+    var sets: [WorkoutSetEntity]
     
     var createdAt: Date
     var order: Int
@@ -24,8 +24,8 @@ final class WorkoutEntry {
     init(
         id: UUID = UUID(),
         exerciseID: UUID,
-        session: WorkoutSession? = nil,
-        sets: [WorkoutSet] = [],
+        session: WorkoutSessionEntity? = nil,
+        sets: [WorkoutSetEntity] = [],
         createdAt: Date,
         order: Int
     ) {
@@ -38,11 +38,11 @@ final class WorkoutEntry {
     }
 }
 
-extension WorkoutEntry {
+extension WorkoutEntryEntity {
     convenience init(dto: WorkoutEntryDTO) {
         self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [], createdAt: dto.createdAt, order: dto.order)
         self.sets = dto.sets.map { setDTO in
-            let set = WorkoutSet(dto: setDTO)
+            let set = WorkoutSetEntity(dto: setDTO)
             set.entry = self
             return set
         }
@@ -59,7 +59,7 @@ extension WorkoutEntry {
         
         sets.forEach { context.delete($0) }
         self.sets = dto.sets.map { setDTO in
-            let set = WorkoutSet(dto: setDTO)
+            let set = WorkoutSetEntity(dto: setDTO)
             set.entry = self
             return set
         }

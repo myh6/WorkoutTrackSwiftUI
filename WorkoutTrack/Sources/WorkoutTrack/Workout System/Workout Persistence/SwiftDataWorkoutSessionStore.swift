@@ -13,7 +13,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     
     //MARK: - Retrieve
     func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
-        var descriptor = FetchDescriptor<WorkoutSession>()
+        var descriptor = FetchDescriptor<WorkoutSessionEntity>()
         let (predicate, sort, postProcess) = translate(query)
         if let predicate {
             descriptor.predicate = predicate
@@ -33,7 +33,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
         if let existing = try getSessionFromContext(id: session.id) {
             existing.update(from: session, in: modelContext)
         } else {
-            let model = WorkoutSession(dto: session)
+            let model = WorkoutSessionEntity(dto: session)
             modelContext.insert(model)
         }
         
@@ -55,7 +55,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
         guard let existingEntry = try getEntryFromContext(id: entry.id) else { return }
 
         sets.forEach { setDTO in
-            let set = WorkoutSet(dto: setDTO)
+            let set = WorkoutSetEntity(dto: setDTO)
             set.entry = existingEntry
             modelContext.insert(set)
         }
@@ -107,29 +107,29 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
 }
 
 extension SwiftDataWorkoutSessionStore {
-    private func getSessionFromContext(id: UUID) throws -> WorkoutSession? {
-        let descriptor = FetchDescriptor<WorkoutSession>(predicate: #Predicate { $0.id == id })
+    private func getSessionFromContext(id: UUID) throws -> WorkoutSessionEntity? {
+        let descriptor = FetchDescriptor<WorkoutSessionEntity>(predicate: #Predicate { $0.id == id })
         return try modelContext.fetch(descriptor).first
     }
     
-    private func getEntryFromContext(id: UUID) throws -> WorkoutEntry? {
-        let descriptor = FetchDescriptor<WorkoutEntry>(predicate: #Predicate { $0.id == id })
+    private func getEntryFromContext(id: UUID) throws -> WorkoutEntryEntity? {
+        let descriptor = FetchDescriptor<WorkoutEntryEntity>(predicate: #Predicate { $0.id == id })
         return try modelContext.fetch(descriptor).first
     }
     
-    private func getSetFromContext(id: UUID) throws -> WorkoutSet? {
-        let descriptor = FetchDescriptor<WorkoutSet>(predicate: #Predicate { $0.id == id })
+    private func getSetFromContext(id: UUID) throws -> WorkoutSetEntity? {
+        let descriptor = FetchDescriptor<WorkoutSetEntity>(predicate: #Predicate { $0.id == id })
         return try modelContext.fetch(descriptor).first
     }
     
-    private func insert(_ entryDTO: WorkoutEntryDTO, in session: WorkoutSession) {
-        let entry = WorkoutEntry(dto: entryDTO)
+    private func insert(_ entryDTO: WorkoutEntryDTO, in session: WorkoutSessionEntity) {
+        let entry = WorkoutEntryEntity(dto: entryDTO)
         entry.session = session
         modelContext.insert(entry)
     }
     
     typealias Process = ([WorkoutSessionDTO]) -> [WorkoutSessionDTO]
-    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSession>?, [SortDescriptor<WorkoutSession>], Process?) {
+    private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSessionEntity>?, [SortDescriptor<WorkoutSessionEntity>], Process?) {
         guard let query else { return (nil, [], nil) }
         let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange)
         let sortDescriptor = getSortDescriptor(query.sortBy)
@@ -138,9 +138,9 @@ extension SwiftDataWorkoutSessionStore {
         return (predicate, sortDescriptor, transform)
     }
     
-    private func getSortDescriptor(_ arr: [QuerySort]?) -> [SortDescriptor<WorkoutSession>] {
+    private func getSortDescriptor(_ arr: [QuerySort]?) -> [SortDescriptor<WorkoutSessionEntity>] {
         guard let arr else { return [] }
-        var sortDescriptor: [SortDescriptor<WorkoutSession>] = []
+        var sortDescriptor: [SortDescriptor<WorkoutSessionEntity>] = []
         for sort in arr {
             switch sort {
             case .byId(let ascending):

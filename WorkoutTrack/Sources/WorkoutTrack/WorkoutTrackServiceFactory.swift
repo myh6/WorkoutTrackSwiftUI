@@ -27,7 +27,7 @@ public final class WorkoutTrackServiceFactory {
         }()
         
         self.container = try ModelContainer(
-            for: ExerciseEntity.self, WorkoutEntry.self, WorkoutSession.self, WorkoutSet.self,
+            for: ExerciseEntity.self, WorkoutEntryEntity.self, WorkoutSessionEntity.self, WorkoutSetEntity.self,
             configurations: config)
     }
     

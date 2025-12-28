@@ -9,17 +9,17 @@ import Foundation
 import SwiftData
 
 @Model
-final class WorkoutSession {
+final class WorkoutSessionEntity {
     @Attribute(.unique) var id: UUID
     var date: Date
 
-    @Relationship(deleteRule: .cascade, inverse: \WorkoutEntry.session)
-    var entries: [WorkoutEntry]
+    @Relationship(deleteRule: .cascade, inverse: \WorkoutEntryEntity.session)
+    var entries: [WorkoutEntryEntity]
 
     init(
         id: UUID = UUID(),
         date: Date = .now,
-        entries: [WorkoutEntry] = []
+        entries: [WorkoutEntryEntity] = []
     ) {
         self.id = id
         self.date = date
@@ -27,11 +27,11 @@ final class WorkoutSession {
     }
 }
 
-extension WorkoutSession {
+extension WorkoutSessionEntity {
     convenience init(dto: WorkoutSessionDTO) {
         self.init(id: dto.id, date: dto.date, entries: [])
         self.entries = dto.entries.map { entryDTO in
-            let entry = WorkoutEntry(dto: entryDTO)
+            let entry = WorkoutEntryEntity(dto: entryDTO)
             entry.session = self
             return entry
         }
@@ -61,7 +61,7 @@ extension WorkoutSession {
         entries.forEach { context.delete($0) }
         
         self.entries = dto.entries.map { entryDTO in
-            let entry = WorkoutEntry(dto: entryDTO)
+            let entry = WorkoutEntryEntity(dto: entryDTO)
             entry.session = self
             return entry
         }

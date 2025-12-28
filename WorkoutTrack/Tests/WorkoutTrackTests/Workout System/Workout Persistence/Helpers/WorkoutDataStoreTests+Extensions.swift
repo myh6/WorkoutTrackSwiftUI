@@ -13,7 +13,7 @@ class WorkoutDataStoreTests: XCTestCase {}
 
 extension WorkoutDataStoreTests {
     func makeSUT(file: StaticString = #file, line: UInt = #line) -> WorkoutSessionStore {
-        let schema = Schema([WorkoutSession.self])
+        let schema = Schema([WorkoutSessionEntity.self])
         let sut = try! SwiftDataWorkoutSessionStore(modelContainer: ModelContainer(for: schema, configurations: ModelConfiguration(isStoredInMemoryOnly: true)))
         trackForMemoryLeaks(sut, file: file, line: line)
         return sut
