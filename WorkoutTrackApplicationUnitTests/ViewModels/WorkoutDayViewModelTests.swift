@@ -18,7 +18,7 @@ struct WorkoutDayViewModelTests {
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         
-        try await sut.load()
+        await sut.load()
         
         let query = try #require(spy.receivedQuery)
         let range = try #require(query.dateRange)
@@ -31,7 +31,7 @@ struct WorkoutDayViewModelTests {
     }
     
     @Test
-    func load_setsStateToEmpty_whenServiceReturnsNoSessions() async throws {
+    func load_setsStateToEmpty_whenServiceReturnsNoSessions() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
@@ -39,13 +39,13 @@ struct WorkoutDayViewModelTests {
         
         #expect(sut.state == .idle)
         
-        try await sut.load()
+        await sut.load()
         
         #expect(sut.state == .empty)
     }
     
     @Test
-    func load_setsStateToLoaded_whenServiceReturnsSessions() async throws {
+    func load_setsStateToLoaded_whenServiceReturnsSessions() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
@@ -53,9 +53,25 @@ struct WorkoutDayViewModelTests {
         
         #expect(sut.state == .idle)
         
-        try await sut.load()
+        await sut.load()
         
         #expect(sut.state == .loaded)
+    }
+    
+    @Test
+    func load_setsStateToFailed_whenServiceThrows() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        spy.stubRetrievalError(anyError("testing crashes"))
+        
+        await sut.load()
+        
+        if case .failed(let message) = sut.state {
+            #expect(message.contains("testing crashes"))
+        } else {
+            #expect(Bool(false))
+        }
     }
     
     //MARK: - Helpers
@@ -68,9 +84,14 @@ struct WorkoutDayViewModelTests {
     private class WorkoutServiceSpy: WorkoutTracking {
         private(set) var receivedQuery: SessionQueryDescriptor?
         private var stubbedSessions: [WorkoutSession] = []
+        private var stubbedRetrievalError: Error?
         
         func stubSessions(_ sessions: [WorkoutSession]) {
             stubbedSessions = sessions
+        }
+        
+        func stubRetrievalError(_ error: Error) {
+            stubbedRetrievalError = error
         }
         
         func getExerciseName(from id: UUID) async throws -> String? {
@@ -88,7 +109,12 @@ struct WorkoutDayViewModelTests {
         
         func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSession] {
             receivedQuery = query
-            return stubbedSessions
+            
+            if let stubbedRetrievalError {
+                throw stubbedRetrievalError
+            } else {
+                return stubbedSessions
+            }
         }
         
         func addSessions(_ sessions: [WorkoutSession]) async throws {
@@ -122,4 +148,8 @@ struct WorkoutDayViewModelTests {
 
 func anySession(id: UUID = UUID(), date: Date = Date(), entries: [WorkoutEntry] = []) -> WorkoutSession {
     return WorkoutSession(id: id, date: date, entries: entries)
+}
+
+func anyError(_ domain: String = "Any error", _ code: Int = 0) -> NSError {
+    return NSError(domain: domain, code: code)
 }

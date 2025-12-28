@@ -15,7 +15,7 @@ class WorkoutDayViewModel: ObservableObject {
     private let calendar: Calendar
     
     enum State: Equatable {
-        case idle, empty, loaded
+        case idle, empty, loaded, failed(String)
     }
     
     private(set) var state: State = .idle
@@ -26,12 +26,16 @@ class WorkoutDayViewModel: ObservableObject {
         self.calendar = calendar
     }
     
-    func load() async throws {
+    func load() async {
         let query = QueryBuilder()
             .filterDateRange(selectedDate.dayRange(in: calendar))
             .build()
-        let sessions = try await service.retrieveSessions(by: query)
-        state = sessions.isEmpty ? .empty : .loaded
+        do {
+            let sessions = try await service.retrieveSessions(by: query)
+            state = sessions.isEmpty ? .empty : .loaded
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
 }
