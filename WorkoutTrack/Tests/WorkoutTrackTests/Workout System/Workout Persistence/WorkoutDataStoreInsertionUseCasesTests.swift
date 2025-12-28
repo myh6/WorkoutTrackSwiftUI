@@ -120,7 +120,7 @@ final class WorkoutDataStoreInsertionUseCasesTests: WorkoutDataStoreTests {
     
     
     //MARK: - Helpers
-    private func appendingEntries(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) -> WorkoutSessionDTO {
-        WorkoutSessionDTO(id: session.id, date: session.date, entries: session.entries + entries)
+    private func appendingEntries(_ entries: [WorkoutEntry], to session: WorkoutSession) -> WorkoutSession {
+        WorkoutSession(id: session.id, date: session.date, entries: session.entries + entries)
     }
 }

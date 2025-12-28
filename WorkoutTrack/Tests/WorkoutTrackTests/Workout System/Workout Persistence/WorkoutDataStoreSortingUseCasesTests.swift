@@ -80,7 +80,7 @@ final class WorkoutDataStoreSortingUseCasesTests: WorkoutDataStoreTests {
         try await sut.insert(session)
 
         let expected = [
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: [entry2, entry1, entry3]
@@ -102,7 +102,7 @@ final class WorkoutDataStoreSortingUseCasesTests: WorkoutDataStoreTests {
         try await sut.insert(session)
         
         let expected = [
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: [entry1, entry2].sorted{ $0.id < $1.id} + [entry3, entry4])
@@ -129,7 +129,7 @@ final class WorkoutDataStoreSortingUseCasesTests: WorkoutDataStoreTests {
         try await sut.insert(session)
         
         let expected = [
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: [entry1, entry2, entry3, entry4, entry5]

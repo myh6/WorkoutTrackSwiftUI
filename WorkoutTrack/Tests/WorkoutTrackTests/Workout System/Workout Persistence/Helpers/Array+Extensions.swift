@@ -7,40 +7,40 @@
 import Foundation
 @testable import WorkoutTrack
 
-extension Array where Element == WorkoutSessionDTO {
-    func sortedBySessionInAscendingOrder() -> [WorkoutSessionDTO] {
+extension Array where Element == WorkoutSession {
+    func sortedBySessionInAscendingOrder() -> [WorkoutSession] {
         sorted { $0.id < $1.id }
     }
     
-    func sortedBySessionInDescendingOrder() -> [WorkoutSessionDTO] {
+    func sortedBySessionInDescendingOrder() -> [WorkoutSession] {
         sorted { $0.id > $1.id }
     }
     
-    func sortedByDateInAscendingOrder() -> [WorkoutSessionDTO] {
+    func sortedByDateInAscendingOrder() -> [WorkoutSession] {
         sorted { $0.date < $1.date }
     }
     
-    func sortedByDateInDescendingOrder() -> [WorkoutSessionDTO] {
+    func sortedByDateInDescendingOrder() -> [WorkoutSession] {
         sorted { $0.date > $1.date }
     }
 }
 
-extension Array where Element == WorkoutEntryDTO {
-    func sortedByDefaultOrder() -> [WorkoutEntryDTO] {
+extension Array where Element == WorkoutEntry {
+    func sortedByDefaultOrder() -> [WorkoutEntry] {
         return sortedByEntryCreatedAtInAscendingOrder()
     }
     
-    func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntryDTO] {
+    func sortedByEntryCreatedAtInAscendingOrder() -> [WorkoutEntry] {
         sorted { $0.createdAt < $1.createdAt }
     }
 }
 
-extension Array where Element == WorkoutSetDTO {
-    func sortedByDefaultOrder() -> [WorkoutSetDTO] {
+extension Array where Element == WorkoutSet {
+    func sortedByDefaultOrder() -> [WorkoutSet] {
         sortedByOrder()
     }
     
-    func sortedByOrder() -> [WorkoutSetDTO] {
+    func sortedByOrder() -> [WorkoutSet] {
         sorted { $0.order < $1.order }
     }
 }

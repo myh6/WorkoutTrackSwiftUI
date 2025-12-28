@@ -1,5 +1,5 @@
 //
-//  WorkoutSetDTO.swift
+//  WorkoutSet.swift
 //  WorkoutTrack
 //
 //  Created by Min-Yang Huang on 2025/11/28.
@@ -7,7 +7,8 @@
 
 import Foundation
 
-public struct WorkoutSetDTO: Equatable, Identifiable {
+// DTO
+public struct WorkoutSet: Equatable, Identifiable {
     public let id: UUID
     public let reps: Int
     public let weight: Double
@@ -23,7 +24,7 @@ public struct WorkoutSetDTO: Equatable, Identifiable {
     }
 }
 
-extension Array where Element == WorkoutSetDTO {
+extension Array where Element == WorkoutSet {
     func hasSet(id: UUID) -> Bool {
         return map(\.id).contains(id)
     }

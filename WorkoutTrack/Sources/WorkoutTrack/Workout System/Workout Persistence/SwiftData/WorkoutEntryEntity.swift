@@ -39,7 +39,7 @@ final class WorkoutEntryEntity {
 }
 
 extension WorkoutEntryEntity {
-    convenience init(dto: WorkoutEntryDTO) {
+    convenience init(dto: WorkoutEntry) {
         self.init(id: dto.id, exerciseID: dto.exerciseID, session: nil, sets: [], createdAt: dto.createdAt, order: dto.order)
         self.sets = dto.sets.map { setDTO in
             let set = WorkoutSetEntity(dto: setDTO)
@@ -48,11 +48,11 @@ extension WorkoutEntryEntity {
         }
     }
     
-    var dto: WorkoutEntryDTO {
-        WorkoutEntryDTO(id: id, exerciseID: exerciseID, sets: sets.map(\.dto).sorted { $0.order < $1.order }, createdAt: createdAt, order: order)
+    var dto: WorkoutEntry {
+        WorkoutEntry(id: id, exerciseID: exerciseID, sets: sets.map(\.dto).sorted { $0.order < $1.order }, createdAt: createdAt, order: order)
     }
     
-    func update(from dto: WorkoutEntryDTO, in context: ModelContext) {
+    func update(from dto: WorkoutEntry, in context: ModelContext) {
         self.exerciseID = dto.exerciseID
         self.order = dto.order
         self.createdAt = dto.createdAt

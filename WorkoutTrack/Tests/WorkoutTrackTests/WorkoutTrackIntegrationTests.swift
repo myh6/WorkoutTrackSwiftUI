@@ -467,11 +467,11 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
         return service
     }
     
-    private func mergeEntriesToOne(_ entries: WorkoutEntryDTO...) -> WorkoutEntryDTO {
+    private func mergeEntriesToOne(_ entries: WorkoutEntry...) -> WorkoutEntry {
         let mergedSets = entries.flatMap(\.sets)
             .enumerated()
             .map { index, set in
-                WorkoutSetDTO(
+                WorkoutSet(
                     id: set.id,
                     reps: set.reps,
                     weight: set.weight,
@@ -479,6 +479,6 @@ final class WorkoutTrackIntegrationTests: XCTestCase {
                     order: index)
             }
         let base = entries[0]
-        return WorkoutEntryDTO(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
+        return WorkoutEntry(id: base.id, exerciseID: base.exerciseID, sets: mergedSets, createdAt: base.createdAt, order: base.order)
     }
 }

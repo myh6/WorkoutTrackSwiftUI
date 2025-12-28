@@ -8,14 +8,14 @@
 import Foundation
 
 public struct PRCalculator {
-    public static func maxWeightPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
+    public static func maxWeightPR(for exercise: UUID, from workouts: [WorkoutSession]) -> ExerciseRecord? {
         return workouts
             .mapToExerciseRecords(for: exercise)
             .filter { $0.set.isFinished }
             .max(by: { $0.set.weight < $1.set.weight })
     }
     
-    public static func maxRepsPR(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> ExerciseRecord? {
+    public static func maxRepsPR(for exercise: UUID, from workouts: [WorkoutSession]) -> ExerciseRecord? {
         return workouts
             .mapToExerciseRecords(for: exercise)
             .filter { $0.set.isFinished }

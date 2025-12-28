@@ -59,7 +59,7 @@ final class OneRepMaxCalculatorTests: XCTestCase {
         date: Date = .now,
         exerciseID: UUID,
         sets: [(reps: Int, weight: Double)]
-    ) -> WorkoutSessionDTO {
+    ) -> WorkoutSession {
         let dummySet = [
             anySet(reps: 10, weight: 10, isFinished: false),
             anySet(reps: 3, weight: 30, isFinished: false),
@@ -68,7 +68,7 @@ final class OneRepMaxCalculatorTests: XCTestCase {
         let entry = anyEntry(
             exercise: exerciseID,
             sets: sets.enumerated().map { index, set in
-                WorkoutSetDTO(
+                WorkoutSet(
                     id: UUID(),
                     reps: set.reps,
                     weight: set.weight,
@@ -76,7 +76,7 @@ final class OneRepMaxCalculatorTests: XCTestCase {
                     order: index
                 )
             } + dummySet)
-        return WorkoutSessionDTO(
+        return WorkoutSession(
             id: UUID(),
             date: date,
             entries: [entry]

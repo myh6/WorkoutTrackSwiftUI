@@ -9,21 +9,21 @@ import Foundation
 
 public protocol WorkoutSessionStore {
     //MARK: - Insertion
-    func insert(_ session: WorkoutSessionDTO) async throws
-    func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) async throws
-    func insert(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) async throws
+    func insert(_ session: WorkoutSession) async throws
+    func insert(_ entries: [WorkoutEntry], to session: WorkoutSession) async throws
+    func insert(_ sets: [WorkoutSet], to entry: WorkoutEntry) async throws
     
     //MARK: - Retrieval
-    func retrieve(query: SessionQueryDescriptor?) async throws -> [WorkoutSessionDTO]
+    func retrieve(query: SessionQueryDescriptor?) async throws -> [WorkoutSession]
     
     //MARK: - Deletion
-    func delete(_ session: WorkoutSessionDTO) async throws
-    func delete(_ entry: WorkoutEntryDTO) async throws
-    func delete(_ set: WorkoutSetDTO) async throws
+    func delete(_ session: WorkoutSession) async throws
+    func delete(_ entry: WorkoutEntry) async throws
+    func delete(_ set: WorkoutSet) async throws
     
     //MARK: - Update
-    func update(_ session: WorkoutSessionDTO) async throws
-    func update(_ entry: WorkoutEntryDTO) async throws
-    func update(_ set: WorkoutSetDTO) async throws
+    func update(_ session: WorkoutSession) async throws
+    func update(_ entry: WorkoutEntry) async throws
+    func update(_ set: WorkoutSet) async throws
 }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 public struct StreakAnalyzer {
-    public static func getWorkoutDays(from workouts: [WorkoutSessionDTO], calendar: Calendar = .current) -> [Date: Bool] {
+    public static func getWorkoutDays(from workouts: [WorkoutSession], calendar: Calendar = .current) -> [Date: Bool] {
         var result: [Date: Bool] = [:]
         
         for session in workouts {

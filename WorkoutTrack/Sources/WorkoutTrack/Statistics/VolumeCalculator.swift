@@ -18,7 +18,7 @@ public struct VolumeStat: Equatable {
 }
 
 public struct VolumeCalculator {
-    public static func getDailyVolume(from workouts: [WorkoutSessionDTO], filteredByExercise exercise: UUID?) -> [VolumeStat] {
+    public static func getDailyVolume(from workouts: [WorkoutSession], filteredByExercise exercise: UUID?) -> [VolumeStat] {
         return workouts.map { session in
             let totalVolume = session.entries
                 .filter {
@@ -32,7 +32,7 @@ public struct VolumeCalculator {
         }
     }
     
-    public static func volumePerExercise(from sessions: [WorkoutSessionDTO]) -> [UUID: Double] {
+    public static func volumePerExercise(from sessions: [WorkoutSession]) -> [UUID: Double] {
         var res = [UUID: Double]()
         
         for session in sessions {
@@ -46,7 +46,7 @@ public struct VolumeCalculator {
         return res
     }
     
-    private static func calculateVolume(_ initial: Double, _ nextSet: WorkoutSetDTO) -> Double {
+    private static func calculateVolume(_ initial: Double, _ nextSet: WorkoutSet) -> Double {
         initial + (Double(nextSet.reps) * nextSet.weight)
     }
 }

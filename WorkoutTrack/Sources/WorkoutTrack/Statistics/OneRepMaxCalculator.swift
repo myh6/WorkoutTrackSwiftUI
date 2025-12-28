@@ -24,7 +24,7 @@ public struct OneRepMaxCalculator {
         self.calendar = calendar
     }
     
-    public func getBestOneRepMax(for exercise: UUID, from workouts: [WorkoutSessionDTO]) -> [OneRepMaxRecord] {
+    public func getBestOneRepMax(for exercise: UUID, from workouts: [WorkoutSession]) -> [OneRepMaxRecord] {
         var dailyBest: [DateComponents: OneRepMaxRecord] = [:]
         
         for session in workouts {

@@ -58,7 +58,7 @@ final class VolumeCalculatorTests: XCTestCase {
         let exerciseA = UUID()
         let exerciseB = UUID()
         
-        let sessions: [WorkoutSessionDTO] = [
+        let sessions: [WorkoutSession] = [
             anySession(entries: [
                 anyEntry(exercise: exerciseA, sets: [
                     anySet(reps: 10, weight: 20, isFinished: true),  // 200
@@ -81,7 +81,7 @@ final class VolumeCalculatorTests: XCTestCase {
     }
     
     //MARK: - Helpers
-    private func getTwoDaysBeforeSession() -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getTwoDaysBeforeSession() -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date().adding(days: -2)
         let session = anySession(date: date, entries: [
             anyEntry(sets: [
@@ -99,7 +99,7 @@ final class VolumeCalculatorTests: XCTestCase {
         return (session, VolumeStat(date: date, volume: 525))
     }
     
-    private func getOneDaysBeforeSession() -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getOneDaysBeforeSession() -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date().adding(days: -1)
         let session = anySession(date: date, entries: [
             anyEntry(sets: [
@@ -115,7 +115,7 @@ final class VolumeCalculatorTests: XCTestCase {
         return (session, VolumeStat(date: date, volume: 225))
     }
     
-    private func getTodaySession() -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getTodaySession() -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date()
         let session = anySession(date: date, entries: [
             anyEntry(sets: [
@@ -132,7 +132,7 @@ final class VolumeCalculatorTests: XCTestCase {
     }
     
     // MARK: - Filtered Exercise Helpers
-    private func getTodaySessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getTodaySessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date()
         let unrelatedExercise = UUID()
 
@@ -151,7 +151,7 @@ final class VolumeCalculatorTests: XCTestCase {
         return (session, VolumeStat(date: date, volume: 100))
     }
 
-    private func getOneDayBeforeSessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getOneDayBeforeSessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date().adding(days: -1)
         let unrelatedExercise = UUID()
 
@@ -170,7 +170,7 @@ final class VolumeCalculatorTests: XCTestCase {
         return (session, VolumeStat(date: date, volume: 25))
     }
 
-    private func getTwoDaysBeforeSessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSessionDTO, volume: VolumeStat) {
+    private func getTwoDaysBeforeSessionWithMixedExercises(targetExercise: UUID) -> (session: WorkoutSession, volume: VolumeStat) {
         let date = Date().adding(days: -2)
         let unrelatedExercise = UUID()
 

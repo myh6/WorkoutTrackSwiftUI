@@ -12,7 +12,7 @@ import SwiftData
 final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     
     //MARK: - Retrieve
-    func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSessionDTO] {
+    func retrieve(query: SessionQueryDescriptor?) throws -> [WorkoutSession] {
         var descriptor = FetchDescriptor<WorkoutSessionEntity>()
         let (predicate, sort, postProcess) = translate(query)
         if let predicate {
@@ -29,7 +29,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     }
     
     //MARK: - Insert
-    func insert(_ session: WorkoutSessionDTO) throws {
+    func insert(_ session: WorkoutSession) throws {
         if let existing = try getSessionFromContext(id: session.id) {
             existing.update(from: session, in: modelContext)
         } else {
@@ -40,7 +40,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
         try modelContext.save()
     }
     
-    func insert(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) throws {
+    func insert(_ entries: [WorkoutEntry], to session: WorkoutSession) throws {
         guard let existingSession = try getSessionFromContext(id: session.id) else {
             try insert(session)
             try insert(entries, to: session)
@@ -51,7 +51,7 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
         try modelContext.save()
     }
     
-    func insert(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO) throws {
+    func insert(_ sets: [WorkoutSet], to entry: WorkoutEntry) throws {
         guard let existingEntry = try getEntryFromContext(id: entry.id) else { return }
 
         sets.forEach { setDTO in
@@ -64,21 +64,21 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     }
     
     //MARK: - Delete
-    func delete(_ session: WorkoutSessionDTO) throws {
+    func delete(_ session: WorkoutSession) throws {
         guard let existing = try getSessionFromContext(id: session.id) else { return }
         
         modelContext.delete(existing)
         try modelContext.save()
     }
     
-    func delete(_ entry: WorkoutEntryDTO) throws {
+    func delete(_ entry: WorkoutEntry) throws {
         guard let existing = try getEntryFromContext(id: entry.id) else { return }
         
         modelContext.delete(existing)
         try modelContext.save()
     }
     
-    func delete(_ set: WorkoutSetDTO) throws {
+    func delete(_ set: WorkoutSet) throws {
         guard let existing = try getSetFromContext(id: set.id) else { return }
         
         modelContext.delete(existing)
@@ -86,20 +86,20 @@ final actor SwiftDataWorkoutSessionStore: WorkoutSessionStore {
     }
     
     //MARK: - Update
-    func update(_ session: WorkoutSessionDTO) throws {
+    func update(_ session: WorkoutSession) throws {
         guard let existing = try getSessionFromContext(id: session.id) else { return }
         
         existing.update(from: session, in: modelContext)
         try modelContext.save()
     }
     
-    func update(_ entry: WorkoutEntryDTO) throws {
+    func update(_ entry: WorkoutEntry) throws {
         guard let existing = try getEntryFromContext(id: entry.id) else { return }
         existing.update(from: entry, in: modelContext)
         try modelContext.save()
     }
     
-    func update(_ set: WorkoutSetDTO) throws {
+    func update(_ set: WorkoutSet) throws {
         guard let existing = try getSetFromContext(id: set.id) else { return }
         existing.update(from: set, in: modelContext)
         try modelContext.save()
@@ -122,13 +122,13 @@ extension SwiftDataWorkoutSessionStore {
         return try modelContext.fetch(descriptor).first
     }
     
-    private func insert(_ entryDTO: WorkoutEntryDTO, in session: WorkoutSessionEntity) {
+    private func insert(_ entryDTO: WorkoutEntry, in session: WorkoutSessionEntity) {
         let entry = WorkoutEntryEntity(dto: entryDTO)
         entry.session = session
         modelContext.insert(entry)
     }
     
-    typealias Process = ([WorkoutSessionDTO]) -> [WorkoutSessionDTO]
+    typealias Process = ([WorkoutSession]) -> [WorkoutSession]
     private func translate(_ query: SessionQueryDescriptor?) -> (Predicate<WorkoutSessionEntity>?, [SortDescriptor<WorkoutSessionEntity>], Process?) {
         guard let query else { return (nil, [], nil) }
         let predicate = PredicateFactory.getPredicate(query.sessionId, query.dateRange)

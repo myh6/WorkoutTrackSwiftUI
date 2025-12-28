@@ -28,7 +28,7 @@ final class WorkoutSessionEntity {
 }
 
 extension WorkoutSessionEntity {
-    convenience init(dto: WorkoutSessionDTO) {
+    convenience init(dto: WorkoutSession) {
         self.init(id: dto.id, date: dto.date, entries: [])
         self.entries = dto.entries.map { entryDTO in
             let entry = WorkoutEntryEntity(dto: entryDTO)
@@ -37,14 +37,14 @@ extension WorkoutSessionEntity {
         }
     }
     
-    var dto: WorkoutSessionDTO {
-        WorkoutSessionDTO(id: id, date: date, entries: entries
+    var dto: WorkoutSession {
+        WorkoutSession(id: id, date: date, entries: entries
             .map(\.dto)
             .sorted(by: sortByCreatedAtThenCustomThenUUID)
         )
     }
     
-    private func sortByCreatedAtThenCustomThenUUID(_ entry1: WorkoutEntryDTO, _ entry2: WorkoutEntryDTO) -> Bool {
+    private func sortByCreatedAtThenCustomThenUUID(_ entry1: WorkoutEntry, _ entry2: WorkoutEntry) -> Bool {
         if entry1.createdAt != entry2.createdAt {
             return entry1.createdAt < entry2.createdAt
         } else {
@@ -56,7 +56,7 @@ extension WorkoutSessionEntity {
         }
     }
     
-    func update(from dto: WorkoutSessionDTO, in context: ModelContext) {
+    func update(from dto: WorkoutSession, in context: ModelContext) {
         self.date = dto.date
         entries.forEach { context.delete($0) }
         

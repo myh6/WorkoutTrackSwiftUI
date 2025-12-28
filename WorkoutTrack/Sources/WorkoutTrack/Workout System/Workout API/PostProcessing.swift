@@ -15,7 +15,7 @@ public enum PostProcessing: Equatable {
 }
 
 extension PostProcessing {
-    var transform: ([WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+    var transform: ([WorkoutSession]) -> [WorkoutSession] {
         switch self {
         case .sortByEntryCustomOrder:
             return Self.sortByEntryCustomOrder
@@ -32,9 +32,9 @@ extension PostProcessing {
         }
     }
     
-    private static func sortByEntryCustomOrder(sessions: [WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+    private static func sortByEntryCustomOrder(sessions: [WorkoutSession]) -> [WorkoutSession] {
         sessions.map { session in
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: session.entries.sorted { $0.order < $1.order }
@@ -42,7 +42,7 @@ extension PostProcessing {
         }
     }
     
-    private static func containsExercises(ids: [UUID], in sessions: [WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+    private static func containsExercises(ids: [UUID], in sessions: [WorkoutSession]) -> [WorkoutSession] {
         let set = Set(ids)
         return sessions.filter { session in
             let exerciseIds = Set(session.entries.map(\.exerciseID))
@@ -50,13 +50,13 @@ extension PostProcessing {
         }
     }
     
-    private static func onlyIncludeFinishedSets(sessions: [WorkoutSessionDTO]) -> [WorkoutSessionDTO] {
+    private static func onlyIncludeFinishedSets(sessions: [WorkoutSession]) -> [WorkoutSession] {
         sessions.map { session in
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: session.entries.map { entry in
-                    WorkoutEntryDTO(
+                    WorkoutEntry(
                         id: entry.id,
                         exerciseID: entry.exerciseID,
                         sets: entry.sets.filter { $0.isFinished },
@@ -66,10 +66,10 @@ extension PostProcessing {
         }
     }
     
-    private static func onlyIncludeExercises(ids: [UUID], in sessions: [WorkoutSessionDTO])
-    -> [WorkoutSessionDTO] {
+    private static func onlyIncludeExercises(ids: [UUID], in sessions: [WorkoutSession])
+    -> [WorkoutSession] {
         sessions.map { session in
-            WorkoutSessionDTO(
+            WorkoutSession(
                 id: session.id,
                 date: session.date,
                 entries: session.entries.filter {

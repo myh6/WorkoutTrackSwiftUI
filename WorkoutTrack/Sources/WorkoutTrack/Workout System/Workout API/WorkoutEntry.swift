@@ -1,5 +1,5 @@
 //
-//  WorkoutEntryDTO.swift
+//  WorkoutEntry.swift
 //  WorkoutTrack
 //
 //  Created by Min-Yang Huang on 2025/11/28.
@@ -7,14 +7,15 @@
 
 import Foundation
 
-public struct WorkoutEntryDTO: Equatable, Identifiable {
+// DTO
+public struct WorkoutEntry: Equatable, Identifiable {
     public let id: UUID
     public let exerciseID: UUID
-    public let sets: [WorkoutSetDTO]
+    public let sets: [WorkoutSet]
     public let createdAt: Date
     public let order: Int
     
-    public init(id: UUID, exerciseID: UUID, sets: [WorkoutSetDTO], createdAt: Date, order: Int) {
+    public init(id: UUID, exerciseID: UUID, sets: [WorkoutSet], createdAt: Date, order: Int) {
         self.id = id
         self.exerciseID = exerciseID
         self.sets = sets
@@ -23,14 +24,14 @@ public struct WorkoutEntryDTO: Equatable, Identifiable {
     }
 }
 
-extension WorkoutEntryDTO {
-    private func withSets(_ sets: [WorkoutSetDTO]) -> WorkoutEntryDTO {
-        WorkoutEntryDTO(id: self.id, exerciseID: self.exerciseID, sets: sets, createdAt: self.createdAt, order: self.order)
+extension WorkoutEntry {
+    private func withSets(_ sets: [WorkoutSet]) -> WorkoutEntry {
+        WorkoutEntry(id: self.id, exerciseID: self.exerciseID, sets: sets, createdAt: self.createdAt, order: self.order)
     }
     
-    func normalizedSetOrder() -> WorkoutEntryDTO {
+    func normalizedSetOrder() -> WorkoutEntry {
         let normalizedSets = sets.enumerated().map { index, set in
-            WorkoutSetDTO(id: set.id,
+            WorkoutSet(id: set.id,
                           reps: set.reps,
                           weight: set.weight,
                           isFinished: set.isFinished,
@@ -40,12 +41,12 @@ extension WorkoutEntryDTO {
     }
 }
 
-extension Array where Element == WorkoutEntryDTO {
+extension Array where Element == WorkoutEntry {
     func hasEntry(id: UUID) -> Bool {
         return map(\.id).contains(id)
     }
     
-    func hasExercise(id: UUID) -> WorkoutEntryDTO? {
+    func hasExercise(id: UUID) -> WorkoutEntry? {
         return filter({ $0.exerciseID == id }).first
     }
 }

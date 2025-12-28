@@ -37,15 +37,15 @@ final class WorkoutSetEntity {
 }
 
 extension WorkoutSetEntity {
-    convenience init(dto: WorkoutSetDTO) {
+    convenience init(dto: WorkoutSet) {
         self.init(id: dto.id, reps: dto.reps, weight: dto.weight, isFinished: dto.isFinished, order: dto.order, entry: nil)
     }
     
-    var dto: WorkoutSetDTO {
-        WorkoutSetDTO(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
+    var dto: WorkoutSet {
+        WorkoutSet(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
     }
     
-    func update(from set: WorkoutSetDTO, in session: ModelContext) {
+    func update(from set: WorkoutSet, in session: ModelContext) {
         self.reps = set.reps
         self.weight = set.weight
         self.isFinished = set.isFinished

@@ -8,12 +8,12 @@
 import Foundation
 
 public struct ExerciseRecord {
-    public let session: WorkoutSessionDTO
-    public let entry: WorkoutEntryDTO
-    public let set: WorkoutSetDTO
+    public let session: WorkoutSession
+    public let entry: WorkoutEntry
+    public let set: WorkoutSet
 }
 
-extension Array where Element == WorkoutSessionDTO {
+extension Array where Element == WorkoutSession {
     func mapToExerciseRecords(for exercise: UUID) -> [ExerciseRecord] {
         self.flatMap { session in
             session.entries

@@ -55,9 +55,9 @@ struct WorkoutDayViewModelTests {
     
     private class WorkoutServiceSpy: WorkoutTracking {
         private(set) var receivedQuery: SessionQueryDescriptor?
-        private var stubbedSessions: [WorkoutSessionDTO] = []
+        private var stubbedSessions: [WorkoutSession] = []
         
-        func stubSessions(_ sessions: [WorkoutSessionDTO]) {
+        func stubSessions(_ sessions: [WorkoutSession]) {
             stubbedSessions = sessions
         }
         
@@ -74,36 +74,40 @@ struct WorkoutDayViewModelTests {
         func updateExercise(_ exercise: CustomExercise) async throws {
         }
         
-        func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSessionDTO] {
+        func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSession] {
             receivedQuery = query
             return stubbedSessions
         }
         
-        func addSessions(_ sessions: [WorkoutSessionDTO]) async throws {
+        func addSessions(_ sessions: [WorkoutSession]) async throws {
         }
         
-        func updateSession(_ session: WorkoutSessionDTO) async throws {
+        func updateSession(_ session: WorkoutSession) async throws {
         }
         
-        func deleteSession(_ session: WorkoutSessionDTO) async throws {
+        func deleteSession(_ session: WorkoutSession) async throws {
         }
         
-        func addEntry(_ entries: [WorkoutEntryDTO], to session: WorkoutSessionDTO) async throws {
+        func addEntry(_ entries: [WorkoutEntry], to session: WorkoutSession) async throws {
         }
         
-        func updateEntry(_ entry: WorkoutEntryDTO, within session: WorkoutSessionDTO) async throws {
+        func updateEntry(_ entry: WorkoutEntry, within session: WorkoutSession) async throws {
         }
         
-        func deleteEntry(_ entry: WorkoutEntryDTO) async throws {
+        func deleteEntry(_ entry: WorkoutEntry) async throws {
         }
         
-        func addSets(_ sets: [WorkoutSetDTO], to entry: WorkoutEntryDTO, within session: UUID) async throws {
+        func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
         }
         
-        func updateSet(_ set: WorkoutSetDTO, within entry: WorkoutEntryDTO, and session: UUID) async throws {
+        func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
         }
         
-        func deleteSet(_ set: WorkoutSetDTO) async throws {
+        func deleteSet(_ set: WorkoutSet) async throws {
         }
     }
+}
+
+func anySession(id: UUID = UUID(), date: Date = Date(), entries: [WorkoutEntry] = []) -> WorkoutSession {
+    return WorkoutSession(id: id, date: date, entries: entries)
 }
