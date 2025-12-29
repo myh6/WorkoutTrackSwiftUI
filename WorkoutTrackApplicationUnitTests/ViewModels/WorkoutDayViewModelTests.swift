@@ -114,6 +114,17 @@ struct WorkoutDayViewModelTests {
         #expect(range.upperBound == expectedUpper)
     }
     
+    @Test
+    func selectDate_sameDate_doesNotTriggerAdditionalLoads() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        
+        #expect(spy.receivedQuery.isEmpty)
+        await sut.selectDate(selected)
+        #expect(spy.receivedQuery.isEmpty)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
