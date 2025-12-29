@@ -39,4 +39,8 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
+    func selectDate(_ newDate: Date) async {
+        selectedDate = newDate
+        await load()
+    }
 }

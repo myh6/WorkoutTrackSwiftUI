@@ -20,7 +20,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        let query = try #require(spy.receivedQuery)
+        let query = try #require(spy.receivedQuery.first)
         let range = try #require(query.dateRange)
         
         let start = selected.startOfDay(in: calendar)
@@ -94,6 +94,26 @@ struct WorkoutDayViewModelTests {
         #expect(sut.state == .empty)
     }
     
+    @Test
+    func selectDate_updatesQueryDateRange_automaticallyTriggersNextLoad() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let newDate = getDecember28th(calendar)
+        
+        #expect(spy.receivedQuery.isEmpty)
+        await sut.selectDate(newDate)
+        
+        let query = try #require(spy.receivedQuery.first)
+        let range = try #require(query.dateRange)
+        
+        let start = newDate.startOfDay(in: calendar)
+        #expect(range.lowerBound == start)
+        
+        let expectedUpper = newDate.addingDays(1, in: calendar).addingTimeInterval(-1)
+        #expect(range.upperBound == expectedUpper)
+    }
+    
     //MARK: - Helpers
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
@@ -101,8 +121,12 @@ struct WorkoutDayViewModelTests {
         return (viewModel, service)
     }
     
+    private func getDecember28th(_ calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: 2025, month: 12, day: 28))!
+    }
+    
     private class WorkoutServiceSpy: WorkoutTracking {
-        private(set) var receivedQuery: SessionQueryDescriptor?
+        private(set) var receivedQuery: [SessionQueryDescriptor] = []
         private var stubbedSessions: [WorkoutSession] = []
         private var stubbedRetrievalError: Error?
         private var shouldSuspend = false
@@ -144,7 +168,9 @@ struct WorkoutDayViewModelTests {
         }
         
         func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSession] {
-            receivedQuery = query
+            if let query {
+                receivedQuery.append(query)
+            }
             
             if let stubbedRetrievalError {
                 throw stubbedRetrievalError
