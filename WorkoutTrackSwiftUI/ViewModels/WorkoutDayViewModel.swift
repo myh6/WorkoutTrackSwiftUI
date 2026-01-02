@@ -8,6 +8,7 @@
 import Foundation
 import WorkoutTrack
 
+@MainActor
 class WorkoutDayViewModel: ObservableObject {
     
     @Published private(set) var selectedDate: Date

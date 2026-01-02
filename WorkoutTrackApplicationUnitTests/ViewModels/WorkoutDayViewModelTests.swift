@@ -12,6 +12,7 @@ import WorkoutTrack
 
 struct WorkoutDayViewModelTests {
     
+    @MainActor
     @Test
     func load_queryServiceWithSelectedDateDayRange() async throws {
         let calendar = makeCalendar()
@@ -30,6 +31,7 @@ struct WorkoutDayViewModelTests {
         #expect(range.upperBound == expectedUpper)
     }
     
+    @MainActor
     @Test
     func load_setsStateToEmpty_whenServiceReturnsNoSessions() async {
         let calendar = makeCalendar()
@@ -44,6 +46,7 @@ struct WorkoutDayViewModelTests {
         #expect(sut.state == .empty)
     }
     
+    @MainActor
     @Test
     func load_setsStateToLoaded_whenServiceReturnsSessions() async {
         let calendar = makeCalendar()
@@ -58,6 +61,7 @@ struct WorkoutDayViewModelTests {
         #expect(sut.state == .loaded)
     }
     
+    @MainActor
     @Test
     func load_setsStateToFailed_whenServiceThrows() async {
         let calendar = makeCalendar()
@@ -74,6 +78,7 @@ struct WorkoutDayViewModelTests {
         }
     }
     
+    @MainActor
     @Test
     func load_setsStateToLoading_whileAwaitingService() async {
         let calendar = makeCalendar()
@@ -94,6 +99,7 @@ struct WorkoutDayViewModelTests {
         #expect(sut.state == .empty)
     }
     
+    @MainActor
     @Test
     func selectDate_updatesQueryDateRange_automaticallyTriggersNextLoad() async throws {
         let calendar = makeCalendar()
@@ -114,6 +120,7 @@ struct WorkoutDayViewModelTests {
         #expect(range.upperBound == expectedUpper)
     }
     
+    @MainActor
     @Test
     func selectDate_sameDate_doesNotTriggerAdditionalLoads() async throws {
         let calendar = makeCalendar()
@@ -126,6 +133,7 @@ struct WorkoutDayViewModelTests {
     }
     
     //MARK: - Helpers
+    @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
         let viewModel = WorkoutDayViewModel(selectedDate: selectedDate, service: service, calendar: calendar)
@@ -134,6 +142,10 @@ struct WorkoutDayViewModelTests {
     
     private func getDecember28th(_ calendar: Calendar) -> Date {
         calendar.date(from: DateComponents(year: 2025, month: 12, day: 28))!
+    }
+    
+    private func getDecember30th(_ calendar: Calendar) -> Date {
+        calendar.date(from: DateComponents(year: 2025, month: 12, day: 30))!
     }
     
     private class WorkoutServiceSpy: WorkoutTracking {
