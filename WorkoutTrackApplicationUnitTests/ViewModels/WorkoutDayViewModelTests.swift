@@ -44,6 +44,7 @@ struct WorkoutDayViewModelTests {
         await sut.load()
         
         #expect(sut.state == .empty)
+        #expect(sut.sessions.isEmpty)
     }
     
     @MainActor
@@ -60,6 +61,27 @@ struct WorkoutDayViewModelTests {
         await sut.load()
         
         #expect(sut.state == .loaded(sessions))
+        #expect(sut.sessions == sessions)
+    }
+    
+    @MainActor
+    @Test
+    func load_empty_clearsSessions() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let sessions = [anySession()]
+        spy.stubSessions(sessions)
+        
+        await sut.load()
+        
+        #expect(sut.sessions == sessions)
+        
+        spy.stubSessions([])
+        
+        await sut.load()
+        
+        #expect(sut.state == .empty)
     }
     
     @MainActor

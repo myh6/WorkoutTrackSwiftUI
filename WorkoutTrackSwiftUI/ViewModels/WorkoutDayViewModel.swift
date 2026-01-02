@@ -20,6 +20,7 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     @Published private(set) var state: State = .idle
+    @Published private(set) var sessions: [WorkoutSession] = []
     
     init(selectedDate: Date, service: WorkoutTracking, calendar: Calendar) {
         self.selectedDate = selectedDate
@@ -33,7 +34,7 @@ class WorkoutDayViewModel: ObservableObject {
             .filterDateRange(selectedDate.dayRange(in: calendar))
             .build()
         do {
-            let sessions = try await service.retrieveSessions(by: query)
+            sessions = try await service.retrieveSessions(by: query)
             state = sessions.isEmpty ? .empty : .loaded(sessions)
         } catch {
             state = .failed(String(describing: error))
