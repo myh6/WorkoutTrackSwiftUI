@@ -52,13 +52,14 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        spy.stubSessions([anySession()])
+        let sessions = [anySession()]
+        spy.stubSessions(sessions)
         
         #expect(sut.state == .idle)
         
         await sut.load()
         
-        #expect(sut.state == .loaded)
+        #expect(sut.state == .loaded(sessions))
     }
     
     @MainActor

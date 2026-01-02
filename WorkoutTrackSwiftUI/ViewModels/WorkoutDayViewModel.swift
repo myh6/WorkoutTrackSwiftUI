@@ -16,7 +16,7 @@ class WorkoutDayViewModel: ObservableObject {
     private let calendar: Calendar
     
     enum State: Equatable {
-        case idle, empty, loading, loaded, failed(String)
+        case idle, empty, loading, loaded([WorkoutSession]), failed(String)
     }
     
     @Published private(set) var state: State = .idle
@@ -34,7 +34,7 @@ class WorkoutDayViewModel: ObservableObject {
             .build()
         do {
             let sessions = try await service.retrieveSessions(by: query)
-            state = sessions.isEmpty ? .empty : .loaded
+            state = sessions.isEmpty ? .empty : .loaded(sessions)
         } catch {
             state = .failed(String(describing: error))
         }
