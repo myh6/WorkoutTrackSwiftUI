@@ -8,6 +8,20 @@
 import Foundation
 import WorkoutTrack
 
+struct ExerciseSection {
+    let id: UUID
+    let title: String
+    let sets: [SetRow]
+    let isExpanded: Bool
+}
+
+struct SetRow {
+    let id: UUID
+    let reps: Int
+    let weight: Int
+    let isFinished: Bool
+}
+
 @MainActor
 class WorkoutDayViewModel: ObservableObject {
     
