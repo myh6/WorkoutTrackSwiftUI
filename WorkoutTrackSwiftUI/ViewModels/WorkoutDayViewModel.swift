@@ -18,8 +18,9 @@ struct ExerciseSection {
 struct SetRow {
     let id: UUID
     let reps: Int
-    let weight: Int
+    let weight: Double
     let isFinished: Bool
+    let order: Int
 }
 
 @MainActor
