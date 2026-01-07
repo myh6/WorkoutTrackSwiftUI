@@ -21,7 +21,7 @@ struct WorkoutDayMapper {
         return sessions.entries.map {
             ExerciseSection(
                 id: $0.id,
-                title: nameForExerciseID($0.exerciseID) ?? "",
+                title: nameForExerciseID($0.exerciseID) ?? "Unkown Exercise",
                 sets: $0.sets.map(sets),
                 isExpanded: expandedExerciseIDs.contains($0.id))
         }
@@ -63,6 +63,17 @@ struct WorkoutDayMapperTests {
         #expect(section.sets[0].isFinished == false)
         #expect(section.sets[1].weight == 20.0)
         #expect(section.sets[1].isFinished)
+    }
+    
+    @Test
+    func sections_fallsBackToUnkownTitle_whenNameProviderReturnsNil() {
+        let session = anySession(entries: [anyEntry(exercise: UUID())])
+        
+        let result = WorkoutDayMapper.sections(from: session, expandedExerciseIDs: []) { _ in nil }
+        
+        #expect(result.count == 1)
+        let section = result[0]
+        #expect(section.title == "Unkown Exercise")
     }
     
     //MARK: - Helpers
