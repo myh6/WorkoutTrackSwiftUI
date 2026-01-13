@@ -22,7 +22,7 @@ struct WorkoutDayMapper {
             ExerciseSection(
                 id: $0.id,
                 title: nameForExerciseID($0.exerciseID) ?? "Unknown Exercise",
-                sets: $0.sets.map(sets),
+                sets: $0.sets.map(sets).sorted { $0.order < $1.order },
                 isExpanded: expandedEntryIDs.contains($0.id))
         }
     }
@@ -74,6 +74,19 @@ struct WorkoutDayMapperTests {
         #expect(result.count == 1)
         let section = result[0]
         #expect(section.title == "Unknown Exercise")
+    }
+    
+    @Test
+    func sections_ordersSetRowsByOrder() {
+        let exercise = UUID()
+        let setA = anySet(weight: 10, isFinished: false, order: 1)
+        let setB = anySet(weight: 20, isFinished: false, order: 0)
+        let entry = anyEntry(exercise: exercise, sets: [setA, setB])
+        let session = anySession(entries: [entry])
+
+        let result = WorkoutDayMapper.sections(from: session, expandedEntryIDs: [], nameForExerciseID: { _ in "E" })
+
+        #expect(result[0].sets.map(\.order) == [0, 1])
     }
     
     //MARK: - Helpers
