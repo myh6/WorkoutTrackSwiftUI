@@ -14,16 +14,16 @@ struct WorkoutDayMapper {
     typealias ExerciseNameResolver = (UUID) -> String?
     
     static func sections(from sessions: WorkoutSession?,
-                         expandedExerciseIDs: Set<UUID>,
+                         expandedEntryIDs: Set<UUID>,
                          nameForExerciseID: ExerciseNameResolver) -> [ExerciseSection] {
         guard let sessions else { return [] }
         
         return sessions.entries.map {
             ExerciseSection(
                 id: $0.id,
-                title: nameForExerciseID($0.exerciseID) ?? "Unkown Exercise",
+                title: nameForExerciseID($0.exerciseID) ?? "Unknown Exercise",
                 sets: $0.sets.map(sets),
-                isExpanded: expandedExerciseIDs.contains($0.id))
+                isExpanded: expandedEntryIDs.contains($0.id))
         }
     }
     
@@ -36,7 +36,7 @@ struct WorkoutDayMapperTests {
     
     @Test
     func sections_emptySession_returnEmpty() {
-        let result = WorkoutDayMapper.sections(from: .none, expandedExerciseIDs: [], nameForExerciseID: { _ in nil })
+        let result = WorkoutDayMapper.sections(from: .none, expandedEntryIDs: [], nameForExerciseID: { _ in nil })
         
         #expect(result.isEmpty)
     }
@@ -50,7 +50,7 @@ struct WorkoutDayMapperTests {
         let entry = anyEntry(exercise: exercise, sets: [set1, set2])
         let session = anySession(entries: [entry])
         
-        let result = WorkoutDayMapper.sections(from: session, expandedExerciseIDs: [], nameForExerciseID: { _ in "Test Exercise" })
+        let result = WorkoutDayMapper.sections(from: session, expandedEntryIDs: [], nameForExerciseID: { _ in "Test Exercise" })
         
         #expect(result.count == 1)
         
@@ -69,11 +69,11 @@ struct WorkoutDayMapperTests {
     func sections_fallsBackToUnkownTitle_whenNameProviderReturnsNil() {
         let session = anySession(entries: [anyEntry(exercise: UUID())])
         
-        let result = WorkoutDayMapper.sections(from: session, expandedExerciseIDs: []) { _ in nil }
+        let result = WorkoutDayMapper.sections(from: session, expandedEntryIDs: []) { _ in nil }
         
         #expect(result.count == 1)
         let section = result[0]
-        #expect(section.title == "Unkown Exercise")
+        #expect(section.title == "Unknown Exercise")
     }
     
     //MARK: - Helpers
