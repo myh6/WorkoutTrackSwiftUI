@@ -89,6 +89,24 @@ struct WorkoutDayMapperTests {
         #expect(result[0].sets.map(\.order) == [0, 1])
     }
     
+    @Test
+    func sections_markExpanded_whenEntryIdIsInExpandedEntryIDs() {
+        let expandEntryID = UUID()
+        let entryA = anyEntry(id: expandEntryID, sets: [anySet()])
+        let entryB = anyEntry(id: UUID())
+        let session = anySession(entries: [entryA, entryB])
+        
+        let expandedEntryIDs = Set<UUID>([expandEntryID])
+        
+        let result = WorkoutDayMapper.sections(from: session, expandedEntryIDs: expandedEntryIDs) { _ in "E" }
+        
+        #expect(result.count == 2)
+        let expandedSection = result.filter { $0.isExpanded }
+        #expect(expandedSection.count == 1)
+        let section = expandedSection.first!
+        #expect(section.id == expandEntryID)
+    }
+    
     //MARK: - Helpers
     private func anyEntry(id: UUID = UUID(), exercise: UUID = UUID(), sets: [WorkoutSet] = [], created: Date = Date(), order: Int = 0) -> WorkoutEntry {
         return .init(id: id, exerciseID: exercise, sets: sets, createdAt: created, order: order)
