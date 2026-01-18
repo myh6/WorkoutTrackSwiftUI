@@ -54,15 +54,20 @@ struct WorkoutDayViewModelTests {
         let selected = getDecember15th(calendar)
         let resolver: (UUID) -> String? = { _ in nil }
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
-        let sessions = anySessionAndSections(entries: [anyEntry()], nameForExerciseID: resolver)
-        spy.stubSessions([sessions.session])
+        let session = anySession(entries: [anyEntry()])
+        let sections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        spy.stubSessions([session])
         
         #expect(sut.state == .idle)
         
         await sut.load()
         
-        #expect(sut.state == .loaded(sessions.sections))
-        #expect(sut.sessions == sessions.sections)
+        #expect(sut.state == .loaded(sections))
+        #expect(sut.sessions == sections)
     }
     
     @MainActor
@@ -71,12 +76,18 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        let sessions = anySessionAndSections()
-        spy.stubSessions([sessions.session])
+        let session = anySession()
+        let sections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        
+        spy.stubSessions([session])
         
         await sut.load()
         
-        #expect(sut.sessions == sessions.sections)
+        #expect(sut.sessions == sections)
         
         spy.stubSessions([])
         
@@ -267,21 +278,6 @@ func anySection(id: UUID = UUID(), title: String = "", sets: [SetRow] = [], isEx
 
 func anyRow(id: UUID = UUID(), reps: Int = 0, weight: Double = 0, isFinished: Bool = true, order: Int = 0) -> SetRow {
     SetRow(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
-}
-
-func anySessionAndSections(
-    id: UUID = UUID(),
-    date: Date = Date(),
-    entries: [WorkoutEntry] = [],
-    expandedEntryIDs: Set<UUID> = [],
-    nameForExerciseID: (UUID) -> String? = { _ in nil }) -> (session: WorkoutSession, sections: [ExerciseSection]) {
-    let session = WorkoutSession(id: id, date: date, entries: entries)
-    let sections = WorkoutDayMapper.sections(
-        from: session,
-        expandedEntryIDs: expandedEntryIDs,
-        nameForExerciseID: nameForExerciseID
-    )
-    return (session: session, sections: sections)
 }
 
 func anySession(id: UUID = UUID(), date: Date = Date(), entries: [WorkoutEntry] = []) -> WorkoutSession {
