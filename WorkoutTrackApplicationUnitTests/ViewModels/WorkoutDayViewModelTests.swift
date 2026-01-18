@@ -52,16 +52,17 @@ struct WorkoutDayViewModelTests {
     func load_setsStateToLoaded_whenServiceReturnsSessions() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
-        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        let sessions = [anySession()]
-        spy.stubSessions(sessions)
+        let resolver: (UUID) -> String? = { _ in nil }
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
+        let sessions = anySessionAndSections(entries: [anyEntry()], nameForExerciseID: resolver)
+        spy.stubSessions([sessions.session])
         
         #expect(sut.state == .idle)
         
         await sut.load()
         
-        #expect(sut.state == .loaded(sessions))
-        #expect(sut.sessions == sessions)
+        #expect(sut.state == .loaded(sessions.sections))
+        #expect(sut.sessions == sessions.sections)
     }
     
     @MainActor
@@ -70,12 +71,12 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        let sessions = [anySession()]
-        spy.stubSessions(sessions)
+        let sessions = anySessionAndSections()
+        spy.stubSessions([sessions.session])
         
         await sut.load()
         
-        #expect(sut.sessions == sessions)
+        #expect(sut.sessions == sessions.sections)
         
         spy.stubSessions([])
         
@@ -157,9 +158,9 @@ struct WorkoutDayViewModelTests {
     
     //MARK: - Helpers
     @MainActor
-    private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
+    private func makeSUT(calendar: Calendar, selectedDate: Date, resolveExerciseName: @escaping (UUID) -> String? = { _ in nil }, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
-        let viewModel = WorkoutDayViewModel(selectedDate: selectedDate, service: service, calendar: calendar)
+        let viewModel = WorkoutDayViewModel(selectedDate: selectedDate, service: service, calendar: calendar, resolveExerciseName: resolveExerciseName)
         return (viewModel, service)
     }
     
@@ -260,8 +261,35 @@ struct WorkoutDayViewModelTests {
     }
 }
 
+func anySection(id: UUID = UUID(), title: String = "", sets: [SetRow] = [], isExpanded: Bool = true) -> ExerciseSection {
+    ExerciseSection(id: id, title: title, sets: sets, isExpanded: isExpanded)
+}
+
+func anyRow(id: UUID = UUID(), reps: Int = 0, weight: Double = 0, isFinished: Bool = true, order: Int = 0) -> SetRow {
+    SetRow(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
+}
+
+func anySessionAndSections(
+    id: UUID = UUID(),
+    date: Date = Date(),
+    entries: [WorkoutEntry] = [],
+    expandedEntryIDs: Set<UUID> = [],
+    nameForExerciseID: (UUID) -> String? = { _ in nil }) -> (session: WorkoutSession, sections: [ExerciseSection]) {
+    let session = WorkoutSession(id: id, date: date, entries: entries)
+    let sections = WorkoutDayMapper.sections(
+        from: session,
+        expandedEntryIDs: expandedEntryIDs,
+        nameForExerciseID: nameForExerciseID
+    )
+    return (session: session, sections: sections)
+}
+
 func anySession(id: UUID = UUID(), date: Date = Date(), entries: [WorkoutEntry] = []) -> WorkoutSession {
     return WorkoutSession(id: id, date: date, entries: entries)
+}
+
+func anyEntry(id: UUID = UUID(), exerciseID: UUID = UUID(), sets: [WorkoutSet] = [], createdAt: Date = Date(), order: Int = 0) -> WorkoutEntry {
+    WorkoutEntry(id: id, exerciseID: exerciseID, sets: sets, createdAt: createdAt, order: order)
 }
 
 func anyError(_ domain: String = "Any error", _ code: Int = 0) -> NSError {

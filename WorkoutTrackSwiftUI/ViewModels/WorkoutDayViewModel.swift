@@ -8,14 +8,14 @@
 import Foundation
 import WorkoutTrack
 
-struct ExerciseSection {
+struct ExerciseSection: Equatable {
     let id: UUID
     let title: String
     let sets: [SetRow]
     let isExpanded: Bool
 }
 
-struct SetRow {
+struct SetRow: Equatable {
     let id: UUID
     let reps: Int
     let weight: Double
@@ -30,17 +30,23 @@ class WorkoutDayViewModel: ObservableObject {
     private let service: WorkoutTracking
     private let calendar: Calendar
     
+    private let resolveExerciseName: (UUID) -> String?
+    
     enum State: Equatable {
-        case idle, empty, loading, loaded([WorkoutSession]), failed(String)
+        case idle, empty, loading, loaded([ExerciseSection]), failed(String)
     }
     
     @Published private(set) var state: State = .idle
-    @Published private(set) var sessions: [WorkoutSession] = []
-    
-    init(selectedDate: Date, service: WorkoutTracking, calendar: Calendar) {
+    @Published private(set) var sessions: [ExerciseSection] = []
+    @Published private(set) var expandedEntryIDs: Set<UUID> = []
+    init(selectedDate: Date,
+         service: WorkoutTracking,
+         calendar: Calendar,
+         resolveExerciseName: @escaping (UUID) -> String?) {
         self.selectedDate = selectedDate
         self.service = service
         self.calendar = calendar
+        self.resolveExerciseName = resolveExerciseName
     }
     
     func load() async {
@@ -50,6 +56,9 @@ class WorkoutDayViewModel: ObservableObject {
             .build()
         do {
             sessions = try await service.retrieveSessions(by: query)
+                .flatMap { session in
+                WorkoutDayMapper.sections(from: session, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
+            }
             state = sessions.isEmpty ? .empty : .loaded(sessions)
         } catch {
             state = .failed(String(describing: error))
