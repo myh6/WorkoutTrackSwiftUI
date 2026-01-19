@@ -89,9 +89,11 @@ extension WorkoutDayViewModel {
     
     private func prefetchNames() async {
         let ids = Set(domainSessions.flatMap(\.entries).map(\.exerciseID))
+        let missing = ids.filter { cachedName[$0] == nil }
+        guard !missing.isEmpty else { return }
         
         await withTaskGroup(of: (UUID, String?).self) { group in
-            for id in ids {
+            for id in missing {
                 group.addTask {
                     let name = try? await self.service.getExerciseName(from: id)
                     return (id, name ?? nil)

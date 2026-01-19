@@ -97,6 +97,27 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func load_prefetchesNames_doesNotRetrieveAgainWhenCacheIsAlreadyPersistent() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let stubbedExerciseName = "Bench Press"
+        let exerciseID = UUID()
+        let entry = anyEntry(exerciseID: exerciseID)
+        let session = anySession(entries: [entry])
+        spy.stubSessions([session])
+        spy.stubName(for: exerciseID, name: stubbedExerciseName)
+        
+        #expect(sut.state == .idle)
+        
+        await sut.load()
+        await sut.load()
+        
+        #expect(spy.requestedExerciseNames == [exerciseID])
+    }
+    
+    @MainActor
+    @Test
     func toggleExpanded_remapsSections() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
