@@ -61,8 +61,8 @@ struct WorkoutDayViewModelTests {
         
         #expect(sut.state == .idle)
         
-        sut.toggleExpanded(entryID: expandedEntryIDs)
         await sut.load()
+        sut.toggleExpanded(entryID: expandedEntryIDs)
         
         let sections = WorkoutDayMapper.sections(
             from: session,
