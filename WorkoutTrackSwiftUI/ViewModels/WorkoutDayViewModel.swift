@@ -37,7 +37,7 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     @Published private(set) var state: State = .idle
-    @Published private(set) var sessions: [ExerciseSection] = []
+    @Published private(set) var sections: [ExerciseSection] = []
     private var domainSessions: [WorkoutSession] = []
     
     @Published private(set) var expandedEntryIDs: Set<UUID> = []
@@ -83,7 +83,7 @@ class WorkoutDayViewModel: ObservableObject {
 
 extension WorkoutDayViewModel {
     private func remapSession() {
-        sessions = WorkoutDayMapper.sections(from: domainSessions, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
-        state = sessions.isEmpty ? .empty : .loaded(sessions)
+        sections = WorkoutDayMapper.sections(from: domainSessions, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
+        state = sections.isEmpty ? .empty : .loaded(sections)
     }
 }

@@ -44,7 +44,7 @@ struct WorkoutDayViewModelTests {
         await sut.load()
         
         #expect(sut.state == .empty)
-        #expect(sut.sessions.isEmpty)
+        #expect(sut.sections.isEmpty)
     }
     
     @MainActor
@@ -71,7 +71,7 @@ struct WorkoutDayViewModelTests {
             nameForExerciseID: { _ in nil }
         )
         #expect(sut.state == .loaded(sections))
-        #expect(sut.sessions == sections)
+        #expect(sut.sections == sections)
     }
     
     @MainActor
@@ -98,7 +98,7 @@ struct WorkoutDayViewModelTests {
             nameForExerciseID: { _ in nil }
         )
         #expect(sut.state == .loaded(expandedSections))
-        #expect(sut.sessions == expandedSections)
+        #expect(sut.sections == expandedSections)
         
         sut.toggleExpanded(entryID: expandedEntryIDs)
         
@@ -128,7 +128,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        #expect(sut.sessions == sections)
+        #expect(sut.sections == sections)
         
         spy.stubSessions([])
         
