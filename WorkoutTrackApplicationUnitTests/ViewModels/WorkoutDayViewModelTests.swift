@@ -214,7 +214,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func selectDate_sameDate_doesNotTriggerAdditionalLoads() async throws {
+    func selectDate_sameDate_doesNotTriggerAdditionalLoads() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
