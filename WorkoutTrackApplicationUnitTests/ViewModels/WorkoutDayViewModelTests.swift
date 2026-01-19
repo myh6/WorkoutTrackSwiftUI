@@ -54,18 +54,22 @@ struct WorkoutDayViewModelTests {
         let selected = getDecember15th(calendar)
         let resolver: (UUID) -> String? = { _ in nil }
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
-        let session = anySession(entries: [anyEntry()])
-        let sections = WorkoutDayMapper.sections(
-            from: session,
-            expandedEntryIDs: [],
-            nameForExerciseID: { _ in nil }
-        )
+        // One random entry and one expanded entry
+        let expandedEntryIDs = UUID()
+        let expandedEntry = anyEntry(id: expandedEntryIDs, order: 1)
+        let session = anySession(entries: [anyEntry(), expandedEntry])
         spy.stubSessions([session])
         
         #expect(sut.state == .idle)
         
+        sut.toggleExpanded(entryID: expandedEntryIDs)
         await sut.load()
         
+        let sections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [expandedEntryIDs],
+            nameForExerciseID: { _ in nil }
+        )
         #expect(sut.state == .loaded(sections))
         #expect(sut.sessions == sections)
     }

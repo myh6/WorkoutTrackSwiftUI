@@ -38,6 +38,8 @@ class WorkoutDayViewModel: ObservableObject {
     
     @Published private(set) var state: State = .idle
     @Published private(set) var sessions: [ExerciseSection] = []
+    private var domainSessions: [WorkoutSession] = []
+    
     @Published private(set) var expandedEntryIDs: Set<UUID> = []
     init(selectedDate: Date,
          service: WorkoutTracking,
@@ -55,11 +57,8 @@ class WorkoutDayViewModel: ObservableObject {
             .filterDateRange(selectedDate.dayRange(in: calendar))
             .build()
         do {
-            sessions = try await service.retrieveSessions(by: query)
-                .flatMap { session in
-                WorkoutDayMapper.sections(from: session, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
-            }
-            state = sessions.isEmpty ? .empty : .loaded(sessions)
+            domainSessions = try await service.retrieveSessions(by: query)
+            remapSession()
         } catch {
             state = .failed(String(describing: error))
         }
@@ -69,5 +68,21 @@ class WorkoutDayViewModel: ObservableObject {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
         await load()
+    }
+    
+    func toggleExpanded(entryID: UUID) {
+        if expandedEntryIDs.contains(entryID) {
+            expandedEntryIDs.remove(entryID)
+        } else {
+            expandedEntryIDs.insert(entryID)
+        }
+        remapSession()
+    }
+}
+
+extension WorkoutDayViewModel {
+    private func remapSession() {
+        sessions = WorkoutDayMapper.sections(from: domainSessions, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
+        state = sessions.isEmpty ? .empty : .loaded(sessions)
     }
 }

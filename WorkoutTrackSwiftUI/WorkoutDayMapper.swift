@@ -29,3 +29,12 @@ struct WorkoutDayMapper {
         SetRow(id: set.id, reps: set.reps, weight: set.weight, isFinished: set.isFinished, order: set.order)
     }
 }
+
+extension WorkoutDayMapper {
+    static func sections(from sessions: [WorkoutSession], expandedEntryIDs: Set<UUID>, nameForExerciseID: ExerciseNameResolver) -> [ExerciseSection] {
+        sessions
+            .flatMap{
+            sections(from: $0, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: nameForExerciseID)
+        }
+    }
+}
