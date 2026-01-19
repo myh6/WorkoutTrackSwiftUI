@@ -76,6 +76,43 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func toggleExpanded_remapsSections() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let resolver: (UUID) -> String? = { _ in nil }
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
+        // One random entry and one expanded entry
+        let expandedEntryIDs = UUID()
+        let expandedEntry = anyEntry(id: expandedEntryIDs, order: 1)
+        let session = anySession(entries: [expandedEntry])
+        spy.stubSessions([session])
+        
+        #expect(sut.state == .idle)
+        
+        sut.toggleExpanded(entryID: expandedEntryIDs)
+        await sut.load()
+        
+        let expandedSections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [expandedEntryIDs],
+            nameForExerciseID: { _ in nil }
+        )
+        #expect(sut.state == .loaded(expandedSections))
+        #expect(sut.sessions == expandedSections)
+        
+        sut.toggleExpanded(entryID: expandedEntryIDs)
+        
+        let collapsedSections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        
+        #expect(sut.state == .loaded(collapsedSections))
+    }
+    
+    @MainActor
+    @Test
     func load_empty_clearsSessions() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
