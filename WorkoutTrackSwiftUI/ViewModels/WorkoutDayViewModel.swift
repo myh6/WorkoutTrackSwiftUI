@@ -67,6 +67,7 @@ class WorkoutDayViewModel: ObservableObject {
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
+        expandedEntryIDs.removeAll()
         await load()
     }
     

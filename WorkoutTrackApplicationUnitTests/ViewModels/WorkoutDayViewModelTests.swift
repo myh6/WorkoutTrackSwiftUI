@@ -198,6 +198,22 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func selectDate_emptyExpandedEntry() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, _) = makeSUT(calendar: calendar, selectedDate: selected)
+        let newDate = getDecember28th(calendar)
+        let expandedID = UUID()
+        
+        sut.toggleExpanded(entryID: expandedID)
+        
+        #expect(sut.expandedEntryIDs.contains(expandedID))
+        await sut.selectDate(newDate)
+        #expect(sut.expandedEntryIDs.isEmpty)
+    }
+    
+    @MainActor
+    @Test
     func selectDate_sameDate_doesNotTriggerAdditionalLoads() async throws {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
