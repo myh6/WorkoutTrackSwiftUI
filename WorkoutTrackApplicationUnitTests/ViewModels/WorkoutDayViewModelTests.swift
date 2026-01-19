@@ -52,8 +52,7 @@ struct WorkoutDayViewModelTests {
     func load_setsStateToLoaded_whenServiceReturnsSessions() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
-        let resolver: (UUID) -> String? = { _ in nil }
-        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         // One random entry and one expanded entry
         let expandedEntryIDs = UUID()
         let expandedEntry = anyEntry(id: expandedEntryIDs, order: 1)
@@ -76,11 +75,32 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func load_prefetchNames_updatesSectionsTitles() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let stubbedExerciseName = "Bench Press"
+        let exerciseID = UUID()
+        let entry = anyEntry(exerciseID: exerciseID)
+        let session = anySession(entries: [entry])
+        spy.stubSessions([session])
+        spy.stubName(for: exerciseID, name: stubbedExerciseName)
+        
+        #expect(sut.state == .idle)
+        
+        await sut.load()
+        
+        #expect(spy.requestedExerciseNames == [exerciseID])
+        #expect(sut.sections.count == 1)
+        #expect(sut.sections[0].title == stubbedExerciseName)
+    }
+    
+    @MainActor
+    @Test
     func toggleExpanded_remapsSections() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
-        let resolver: (UUID) -> String? = { _ in nil }
-        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected, resolveExerciseName: resolver)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         // One random entry and one expanded entry
         let expandedEntryIDs = UUID()
         let expandedEntry = anyEntry(id: expandedEntryIDs, order: 1)
@@ -226,9 +246,9 @@ struct WorkoutDayViewModelTests {
     
     //MARK: - Helpers
     @MainActor
-    private func makeSUT(calendar: Calendar, selectedDate: Date, resolveExerciseName: @escaping (UUID) -> String? = { _ in nil }, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
+    private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
         let service = WorkoutServiceSpy()
-        let viewModel = WorkoutDayViewModel(selectedDate: selectedDate, service: service, calendar: calendar, resolveExerciseName: resolveExerciseName)
+        let viewModel = WorkoutDayViewModel(selectedDate: selectedDate, service: service, calendar: calendar)
         return (viewModel, service)
     }
     
@@ -269,8 +289,15 @@ struct WorkoutDayViewModelTests {
             stubbedRetrievalError = error
         }
         
+        func stubName(for id: UUID, name: String) {
+            stubbedNames[id] = name
+        }
+        
+        private(set) var requestedExerciseNames: [UUID] = []
+        var stubbedNames: [UUID: String] = [:]
         func getExerciseName(from id: UUID) async throws -> String? {
-            return nil
+            requestedExerciseNames.append(id)
+            return stubbedNames[id]
         }
         
         func addCustomExercise(_ exercise: CustomExercise) async throws {

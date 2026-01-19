@@ -29,9 +29,7 @@ class WorkoutDayViewModel: ObservableObject {
     @Published private(set) var selectedDate: Date
     private let service: WorkoutTracking
     private let calendar: Calendar
-    
-    private let resolveExerciseName: (UUID) -> String?
-    
+        
     enum State: Equatable {
         case idle, empty, loading, loaded([ExerciseSection]), failed(String)
     }
@@ -40,15 +38,15 @@ class WorkoutDayViewModel: ObservableObject {
     @Published private(set) var sections: [ExerciseSection] = []
     private var domainSessions: [WorkoutSession] = []
     
+    private var cachedName: [UUID: String] = [:]
+    
     @Published private(set) var expandedEntryIDs: Set<UUID> = []
     init(selectedDate: Date,
          service: WorkoutTracking,
-         calendar: Calendar,
-         resolveExerciseName: @escaping (UUID) -> String?) {
+         calendar: Calendar) {
         self.selectedDate = selectedDate
         self.service = service
         self.calendar = calendar
-        self.resolveExerciseName = resolveExerciseName
     }
     
     func load() async {
@@ -59,6 +57,7 @@ class WorkoutDayViewModel: ObservableObject {
         do {
             domainSessions = try await service.retrieveSessions(by: query)
             remapSession()
+            await prefetchNames()
         } catch {
             state = .failed(String(describing: error))
         }
@@ -83,7 +82,27 @@ class WorkoutDayViewModel: ObservableObject {
 
 extension WorkoutDayViewModel {
     private func remapSession() {
-        sections = WorkoutDayMapper.sections(from: domainSessions, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: resolveExerciseName)
+        let cache = cachedName
+        sections = WorkoutDayMapper.sections(from: domainSessions, expandedEntryIDs: expandedEntryIDs, nameForExerciseID: { cache[$0] })
         state = sections.isEmpty ? .empty : .loaded(sections)
+    }
+    
+    private func prefetchNames() async {
+        let ids = Set(domainSessions.flatMap(\.entries).map(\.exerciseID))
+        
+        await withTaskGroup(of: (UUID, String?).self) { group in
+            for id in ids {
+                group.addTask {
+                    let name = try? await self.service.getExerciseName(from: id)
+                    return (id, name ?? nil)
+                }
+            }
+            
+            for await (id, name) in group {
+                if let name { self.cachedName[id] = name }
+            }
+        }
+        
+        remapSession()
     }
 }
