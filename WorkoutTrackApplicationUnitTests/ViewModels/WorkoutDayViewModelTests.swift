@@ -240,6 +240,38 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func selectDate_removesLastSavedSections() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let newDate = getDecember28th(calendar)
+        
+        let oldSession = anySession(entries: [anyEntry()])
+        let oldExpect = WorkoutDayMapper.sections(
+            from: oldSession,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        spy.stubSessions([oldSession])
+        
+        await sut.load()
+        #expect(sut.sections == oldExpect)
+        
+        spy.suspendNextRetrieval(true)
+        let task = Task {
+            await sut.selectDate(newDate)
+        }
+        await waitUntil { spy.hasPendingRetrieval }
+        #expect(sut.state == .loading)
+        #expect(sut.sections.isEmpty)
+        
+        spy.completeRetrievalContinuation(with: [])
+        _ = await task.value
+        #expect(sut.sections.isEmpty)
+    }
+    
+    @MainActor
+    @Test
     func selectDate_updatesSections_withResultOfNextLoad() async throws {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)

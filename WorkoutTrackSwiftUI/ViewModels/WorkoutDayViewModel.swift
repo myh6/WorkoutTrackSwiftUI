@@ -67,6 +67,8 @@ class WorkoutDayViewModel: ObservableObject {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
         expandedEntryIDs.removeAll()
+        domainSessions.removeAll()
+        sections.removeAll()
         await load()
     }
     
