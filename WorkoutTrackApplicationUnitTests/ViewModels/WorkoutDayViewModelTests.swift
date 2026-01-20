@@ -130,8 +130,8 @@ struct WorkoutDayViewModelTests {
         
         #expect(sut.state == .idle)
         
-        sut.toggleExpanded(entryID: expandedEntryIDs)
         await sut.load()
+        sut.toggleExpanded(entryID: expandedEntryIDs)
         
         let expandedSections = WorkoutDayMapper.sections(
             from: session,
@@ -150,6 +150,42 @@ struct WorkoutDayViewModelTests {
         )
         
         #expect(sut.state == .loaded(collapsedSections))
+    }
+    
+    @MainActor
+    @Test
+    func toggleExpanded_doesNotOverrideWhileInLoadingState() async {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let expandedEntryIDs = UUID()
+        let session = anySession(entries: [anyEntry(id: expandedEntryIDs)])
+        spy.stubSessions([session])
+        
+        #expect(sut.state == .idle)
+        
+        await sut.load()
+        
+        spy.suspendNextRetrieval(true)
+        let task = Task {
+            await sut.load()
+        }
+        
+        await waitUntil { spy.hasPendingRetrieval }
+        #expect(sut.state == .loading)
+        
+        sut.toggleExpanded(entryID: expandedEntryIDs)
+        
+        let sameSections = WorkoutDayMapper.sections(
+            from: session,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        #expect(sut.sections == sameSections)
+        
+        spy.completeRetrievalContinuation(with: [])
+        _ = await task.value
+        #expect(sut.state == .empty)
     }
     
     @MainActor

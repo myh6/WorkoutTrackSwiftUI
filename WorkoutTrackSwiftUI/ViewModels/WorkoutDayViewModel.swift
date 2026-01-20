@@ -73,6 +73,7 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     func toggleExpanded(entryID: UUID) {
+        guard state != .loading else { return }
         if expandedEntryIDs.contains(entryID) {
             expandedEntryIDs.remove(entryID)
         } else {
