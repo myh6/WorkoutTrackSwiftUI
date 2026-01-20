@@ -92,17 +92,9 @@ extension WorkoutDayViewModel {
         let missing = ids.filter { cachedName[$0] == nil }
         guard !missing.isEmpty else { return }
         
-        let service = self.service
-        await withTaskGroup(of: (UUID, String?).self) { group in
-            for id in missing {
-                group.addTask {
-                    let name = try? await service.getExerciseName(from: id)
-                    return (id, name ?? nil)
-                }
-            }
-            
-            for await (id, name) in group {
-                if let name { cachedName[id] = name }
+        for id in missing {
+            if let name = try? await service.getExerciseName(from: id) {
+                cachedName[id] = name
             }
         }
         
