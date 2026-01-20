@@ -308,15 +308,12 @@ struct WorkoutDayViewModelTests {
         
         func completeRetrievalContinuation(with sessions: [WorkoutSession]) {
             hasPendingRetrieval = false
-            shouldSuspend = false
             retrievalContinunation?.resume(returning: sessions)
             retrievalContinunation = nil
-            shouldSuspend = false
         }
         
         func completeRetrievalContinuation(with error: Error) {
             hasPendingRetrieval = false
-            shouldSuspend = false
             retrievalContinunation?.resume(throwing: error)
             retrievalContinunation = nil
         }
@@ -359,6 +356,7 @@ struct WorkoutDayViewModelTests {
             }
             
             if shouldSuspend {
+                shouldSuspend = false
                 return try await withCheckedThrowingContinuation { cont in
                     self.retrievalContinunation = cont
                     self.hasPendingRetrieval = true
