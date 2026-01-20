@@ -240,6 +240,37 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func selectDate_updatesSections_withResultOfNextLoad() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let newDate = getDecember28th(calendar)
+        
+        // First load
+        let sessionA = anySession(entries: [anyEntry()])
+        let expectedA = WorkoutDayMapper.sections(
+            from: sessionA,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        // Second load
+        let sessionB = anySession(entries: [anyEntry()])
+        let expectedB = WorkoutDayMapper.sections(
+            from: sessionB,
+            expandedEntryIDs: [],
+            nameForExerciseID: { _ in nil }
+        )
+        spy.enqueuSession([[sessionA], [sessionB]])
+        
+        await sut.load()
+        #expect(sut.sections == expectedA)
+        
+        await sut.selectDate(newDate)
+        #expect(sut.sections == expectedB)
+    }
+    
+    @MainActor
+    @Test
     func selectDate_emptyExpandedEntry() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
@@ -302,6 +333,11 @@ struct WorkoutDayViewModelTests {
         
         private(set) var hasPendingRetrieval = false
         
+        private var sessionsQueue: [[WorkoutSession]] = []
+        func enqueuSession(_ batches: [[WorkoutSession]]) {
+            sessionsQueue = batches
+        }
+        
         func suspendNextRetrieval(_ val: Bool) {
             shouldSuspend = val
         }
@@ -362,6 +398,9 @@ struct WorkoutDayViewModelTests {
                     self.hasPendingRetrieval = true
                 }
             } else {
+                if !sessionsQueue.isEmpty {
+                    return sessionsQueue.removeFirst()
+                }
                 return stubbedSessions
             }
         }
