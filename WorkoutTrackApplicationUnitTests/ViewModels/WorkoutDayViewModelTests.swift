@@ -206,7 +206,8 @@ struct WorkoutDayViewModelTests {
         let task = Task {
             await sut.load()
         }
-        await Task.yield()
+        
+        await waitUntil { spy.hasPendingRetrieval }
         
         #expect(sut.state == .loading)
         
@@ -281,6 +282,17 @@ struct WorkoutDayViewModelTests {
         calendar.date(from: DateComponents(year: 2025, month: 12, day: 30))!
     }
     
+    /// Suspend the current task until condition is met
+    @MainActor
+    private func waitUntil(
+        _ condition: @MainActor () -> Bool,
+        file: StaticString = #file, line: UInt = #line
+    ) async {
+        while !condition() {
+            await Task.yield()
+        }
+    }
+    
     private class WorkoutServiceSpy: WorkoutTracking {
         private(set) var receivedQuery: [SessionQueryDescriptor] = []
         private var stubbedSessions: [WorkoutSession] = []
@@ -288,16 +300,23 @@ struct WorkoutDayViewModelTests {
         private var shouldSuspend = false
         private var retrievalContinunation: CheckedContinuation<[WorkoutSession], Error>?
         
+        private(set) var hasPendingRetrieval = false
+        
         func suspendNextRetrieval(_ val: Bool) {
             shouldSuspend = val
         }
         
         func completeRetrievalContinuation(with sessions: [WorkoutSession]) {
+            hasPendingRetrieval = false
+            shouldSuspend = false
             retrievalContinunation?.resume(returning: sessions)
             retrievalContinunation = nil
+            shouldSuspend = false
         }
         
         func completeRetrievalContinuation(with error: Error) {
+            hasPendingRetrieval = false
+            shouldSuspend = false
             retrievalContinunation?.resume(throwing: error)
             retrievalContinunation = nil
         }
@@ -342,6 +361,7 @@ struct WorkoutDayViewModelTests {
             if shouldSuspend {
                 return try await withCheckedThrowingContinuation { cont in
                     self.retrievalContinunation = cont
+                    self.hasPendingRetrieval = true
                 }
             } else {
                 return stubbedSessions
