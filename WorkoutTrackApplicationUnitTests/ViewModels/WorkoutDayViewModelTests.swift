@@ -324,7 +324,7 @@ struct WorkoutDayViewModelTests {
             expandedEntryIDs: [],
             nameForExerciseID: { _ in nil }
         )
-        spy.enqueuSession([[sessionA], [sessionB]])
+        spy.enqueueSession([[sessionA], [sessionB]])
         
         await sut.load()
         #expect(sut.sections == expectedA)
@@ -393,12 +393,12 @@ struct WorkoutDayViewModelTests {
         private var stubbedSessions: [WorkoutSession] = []
         private var stubbedRetrievalError: Error?
         private var shouldSuspend = false
-        private var retrievalContinunation: CheckedContinuation<[WorkoutSession], Error>?
+        private var retrievalContinuation: CheckedContinuation<[WorkoutSession], Error>?
         
         private(set) var hasPendingRetrieval = false
         
         private var sessionsQueue: [[WorkoutSession]] = []
-        func enqueuSession(_ batches: [[WorkoutSession]]) {
+        func enqueueSession(_ batches: [[WorkoutSession]]) {
             sessionsQueue = batches
         }
         
@@ -408,14 +408,14 @@ struct WorkoutDayViewModelTests {
         
         func completeRetrievalContinuation(with sessions: [WorkoutSession]) {
             hasPendingRetrieval = false
-            retrievalContinunation?.resume(returning: sessions)
-            retrievalContinunation = nil
+            retrievalContinuation?.resume(returning: sessions)
+            retrievalContinuation = nil
         }
         
         func completeRetrievalContinuation(with error: Error) {
             hasPendingRetrieval = false
-            retrievalContinunation?.resume(throwing: error)
-            retrievalContinunation = nil
+            retrievalContinuation?.resume(throwing: error)
+            retrievalContinuation = nil
         }
         
         func stubSessions(_ sessions: [WorkoutSession]) {
@@ -458,7 +458,7 @@ struct WorkoutDayViewModelTests {
             if shouldSuspend {
                 shouldSuspend = false
                 return try await withCheckedThrowingContinuation { cont in
-                    self.retrievalContinunation = cont
+                    self.retrievalContinuation = cont
                     self.hasPendingRetrieval = true
                 }
             } else {
