@@ -442,11 +442,12 @@ struct WorkoutDayViewModelTests {
     func toggleSetFinished_updatesSectionsAfterReload_withToggledFinishedSet() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
-        let setID = UUID(), exerciseID = UUID(), entryID = UUID()
+        let setID = UUID()
         
         let setBefore = anySet(id: setID, isFinished: false)
         let setAfter = anySet(id: setID, isFinished: true)
-        let (sessionBefore, sessionAfter) = sessionsBeforeAfter(entryID: entryID, exerciseID: exerciseID, setID: setID, before: setBefore, after: setAfter)
+
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(before: setBefore, after: setAfter)
         
         spy.enqueueSession([[sessionBefore], [sessionAfter]])
         
@@ -518,14 +519,13 @@ struct WorkoutDayViewModelTests {
     private func sessionsBeforeAfter(
         entryID: UUID = UUID(),
         exerciseID: UUID = UUID(),
-        setID: UUID = UUID(),
         before: WorkoutSet,
         after: WorkoutSet
-    ) -> (before: WorkoutSession, after: WorkoutSession) {
+    ) -> (before: WorkoutSession, after: WorkoutSession, entryID: UUID) {
         let sessionID = UUID()
         let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [before])
         let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [after])
-        return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]))
+        return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]), entryID)
     }
     
     private class WorkoutServiceSpy: WorkoutTracking {
