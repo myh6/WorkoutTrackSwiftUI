@@ -445,12 +445,8 @@ struct WorkoutDayViewModelTests {
         let setID = UUID(), exerciseID = UUID(), entryID = UUID()
         
         let setBefore = anySet(id: setID, isFinished: false)
-        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [setBefore])
-        let sessionBefore = anySession(entries: [entryBefore])
-        
         let setAfter = anySet(id: setID, isFinished: true)
-        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [setAfter])
-        let sessionAfter = anySession(entries: [entryAfter])
+        let (sessionBefore, sessionAfter) = sessionsBeforeAfter(entryID: entryID, exerciseID: exerciseID, setID: setID, before: setBefore, after: setAfter)
         
         spy.enqueueSession([[sessionBefore], [sessionAfter]])
         
@@ -517,6 +513,19 @@ struct WorkoutDayViewModelTests {
         while !condition() {
             await Task.yield()
         }
+    }
+    
+    private func sessionsBeforeAfter(
+        entryID: UUID = UUID(),
+        exerciseID: UUID = UUID(),
+        setID: UUID = UUID(),
+        before: WorkoutSet,
+        after: WorkoutSet
+    ) -> (before: WorkoutSession, after: WorkoutSession) {
+        let sessionID = UUID()
+        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [before])
+        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [after])
+        return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]))
     }
     
     private class WorkoutServiceSpy: WorkoutTracking {
