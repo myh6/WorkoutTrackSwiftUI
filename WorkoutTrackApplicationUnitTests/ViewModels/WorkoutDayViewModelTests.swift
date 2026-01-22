@@ -461,6 +461,37 @@ struct WorkoutDayViewModelTests {
         #expect(row.isFinished)
     }
     
+    @MainActor
+    @Test
+    func toggleSetFinished_doesNotOverrideWhileInLoadingState() async throws {
+        let calendar = makeCalendar()
+        let selected = getDecember15th(calendar)
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        let session = anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])
+        spy.enqueueSession([[session]])
+        
+        #expect(sut.state == .idle)
+        
+        await sut.load()
+        
+        spy.suspendNextRetrieval(true)
+        let task = Task {
+            await sut.load()
+        }
+        
+        await waitUntil { spy.hasPendingRetrieval }
+        #expect(sut.state == .loading)
+        
+        try await sut.toggleSetFinished(entryID: entryID, setID: setID)
+        
+        spy.completeRetrievalContinuation(with: [])
+        _ = await task.value
+        #expect(sut.state == .empty)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {

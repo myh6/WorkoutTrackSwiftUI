@@ -111,6 +111,7 @@ extension WorkoutDayViewModel {
     }
     
     private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet) async throws {
+        guard state != .loading else { return }
         guard let ctx = resolveContext(entryID, setID) else { return }
         let updatedSet = transform(ctx.set)
         
