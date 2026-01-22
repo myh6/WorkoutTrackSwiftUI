@@ -86,7 +86,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        #expect(spy.requestedExerciseNames == [exerciseID])
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
         #expect(sut.sections.count == 1)
         #expect(sut.sections[0].title == stubbedExerciseName)
     }
@@ -109,7 +109,7 @@ struct WorkoutDayViewModelTests {
         await sut.load()
         await sut.load()
         
-        #expect(spy.requestedExerciseNames == [exerciseID])
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve])
     }
     
     @MainActor
@@ -356,27 +356,27 @@ struct WorkoutDayViewModelTests {
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         
-        #expect(spy.receivedQuery.isEmpty)
+        #expect(spy.receivedMessages.isEmpty)
         await sut.selectDate(selected)
-        #expect(spy.receivedQuery.isEmpty)
+        #expect(spy.receivedMessages.isEmpty)
     }
     
     @MainActor
     @Test
-    func toggleSetFinished_doesNotCallServiceWhenNoMatchingSet() async throws {
+    func toggleSetFinished_doesNotCallServiceToUpdateWhenNoMatchingSet() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
-        let entryID = UUID(), setID = UUID()
-        spy.stubSessions([anySession(entries: [anyEntry(id: entryID, sets: [anySet(id: setID)])])])
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        spy.stubSessions([anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])])
         
         await sut.load()
         try await sut.toggleSetFinished(entryID: entryID, setID: UUID())
         
-        #expect(spy.receivedUpdateCalls.isEmpty)
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
         
         try await sut.toggleSetFinished(entryID: UUID(), setID: setID)
         
-        #expect(spy.receivedUpdateCalls.isEmpty)
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
     
     @MainActor
@@ -385,7 +385,10 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let updateError = anyError("Update failure")
-        let set = anySet(), entry = anyEntry(sets: [set]), session = anySession(entries: [entry])
+        let set = anySet(),
+            exerciseID = UUID(),
+            entry = anyEntry(exerciseID: exerciseID, sets: [set]),
+            session = anySession(entries: [entry])
         spy.stubSessions([session])
         
         await sut.load()
@@ -399,11 +402,17 @@ struct WorkoutDayViewModelTests {
             #expect((error as NSError) == updateError)
         }
         
-        #expect(spy.receivedUpdateCalls.count == 1)
-        let received = spy.receivedUpdateCalls.first!
-        #expect(received.entry == entry)
-        #expect(received.set.id == set.id)
-        #expect(received.set.isFinished == !set.isFinished)
+        #expect(spy.receivedMessages == [
+            .retrieve,
+            .requestName(exerciseID),
+            .updateSet((session.id, entry, set))
+        ])
+        let received = try #require(spy.receivedMessages.last)
+        if case let .updateSet((_, _, receivedSet)) = received {
+            #expect(receivedSet.isFinished == !set.isFinished)
+        } else {
+            #expect(Bool(false), "Service received set that doesn't toggle `isFinished` correctly")
+        }
     }
     
     //MARK: - Helpers
@@ -434,7 +443,27 @@ struct WorkoutDayViewModelTests {
     }
     
     private class WorkoutServiceSpy: WorkoutTracking {
-        private(set) var receivedQuery: [SessionQueryDescriptor] = []
+        enum Message: Equatable {
+            case retrieve,
+                 updateSet((session: UUID, entry: WorkoutEntry, set: WorkoutSet)),
+                 requestName(UUID)
+            
+            static func ==(_ lhs: Message, _ rhs: Message) -> Bool {
+                switch (lhs, rhs) {
+                case (.retrieve, .retrieve):
+                    return true
+                case let (.updateSet(firstCtx), .updateSet(secondCtx)):
+                    return firstCtx.session == secondCtx.session && firstCtx.entry == secondCtx.entry && firstCtx.set.id == secondCtx.set.id // The rest of the properties need to be checked separately
+                case let (.requestName(firstID), .requestName(secondID)):
+                    return firstID == secondID
+                default:
+                    return false
+                }
+            }
+        }
+        
+        private(set) var receivedMessages = [Message]()
+        private(set) var receivedQuery = [SessionQueryDescriptor]()
         private var stubbedSessions: [WorkoutSession] = []
         private var stubbedRetrievalError: Error?
         private var shouldSuspend = false
@@ -475,10 +504,9 @@ struct WorkoutDayViewModelTests {
             stubbedNames[id] = name
         }
         
-        private(set) var requestedExerciseNames: [UUID] = []
         var stubbedNames: [UUID: String] = [:]
         func getExerciseName(from id: UUID) async throws -> String? {
-            requestedExerciseNames.append(id)
+            receivedMessages.append(.requestName(id))
             return stubbedNames[id]
         }
         
@@ -495,7 +523,7 @@ struct WorkoutDayViewModelTests {
             if let query {
                 receivedQuery.append(query)
             }
-            
+            receivedMessages.append(.retrieve)
             if let stubbedRetrievalError {
                 throw stubbedRetrievalError
             }
@@ -536,14 +564,13 @@ struct WorkoutDayViewModelTests {
         }
         
         
-        private(set) var receivedUpdateCalls: [(session: UUID, entry: WorkoutEntry, set: WorkoutSet)] = []
         private var updateError: Error?
         func stubUpdateError(_ error: Error) {
             updateError = error
         }
         
         func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
-            receivedUpdateCalls.append((session, entry, set))
+            receivedMessages.append(.updateSet((session, entry, set)))
             if let error = updateError { throw error }
         }
         
