@@ -438,6 +438,30 @@ struct WorkoutDayViewModelTests {
         ])
     }
     
+    @MainActor
+    @Test
+    func toggleSetFinished_updatesSectionsAfterReload_withToggledFinishedSet() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let setID = UUID(), exerciseID = UUID(), entryID = UUID()
+        
+        let setBefore = anySet(id: setID, isFinished: false)
+        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [setBefore])
+        let sessionBefore = anySession(entries: [entryBefore])
+        
+        let setAfter = anySet(id: setID, isFinished: true)
+        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [setAfter])
+        let sessionAfter = anySession(entries: [entryAfter])
+        
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+        
+        await sut.load()
+        try await sut.toggleSetFinished(entryID: entryID, setID: setID)
+        
+        let row = try #require(sut.sections.first?.sets.first)
+        #expect(row.isFinished)
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
