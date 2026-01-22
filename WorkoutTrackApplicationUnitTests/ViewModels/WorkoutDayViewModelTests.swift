@@ -37,7 +37,7 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        spy.stubSessions([])
+        spy.enqueueSession([])
         
         #expect(sut.state == .idle)
         
@@ -54,7 +54,7 @@ struct WorkoutDayViewModelTests {
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         let session = anySession(entries: [anyEntry()])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         #expect(sut.state == .idle)
         
@@ -79,7 +79,7 @@ struct WorkoutDayViewModelTests {
         let exerciseID = UUID()
         let entry = anyEntry(exerciseID: exerciseID)
         let session = anySession(entries: [entry])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         spy.stubName(for: exerciseID, name: stubbedExerciseName)
         
         #expect(sut.state == .idle)
@@ -101,7 +101,7 @@ struct WorkoutDayViewModelTests {
         let exerciseID = UUID()
         let entry = anyEntry(exerciseID: exerciseID)
         let session = anySession(entries: [entry])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         spy.stubName(for: exerciseID, name: stubbedExerciseName)
         
         #expect(sut.state == .idle)
@@ -122,7 +122,7 @@ struct WorkoutDayViewModelTests {
         let expandedEntryIDs = UUID()
         let expandedEntry = anyEntry(id: expandedEntryIDs, order: 1)
         let session = anySession(entries: [expandedEntry])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         #expect(sut.state == .idle)
         
@@ -156,7 +156,7 @@ struct WorkoutDayViewModelTests {
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
         let expandedEntryIDs = UUID()
         let session = anySession(entries: [anyEntry(id: expandedEntryIDs)])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         #expect(sut.state == .idle)
         
@@ -197,13 +197,11 @@ struct WorkoutDayViewModelTests {
             nameForExerciseID: { _ in nil }
         )
         
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         await sut.load()
         
         #expect(sut.sections == sections)
-        
-        spy.stubSessions([])
         
         await sut.load()
         
@@ -284,7 +282,7 @@ struct WorkoutDayViewModelTests {
             expandedEntryIDs: [],
             nameForExerciseID: { _ in nil }
         )
-        spy.stubSessions([oldSession])
+        spy.enqueueSession([[oldSession]])
         
         await sut.load()
         #expect(sut.sections == oldExpect)
@@ -367,7 +365,9 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let entryID = UUID(), setID = UUID(), exerciseID = UUID()
-        spy.stubSessions([anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])])
+        spy.enqueueSession([[
+            anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])
+        ]])
         
         await sut.load()
         try await sut.toggleSetFinished(entryID: entryID, setID: UUID())
@@ -389,7 +389,7 @@ struct WorkoutDayViewModelTests {
             exerciseID = UUID(),
             entry = anyEntry(exerciseID: exerciseID, sets: [set]),
             session = anySession(entries: [entry])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         await sut.load()
         
@@ -424,7 +424,7 @@ struct WorkoutDayViewModelTests {
             exerciseID = UUID(),
             entry = anyEntry(exerciseID: exerciseID, sets: [set]),
             session = anySession(entries: [entry])
-        spy.stubSessions([session])
+        spy.enqueueSession([[session]])
         
         await sut.load()
         try await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
@@ -434,7 +434,6 @@ struct WorkoutDayViewModelTests {
             .requestName(exerciseID),
             .updateSet((session.id, entry, set)),
             .retrieve,
-            .requestName(exerciseID)
         ])
     }
     
@@ -511,7 +510,7 @@ struct WorkoutDayViewModelTests {
         
         private(set) var receivedMessages = [Message]()
         private(set) var receivedQuery = [SessionQueryDescriptor]()
-        private var stubbedSessions: [WorkoutSession] = []
+
         private var stubbedRetrievalError: Error?
         private var shouldSuspend = false
         private var retrievalContinuation: CheckedContinuation<[WorkoutSession], Error>?
@@ -537,10 +536,6 @@ struct WorkoutDayViewModelTests {
             hasPendingRetrieval = false
             retrievalContinuation?.resume(throwing: error)
             retrievalContinuation = nil
-        }
-        
-        func stubSessions(_ sessions: [WorkoutSession]) {
-            stubbedSessions = sessions
         }
         
         func stubRetrievalError(_ error: Error) {
@@ -582,10 +577,7 @@ struct WorkoutDayViewModelTests {
                     self.hasPendingRetrieval = true
                 }
             } else {
-                if !sessionsQueue.isEmpty {
-                    return sessionsQueue.removeFirst()
-                }
-                return stubbedSessions
+                return sessionsQueue.isEmpty ? [] : sessionsQueue.removeFirst()
             }
         }
         
