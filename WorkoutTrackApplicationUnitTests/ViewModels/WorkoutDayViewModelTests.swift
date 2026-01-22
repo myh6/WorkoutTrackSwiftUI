@@ -361,6 +361,25 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedQuery.isEmpty)
     }
     
+    @MainActor
+    @Test
+    func toggleSetFinished_doesNotCallServiceWhenNoMatchingSet() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let entryID = UUID()
+        let setID = UUID()
+        spy.stubSessions([anySession(entries: [anyEntry(id: entryID, sets: [anySet(id: setID)])])])
+        
+        await sut.load()
+        await sut.toggleSetFinished(entryID: entryID, setID: UUID())
+        
+        #expect(spy.receivedUpdateCalls.isEmpty)
+        
+        await sut.toggleSetFinished(entryID: UUID(), setID: setID)
+        
+        #expect(spy.receivedUpdateCalls.isEmpty)
+    }
+
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -490,7 +509,16 @@ struct WorkoutDayViewModelTests {
         func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
         }
         
+        
+        private(set) var receivedUpdateCalls: [(session: UUID, entry: WorkoutEntry, set: WorkoutSet)] = []
+        private var updateError: Error?
+        func stubUpdateError(_ error: Error) {
+            updateError = error
+        }
+        
         func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
+            if let error = updateError { throw error }
+            receivedUpdateCalls.append((session, entry, set))
         }
         
         func deleteSet(_ set: WorkoutSet) async throws {
@@ -512,6 +540,10 @@ func anySession(id: UUID = UUID(), date: Date = Date(), entries: [WorkoutEntry] 
 
 func anyEntry(id: UUID = UUID(), exerciseID: UUID = UUID(), sets: [WorkoutSet] = [], createdAt: Date = Date(), order: Int = 0) -> WorkoutEntry {
     WorkoutEntry(id: id, exerciseID: exerciseID, sets: sets, createdAt: createdAt, order: order)
+}
+
+func anySet(id: UUID = UUID(), reps: Int = 0, weight: Double = 0, isFinished: Bool = false, order: Int = 0) -> WorkoutSet {
+    WorkoutSet(id: id, reps: reps, weight: weight, isFinished: isFinished, order: order)
 }
 
 func anyError(_ domain: String = "Any error", _ code: Int = 0) -> NSError {

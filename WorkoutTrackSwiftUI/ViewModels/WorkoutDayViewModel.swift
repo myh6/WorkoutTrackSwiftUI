@@ -63,6 +63,12 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
+    func toggleSetFinished(entryID: UUID, setID: UUID) async {
+        await mutateSet(entryID: entryID, setID: setID) { oldSet in
+            WorkoutSet(id: oldSet.id, reps: oldSet.reps, weight: oldSet.weight, isFinished: !oldSet.isFinished, order: oldSet.order)
+        }
+    }
+    
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
@@ -102,5 +108,19 @@ extension WorkoutDayViewModel {
         }
         
         remapSession()
+    }
+    
+    private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet) async {
+        guard let ctx = resolveContext(entryID, setID) else { return }
+        let updatedSet = transform(ctx.set)
+    }
+    
+    private func resolveContext(_ entryID: UUID, _ setID: UUID) -> (session: WorkoutSession, entry: WorkoutEntry, set: WorkoutSet)? {
+        for session in domainSessions {
+            guard let entry = session.entries.first(where: { $0.id == entryID }) else { continue }
+            guard let set = entry.sets.first(where: { $0.id == setID }) else { continue }
+            return (session, entry, set)
+        }
+        return nil
     }
 }
