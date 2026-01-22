@@ -366,20 +366,46 @@ struct WorkoutDayViewModelTests {
     func toggleSetFinished_doesNotCallServiceWhenNoMatchingSet() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
-        let entryID = UUID()
-        let setID = UUID()
+        let entryID = UUID(), setID = UUID()
         spy.stubSessions([anySession(entries: [anyEntry(id: entryID, sets: [anySet(id: setID)])])])
         
         await sut.load()
-        await sut.toggleSetFinished(entryID: entryID, setID: UUID())
+        try await sut.toggleSetFinished(entryID: entryID, setID: UUID())
         
         #expect(spy.receivedUpdateCalls.isEmpty)
         
-        await sut.toggleSetFinished(entryID: UUID(), setID: setID)
+        try await sut.toggleSetFinished(entryID: UUID(), setID: setID)
         
         #expect(spy.receivedUpdateCalls.isEmpty)
     }
-
+    
+    @MainActor
+    @Test
+    func toggleSetFinished_throwsErrorOnServiceUpdateFailure() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let updateError = anyError("Update failure")
+        let set = anySet(), entry = anyEntry(sets: [set]), session = anySession(entries: [entry])
+        spy.stubSessions([session])
+        
+        await sut.load()
+        
+        spy.stubUpdateError(updateError)
+        
+        do {
+            try await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
+            #expect(Bool(false))
+        } catch {
+            #expect((error as NSError) == updateError)
+        }
+        
+        #expect(spy.receivedUpdateCalls.count == 1)
+        let received = spy.receivedUpdateCalls.first!
+        #expect(received.entry == entry)
+        #expect(received.set.id == set.id)
+        #expect(received.set.isFinished == !set.isFinished)
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -517,8 +543,8 @@ struct WorkoutDayViewModelTests {
         }
         
         func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
-            if let error = updateError { throw error }
             receivedUpdateCalls.append((session, entry, set))
+            if let error = updateError { throw error }
         }
         
         func deleteSet(_ set: WorkoutSet) async throws {

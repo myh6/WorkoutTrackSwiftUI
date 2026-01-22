@@ -63,8 +63,8 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
-    func toggleSetFinished(entryID: UUID, setID: UUID) async {
-        await mutateSet(entryID: entryID, setID: setID) { oldSet in
+    func toggleSetFinished(entryID: UUID, setID: UUID) async throws {
+        try await mutateSet(entryID: entryID, setID: setID) { oldSet in
             WorkoutSet(id: oldSet.id, reps: oldSet.reps, weight: oldSet.weight, isFinished: !oldSet.isFinished, order: oldSet.order)
         }
     }
@@ -110,9 +110,11 @@ extension WorkoutDayViewModel {
         remapSession()
     }
     
-    private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet) async {
+    private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet) async throws {
         guard let ctx = resolveContext(entryID, setID) else { return }
         let updatedSet = transform(ctx.set)
+        
+        try await service.updateSet(updatedSet, within: ctx.entry, and: ctx.session.id)
     }
     
     private func resolveContext(_ entryID: UUID, _ setID: UUID) -> (session: WorkoutSession, entry: WorkoutEntry, set: WorkoutSet)? {
