@@ -415,6 +415,29 @@ struct WorkoutDayViewModelTests {
         }
     }
     
+    @MainActor
+    @Test
+    func toggleSetFinished_doesCallServiceToUpdateSetAndReloadSessions() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let set = anySet(),
+            exerciseID = UUID(),
+            entry = anyEntry(exerciseID: exerciseID, sets: [set]),
+            session = anySession(entries: [entry])
+        spy.stubSessions([session])
+        
+        await sut.load()
+        try await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
+        
+        #expect(spy.receivedMessages == [
+            .retrieve,
+            .requestName(exerciseID),
+            .updateSet((session.id, entry, set)),
+            .retrieve,
+            .requestName(exerciseID)
+        ])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {

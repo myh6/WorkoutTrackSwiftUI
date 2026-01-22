@@ -115,6 +115,7 @@ extension WorkoutDayViewModel {
         let updatedSet = transform(ctx.set)
         
         try await service.updateSet(updatedSet, within: ctx.entry, and: ctx.session.id)
+        await load()
     }
     
     private func resolveContext(_ entryID: UUID, _ setID: UUID) -> (session: WorkoutSession, entry: WorkoutEntry, set: WorkoutSet)? {
