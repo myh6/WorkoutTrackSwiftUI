@@ -645,6 +645,29 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
     
+    @MainActor
+    @Test
+    func deleteSet_throwsErrorOnServiceDeletionFailure() async {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        let set = anySet(id: setID)
+        let sessions = [anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [set])])]
+        let deletionError = NSError(domain: "Deletion Failure", code: 0)
+        spy.enqueueSession([sessions])
+        spy.stubDeleteError(deletionError)
+        
+        await sut.load()
+        
+        do {
+            try await sut.deleteSet(entryID: entryID, setID: setID)
+            #expect(Bool(false), "Expect deleteSet to throw")
+        } catch {
+            #expect((error as NSError) == deletionError)
+        }
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set)])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -688,7 +711,8 @@ struct WorkoutDayViewModelTests {
         enum Message: Equatable {
             case retrieve,
                  updateSet((session: UUID, entry: UUID, set: WorkoutSet)),
-                 requestName(UUID)
+                 requestName(UUID),
+                 deleteSet(WorkoutSet)
             
             static func ==(_ lhs: Message, _ rhs: Message) -> Bool {
                 switch (lhs, rhs) {
@@ -698,6 +722,8 @@ struct WorkoutDayViewModelTests {
                     return firstCtx.session == secondCtx.session && firstCtx.entry == secondCtx.entry && firstCtx.set.id == secondCtx.set.id // The rest of the properties need to be checked separately
                 case let (.requestName(firstID), .requestName(secondID)):
                     return firstID == secondID
+                case let (.deleteSet(firstSet), .deleteSet(secondSet)):
+                    return firstSet == secondSet
                 default:
                     return false
                 }
@@ -809,7 +835,13 @@ struct WorkoutDayViewModelTests {
             if let error = updateError { throw error }
         }
         
+        private var deleteError: Error?
+        func stubDeleteError(_ error: Error) {
+            deleteError = error
+        }
         func deleteSet(_ set: WorkoutSet) async throws {
+            receivedMessages.append(.deleteSet(set))
+            if let error = deleteError { throw error }
         }
     }
 }
