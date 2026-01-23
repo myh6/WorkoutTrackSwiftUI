@@ -197,7 +197,7 @@ struct WorkoutDayViewModelTests {
             nameForExerciseID: { _ in nil }
         )
         
-        spy.enqueueSession([[session]])
+        spy.enqueueSession([[session], []])
         
         await sut.load()
         
@@ -536,7 +536,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func updateSetWeight_doesNotCallServiceForSameRepsValue() async throws {
+    func updateSetWeight_doesNotCallServiceForSameWeightValue() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let setID = UUID(), exerciseID = UUID()
@@ -581,7 +581,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func updateSetOrder_doesNotCallServiceForSameRepsValue() async throws {
+    func updateSetOrder_doesNotCallServiceForSameOrderValue() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let setID = UUID(), exerciseID = UUID()
@@ -694,7 +694,7 @@ struct WorkoutDayViewModelTests {
         
         private var sessionsQueue: [[WorkoutSession]] = []
         func enqueueSession(_ batches: [[WorkoutSession]]) {
-            sessionsQueue = batches
+            sessionsQueue.append(contentsOf: batches)
         }
         
         func suspendNextRetrieval(_ val: Bool) {

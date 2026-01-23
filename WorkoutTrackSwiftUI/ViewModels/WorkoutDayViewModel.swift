@@ -64,27 +64,27 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     func toggleSetFinished(entryID: UUID, setID: UUID) async throws {
-        try await mutateSet(entryID: entryID, setID: setID) { $0.updateing(isFinished: !$0.isFinished) }
+        try await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
     }
     
     func updateSetReps(entryID: UUID, setID: UUID, reps: Int) async throws {
         try await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.reps != reps else { return nil }
-            return oldSet.updateing(reps: reps)
+            return oldSet.updating(reps: reps)
         }
     }
     
     func updateSetWeight(entryID: UUID, setID: UUID, weight: Double) async throws {
         try await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.weight != weight else { return nil }
-            return oldSet.updateing(weight: weight)
+            return oldSet.updating(weight: weight)
         }
     }
     
     func updateSetOrder(entryID: UUID, setID: UUID, order: Int) async throws {
         try await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.order != order else { return nil }
-            return oldSet.updateing(order: order)
+            return oldSet.updating(order: order)
         }
     }
     
@@ -152,7 +152,7 @@ extension WorkoutDayViewModel {
 }
 
 extension WorkoutSet {
-    func updateing(
+    func updating(
         reps: Int? = nil,
         weight: Double? = nil,
         isFinished: Bool? = nil,
