@@ -405,7 +405,7 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [
             .retrieve,
             .requestName(exerciseID),
-            .updateSet((session.id, entry, set))
+            .updateSet((session.id, entry.id, set))
         ])
         let received = try #require(spy.receivedMessages.last)
         if case let .updateSet((_, _, receivedSet)) = received {
@@ -432,7 +432,7 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [
             .retrieve,
             .requestName(exerciseID),
-            .updateSet((session.id, entry, set)),
+            .updateSet((session.id, entry.id, set)),
             .retrieve,
         ])
     }
@@ -489,6 +489,30 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve])
     }
     
+    @MainActor
+    @Test
+    func updateSetReps_callsServiceToUpdateSet() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let setID = UUID(), exerciseID = UUID()
+        
+        let setBefore = anySet(id: setID, reps: 10)
+        let setAfter = anySet(id: setID, reps: 15)
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, before: setBefore, after: setAfter)
+        spy.stubName(for: exerciseID, name: "Random exercise")
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+        
+        await sut.load()
+        
+        let oldRow = try #require(sut.sections.first?.sets.first)
+        #expect(oldRow.reps == 10)
+        try await sut.updateSetReps(entryID: entryID, setID: setID, reps: 15)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateSet((sessionAfter.id, entryID, setAfter)), .retrieve])
+        let newRow = try #require(sut.sections.first?.sets.first)
+        #expect(newRow.reps == 15)
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -531,7 +555,7 @@ struct WorkoutDayViewModelTests {
     private class WorkoutServiceSpy: WorkoutTracking {
         enum Message: Equatable {
             case retrieve,
-                 updateSet((session: UUID, entry: WorkoutEntry, set: WorkoutSet)),
+                 updateSet((session: UUID, entry: UUID, set: WorkoutSet)),
                  requestName(UUID)
             
             static func ==(_ lhs: Message, _ rhs: Message) -> Bool {
@@ -649,7 +673,7 @@ struct WorkoutDayViewModelTests {
         }
         
         func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
-            receivedMessages.append(.updateSet((session, entry, set)))
+            receivedMessages.append(.updateSet((session, entry.id, set)))
             if let error = updateError { throw error }
         }
         
