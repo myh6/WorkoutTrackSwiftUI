@@ -491,6 +491,27 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func updateSetReps_doesNotCallServiceForSameRepsValue() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let setID = UUID(), exerciseID = UUID()
+        let repsVal = 10
+
+        let setBefore = anySet(id: setID, reps: repsVal)
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, before: setBefore, after: setBefore)
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+
+        await sut.load()
+
+        let row = try #require(sut.sections.first?.sets.first)
+        #expect(row.reps == 10)
+        try await sut.updateSetReps(entryID: entryID, setID: setID, reps: repsVal)
+
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
+    }
+    
+    @MainActor
+    @Test
     func updateSetReps_callsServiceToUpdateSet() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
