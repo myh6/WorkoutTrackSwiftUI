@@ -91,6 +91,7 @@ class WorkoutDayViewModel: ObservableObject {
     func deleteSet(entryID: UUID, setID: UUID) async throws {
         guard let ctx = resolveContext(entryID, setID) else { return }
         try await service.deleteSet(ctx.set)
+        await load()
     }
     
     func selectDate(_ newDate: Date) async {

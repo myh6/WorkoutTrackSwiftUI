@@ -668,6 +668,23 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set)])
     }
     
+    @MainActor
+    @Test
+    func deleteSet_callsServiceToReload_AfterSuccessfulDeletion() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        let set = anySet(id: setID)
+        let sessions = [anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [set])])]
+        
+        spy.enqueueSession([sessions])
+        
+        await sut.load()
+        
+        try await sut.deleteSet(entryID: entryID, setID: setID)
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set), .retrieve])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
