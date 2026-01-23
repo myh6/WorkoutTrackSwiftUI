@@ -468,25 +468,9 @@ struct WorkoutDayViewModelTests {
         let session = anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])
         spy.enqueueSession([[session]])
         
-        #expect(sut.state == .idle)
-        
-        await sut.load()
-        
-        spy.suspendNextRetrieval(true)
-        let task = Task {
-            await sut.load()
+        try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
+            try await sut.toggleSetFinished(entryID: entryID, setID: setID)
         }
-        
-        await waitUntil { spy.hasPendingRetrieval }
-        #expect(sut.state == .loading)
-        
-        try await sut.toggleSetFinished(entryID: entryID, setID: setID)
-        
-        spy.completeRetrievalContinuation(with: [])
-        _ = await task.value
-        #expect(sut.state == .empty)
-        
-        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve])
     }
     
     @MainActor
@@ -685,6 +669,20 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set), .retrieve])
     }
     
+    @MainActor
+    @Test
+    func deleteSet_doesNotCallServiceToDeleteWhenInLoadingState() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        let session = anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])
+        spy.enqueueSession([[session]])
+        
+        try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
+            try await sut.deleteSet(entryID: entryID, setID: setID)
+        }
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -722,6 +720,28 @@ struct WorkoutDayViewModelTests {
         let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [before])
         let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [after])
         return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]), entryID)
+    }
+    
+    @MainActor
+    private func assertOperationsGotIgnoredUnderSuspension(_ sut: WorkoutDayViewModel, _ spy: WorkoutServiceSpy, exerciseID: UUID, _ operation: @escaping () async throws -> Void, fileID: String = #fileID, file: String = #filePath, line: Int = #line, column: Int = #column) async throws {
+        
+        await sut.load()
+        
+        spy.suspendNextRetrieval(true)
+        let task = Task {
+            await sut.load()
+        }
+        
+        await waitUntil { spy.hasPendingRetrieval }
+        #expect(sut.state == .loading)
+        
+        try await operation()
+        
+        spy.completeRetrievalContinuation(with: [])
+        _ = await task.value
+        #expect(sut.state == .empty)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve], sourceLocation: SourceLocation(fileID: fileID, filePath: file, line: line, column: column))
     }
     
     private class WorkoutServiceSpy: WorkoutTracking {
