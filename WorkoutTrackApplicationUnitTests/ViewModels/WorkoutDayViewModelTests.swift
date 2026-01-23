@@ -624,6 +624,27 @@ struct WorkoutDayViewModelTests {
         #expect(newRow.order == 2)
     }
     
+    @MainActor
+    @Test
+    func deleteSet_doesNotCallServiceWhenNoMatchingSet() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let entryID = UUID(), setID = UUID(), exerciseID = UUID()
+        let sessions = [anySession(entries: [anyEntry(id: entryID, exerciseID: exerciseID, sets: [anySet(id: setID)])])]
+        spy.stubName(for: exerciseID, name: "Random exercise")
+        spy.enqueueSession([sessions])
+        
+        await sut.load()
+                        
+        try await sut.deleteSet(entryID: entryID, setID: UUID())
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
+        
+        try await sut.deleteSet(entryID: UUID(), setID: setID)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {

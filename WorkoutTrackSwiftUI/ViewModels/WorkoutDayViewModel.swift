@@ -88,6 +88,10 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
+    func deleteSet(entryID: UUID, setID: UUID) async throws {
+        guard let ctx = resolveContext(entryID, setID) else { return }
+    }
+    
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
