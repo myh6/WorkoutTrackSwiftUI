@@ -74,6 +74,13 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
+    func updateSetWeight(entryID: UUID, setID: UUID, weight: Double) async throws {
+        try await mutateSet(entryID: entryID, setID: setID) { oldSet in
+            guard oldSet.weight != weight else { return nil }
+            return oldSet.updateing(weight: weight)
+        }
+    }
+    
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate

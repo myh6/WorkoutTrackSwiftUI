@@ -534,6 +534,51 @@ struct WorkoutDayViewModelTests {
         #expect(newRow.reps == 15)
     }
     
+    @MainActor
+    @Test
+    func updateSetWeight_doesNotCallServiceForSameRepsValue() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let setID = UUID(), exerciseID = UUID()
+        let weightVal: Double = 10
+
+        let setBefore = anySet(id: setID, weight: weightVal)
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, before: setBefore, after: setBefore)
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+
+        await sut.load()
+
+        let row = try #require(sut.sections.first?.sets.first)
+        #expect(row.weight == 10)
+        try await sut.updateSetWeight(entryID: entryID, setID: setID, weight: weightVal)
+
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
+    }
+    
+    @MainActor
+    @Test
+    func updateSetWeight_callsServiceToUpdateSet() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let setID = UUID(), exerciseID = UUID()
+        
+        let setBefore = anySet(id: setID, weight: 10)
+        let setAfter = anySet(id: setID, weight: 15)
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, before: setBefore, after: setAfter)
+        spy.stubName(for: exerciseID, name: "Random exercise")
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+        
+        await sut.load()
+        
+        let oldRow = try #require(sut.sections.first?.sets.first)
+        #expect(oldRow.weight == 10)
+        try await sut.updateSetWeight(entryID: entryID, setID: setID, weight: 15)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateSet((sessionAfter.id, entryID, setAfter)), .retrieve])
+        let newRow = try #require(sut.sections.first?.sets.first)
+        #expect(newRow.weight == 15)
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
