@@ -728,7 +728,7 @@ struct WorkoutDayViewModelTests {
         await sut.load()
         try await sut.addSet(weight: weightVal, reps: repsVal, to: entry.id)
         
-        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((weightVal, repsVal, entry, session.id))])
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((weightVal, repsVal, entry, session.id)), .retrieve])
     }
     
     @MainActor

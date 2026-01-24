@@ -95,6 +95,7 @@ class WorkoutDayViewModel: ObservableObject {
         try await service.addSets([
             createSet(weight: weight, reps: reps)
         ], to: ctx.entry, within: ctx.session.id)
+        await load()
     }
     
     func selectDate(_ newDate: Date) async {
