@@ -941,7 +941,10 @@ struct WorkoutDayViewModelTests {
                 case let (.updateEntry(firstEntry), .updateEntry(secondEntry)):
                     return firstEntry == secondEntry
                 case let (.addSet(firstAddition), .addSet(secondAddition)):
-                    return firstAddition.weight == secondAddition.weight && firstAddition.reps == firstAddition.reps && firstAddition.entry == secondAddition.entry && firstAddition.sessionID == secondAddition.sessionID
+                    return firstAddition.weight == secondAddition.weight &&
+                    firstAddition.reps == secondAddition.reps &&
+                    firstAddition.entry == secondAddition.entry &&
+                    firstAddition.sessionID == secondAddition.sessionID
                 default:
                     return false
                 }
