@@ -92,6 +92,9 @@ class WorkoutDayViewModel: ObservableObject {
     func addSet(weight: Double, reps: Int, to entry: UUID) async throws {
         guard state != .loading else { return }
         guard let ctx = resolveEntryContext(entry) else { return }
+        try await service.addSets([
+            createSet(weight: weight, reps: reps)
+        ], to: ctx.entry, within: ctx.session.id)
     }
     
     func selectDate(_ newDate: Date) async {
@@ -145,6 +148,10 @@ extension WorkoutDayViewModel {
         
         try await service.updateSet(updatedSet, within: ctx.entry, and: ctx.session.id)
         await load()
+    }
+    
+    private func createSet(weight: Double, reps: Int) -> WorkoutSet {
+        WorkoutSet(id: UUID(), reps: reps, weight: weight, isFinished: false, order: 0)
     }
     
     private func resolveContext(_ entryID: UUID, _ setID: UUID) -> (session: WorkoutSession, entry: WorkoutEntry, set: WorkoutSet)? {

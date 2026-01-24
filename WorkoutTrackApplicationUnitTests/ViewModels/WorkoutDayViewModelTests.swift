@@ -716,6 +716,23 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func addSet_callsServiceToAddThenReload() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let exerciseID = UUID()
+        let entry = anyEntry(exerciseID: exerciseID, sets: [anySet()])
+        let weightVal: Double = 20, repsVal = 10
+        let session = anySession(entries: [entry])
+        spy.enqueueSession([[session]])
+        
+        await sut.load()
+        try await sut.addSet(weight: weightVal, reps: repsVal, to: entry.id)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((weightVal, repsVal, entry, session.id))])
+    }
+    
+    @MainActor
+    @Test
     func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
@@ -879,19 +896,12 @@ struct WorkoutDayViewModelTests {
     }
     
     private class WorkoutServiceSpy: WorkoutDayServicing {
-        struct AddSet: Equatable {
-            let weight: Double
-            let reps: Int
-            let entry: WorkoutEntry
-            let sessionID: UUID
-        }
-        
         enum Message: Equatable {
             case retrieve,
                  updateSet((session: UUID, entry: UUID, set: WorkoutSet)),
                  requestName(UUID),
                  deleteSet(WorkoutSet),
-                 addSet([AddSet]),
+                 addSet((weight: Double, reps: Int, entry: WorkoutEntry, sessionID: UUID)),
                  updateEntry(WorkoutEntry)
                 
             
@@ -908,7 +918,7 @@ struct WorkoutDayViewModelTests {
                 case let (.updateEntry(firstEntry), .updateEntry(secondEntry)):
                     return firstEntry == secondEntry
                 case let (.addSet(firstAddition), .addSet(secondAddition)):
-                    return firstAddition == secondAddition
+                    return firstAddition.weight == secondAddition.weight && firstAddition.reps == firstAddition.reps && firstAddition.entry == secondAddition.entry && firstAddition.sessionID == secondAddition.sessionID
                 default:
                     return false
                 }
@@ -999,7 +1009,9 @@ struct WorkoutDayViewModelTests {
         }
         
         func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
-            receivedMessages.append(.addSet(sets.map { AddSet(weight: $0.weight, reps: $0.reps, entry: entry, sessionID: session) }))
+            for set in sets {
+                receivedMessages.append(.addSet((set.weight, set.reps, entry, session)))
+            }
         }
         
         func stubUpdateEntryError(_ error: Error) {
