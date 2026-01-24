@@ -80,6 +80,10 @@ class WorkoutDayViewModel: ObservableObject {
         await load()
     }
     
+    func updateEntryOrder(_ entryID: UUID, to order: Int) async throws {
+        guard let (session, entry) = resolveEntryContext(entryID) else { return }
+    }
+    
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
@@ -138,6 +142,14 @@ extension WorkoutDayViewModel {
             guard let entry = session.entries.first(where: { $0.id == entryID }) else { continue }
             guard let set = entry.sets.first(where: { $0.id == setID }) else { continue }
             return (session, entry, set)
+        }
+        return nil
+    }
+    
+    private func resolveEntryContext(_ entryID: UUID) -> (session: WorkoutSession, entry: WorkoutEntry)? {
+        for session in domainSessions {
+            guard let entry = session.entries.first(where: { $0.id == entryID }) else { continue }
+            return (session, entry)
         }
         return nil
     }

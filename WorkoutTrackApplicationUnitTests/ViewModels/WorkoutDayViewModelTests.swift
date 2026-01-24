@@ -684,6 +684,20 @@ struct WorkoutDayViewModelTests {
         }
     }
     
+    @MainActor
+    @Test
+    func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        spy.enqueueSession([[anySession()]])
+        
+        await sut.load()
+        
+        try await sut.updateEntryOrder(UUID(), to: 2)
+        
+        #expect(spy.receivedMessages == [.retrieve])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -750,7 +764,9 @@ struct WorkoutDayViewModelTests {
             case retrieve,
                  updateSet((session: UUID, entry: UUID, set: WorkoutSet)),
                  requestName(UUID),
-                 deleteSet(WorkoutSet)
+                 deleteSet(WorkoutSet),
+                 updateEntry(WorkoutEntry)
+                
             
             static func ==(_ lhs: Message, _ rhs: Message) -> Bool {
                 switch (lhs, rhs) {
@@ -849,6 +865,14 @@ struct WorkoutDayViewModelTests {
         func deleteSet(_ set: WorkoutSet) async throws {
             receivedMessages.append(.deleteSet(set))
             if let error = deleteError { throw error }
+        }
+        
+        func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
+            
+        }
+        
+        func updateEntry(_ entry: WorkoutEntry, within session: WorkoutSession) async throws {
+            receivedMessages.append(.updateEntry(entry))
         }
     }
 }
