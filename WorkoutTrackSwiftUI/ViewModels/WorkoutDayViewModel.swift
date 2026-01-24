@@ -82,6 +82,7 @@ class WorkoutDayViewModel: ObservableObject {
     
     func updateEntryOrder(_ entryID: UUID, to order: Int) async throws {
         guard let (session, entry) = resolveEntryContext(entryID) else { return }
+        guard entry.order != order else { return }
         let newEntry = entry.updating(order: order)
         try await service.updateEntry(newEntry, within: session)
         await load()

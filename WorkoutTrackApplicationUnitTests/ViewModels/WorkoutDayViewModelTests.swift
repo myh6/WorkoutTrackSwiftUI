@@ -740,6 +740,23 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateEntry(entry), .retrieve])
     }
     
+    @MainActor
+    @Test
+    func updateEntryOrder_doesNotCallServiceWhenOrderIsNotChanged() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let exerciseID = UUID()
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, beforeOrder: 0, afterOrder: 0, sets: [anySet()])
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+        spy.stubName(for: exerciseID, name: "Random Exercise")
+        
+        await sut.load()
+        
+        try await sut.updateEntryOrder(entryID, to: 0)
+        
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
