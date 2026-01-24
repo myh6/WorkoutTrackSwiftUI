@@ -12,7 +12,7 @@ import WorkoutTrack
 class WorkoutDayViewModel: ObservableObject {
     
     @Published private(set) var selectedDate: Date
-    private let service: WorkoutTracking
+    private let service: WorkoutDayServicing
     private let calendar: Calendar
         
     enum State: Equatable {
@@ -27,7 +27,7 @@ class WorkoutDayViewModel: ObservableObject {
     
     @Published private(set) var expandedEntryIDs: Set<UUID> = []
     init(selectedDate: Date,
-         service: WorkoutTracking,
+         service: WorkoutDayServicing,
          calendar: Calendar) {
         self.selectedDate = selectedDate
         self.service = service

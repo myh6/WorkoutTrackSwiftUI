@@ -745,7 +745,7 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve], sourceLocation: SourceLocation(fileID: fileID, filePath: file, line: line, column: column))
     }
     
-    private class WorkoutServiceSpy: WorkoutTracking {
+    private class WorkoutServiceSpy: WorkoutDayServicing {
         enum Message: Equatable {
             case retrieve,
                  updateSet((session: UUID, entry: UUID, set: WorkoutSet)),
@@ -812,15 +812,6 @@ struct WorkoutDayViewModelTests {
             return stubbedNames[id]
         }
         
-        func addCustomExercise(_ exercise: CustomExercise) async throws {
-        }
-        
-        func deleteExercise(_ exercise: CustomExercise) async throws {
-        }
-        
-        func updateExercise(_ exercise: CustomExercise) async throws {
-        }
-        
         func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutTrack.WorkoutSession] {
             if let query {
                 receivedQuery.append(query)
@@ -840,28 +831,6 @@ struct WorkoutDayViewModelTests {
                 return sessionsQueue.isEmpty ? [] : sessionsQueue.removeFirst()
             }
         }
-        
-        func addSessions(_ sessions: [WorkoutSession]) async throws {
-        }
-        
-        func updateSession(_ session: WorkoutSession) async throws {
-        }
-        
-        func deleteSession(_ session: WorkoutSession) async throws {
-        }
-        
-        func addEntry(_ entries: [WorkoutEntry], to session: WorkoutSession) async throws {
-        }
-        
-        func updateEntry(_ entry: WorkoutEntry, within session: WorkoutSession) async throws {
-        }
-        
-        func deleteEntry(_ entry: WorkoutEntry) async throws {
-        }
-        
-        func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
-        }
-        
         
         private var updateError: Error?
         func stubUpdateError(_ error: Error) {
