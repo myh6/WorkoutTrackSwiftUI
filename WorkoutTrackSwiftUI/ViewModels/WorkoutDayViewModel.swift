@@ -84,6 +84,7 @@ class WorkoutDayViewModel: ObservableObject {
         guard let (session, entry) = resolveEntryContext(entryID) else { return }
         let newEntry = entry.updating(order: order)
         try await service.updateEntry(newEntry, within: session)
+        await load()
     }
     
     func selectDate(_ newDate: Date) async {
