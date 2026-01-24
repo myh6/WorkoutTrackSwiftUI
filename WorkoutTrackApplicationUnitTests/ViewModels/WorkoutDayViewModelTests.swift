@@ -701,6 +701,21 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func addSet_doesNotCallServiceWhenInLoading() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let exerciseID = UUID()
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, beforeOrder: 0, afterOrder: 2, sets: [anySet()])
+        spy.enqueueSession([[sessionBefore], [sessionAfter]])
+        spy.stubName(for: exerciseID, name: "Random Exercise")
+        
+        try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
+            try await sut.addSet(weight: 10, reps: 10, to: entryID)
+        }
+    }
+    
+    @MainActor
+    @Test
     func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))

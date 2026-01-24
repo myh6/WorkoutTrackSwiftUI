@@ -90,6 +90,7 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     func addSet(weight: Double, reps: Int, to entry: UUID) async throws {
+        guard state != .loading else { return }
         guard let ctx = resolveEntryContext(entry) else { return }
     }
     
