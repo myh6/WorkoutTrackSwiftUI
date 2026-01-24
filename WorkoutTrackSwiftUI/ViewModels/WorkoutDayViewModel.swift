@@ -89,6 +89,10 @@ class WorkoutDayViewModel: ObservableObject {
         await load()
     }
     
+    func addSet(weight: Double, reps: Int, to entry: UUID) async throws {
+        guard let ctx = resolveEntryContext(entry) else { return }
+    }
+    
     func selectDate(_ newDate: Date) async {
         guard newDate != selectedDate else { return }
         selectedDate = newDate
