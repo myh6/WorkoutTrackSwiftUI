@@ -8,21 +8,6 @@
 import Foundation
 import WorkoutTrack
 
-struct ExerciseSection: Equatable {
-    let id: UUID
-    let title: String
-    let sets: [SetRow]
-    let isExpanded: Bool
-}
-
-struct SetRow: Equatable {
-    let id: UUID
-    let reps: Int
-    let weight: Double
-    let isFinished: Bool
-    let order: Int
-}
-
 @MainActor
 class WorkoutDayViewModel: ObservableObject {
     
