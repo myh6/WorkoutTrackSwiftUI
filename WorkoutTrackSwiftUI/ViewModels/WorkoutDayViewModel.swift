@@ -82,6 +82,8 @@ class WorkoutDayViewModel: ObservableObject {
     
     func updateEntryOrder(_ entryID: UUID, to order: Int) async throws {
         guard let (session, entry) = resolveEntryContext(entryID) else { return }
+        let newEntry = entry.updating(order: order)
+        try await service.updateEntry(newEntry, within: session)
     }
     
     func selectDate(_ newDate: Date) async {
@@ -163,5 +165,12 @@ extension WorkoutSet {
         order: Int? = nil
     ) -> WorkoutSet {
         WorkoutSet(id: id, reps: reps ?? self.reps, weight: weight ?? self.weight, isFinished: isFinished ?? self.isFinished, order: order ?? self.order)
+    }
+}
+
+
+extension WorkoutEntry {
+    func updating(order: Int) -> WorkoutEntry {
+        WorkoutEntry(id: id, exerciseID: exerciseID, sets: sets, createdAt: createdAt, order: order)
     }
 }

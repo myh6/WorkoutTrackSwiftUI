@@ -698,6 +698,30 @@ struct WorkoutDayViewModelTests {
         #expect(spy.receivedMessages == [.retrieve])
     }
     
+    @MainActor
+    @Test
+    func updateEntryOrder_throwsErrorWhenServiceFinishesUpdateWithFailure() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let updateFailure = anyError("Update Failure")
+        let exerciseID = UUID()
+        let (sessionBefore, sessionAfter, entryID) = sessionsBeforeAfter(exerciseID: exerciseID, beforeOrder: 0, afterOrder: 2, sets: [anySet()])
+        spy.enqueueSession([[sessionBefore]])
+        spy.stubUpdateEntryError(updateFailure)
+        
+        await sut.load()
+        
+        do {
+            try await sut.updateEntryOrder(entryID, to: 2)
+            #expect(Bool(false), "Expect updateEntryOrder to throw error")
+        } catch {
+            #expect((error as NSError) == updateFailure)
+        }
+        
+        let entry = try #require(sessionAfter.entries.first)
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateEntry(entry)])
+    }
+    
     //MARK: - Helpers
     @MainActor
     private func makeSUT(calendar: Calendar, selectedDate: Date, file: StaticString = #file, line: UInt = #line) -> (viewModel: WorkoutDayViewModel, service: WorkoutServiceSpy) {
@@ -728,12 +752,27 @@ struct WorkoutDayViewModelTests {
     private func sessionsBeforeAfter(
         entryID: UUID = UUID(),
         exerciseID: UUID = UUID(),
+        date: Date = Date(),
         before: WorkoutSet,
         after: WorkoutSet
     ) -> (before: WorkoutSession, after: WorkoutSession, entryID: UUID) {
         let sessionID = UUID()
-        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [before])
-        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [after])
+        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: [before], createdAt: date)
+        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: [after], createdAt: date)
+        return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]), entryID)
+    }
+    
+    private func sessionsBeforeAfter(
+        entryID: UUID = UUID(),
+        exerciseID: UUID = UUID(),
+        date: Date = Date(),
+        beforeOrder: Int,
+        afterOrder: Int,
+        sets: [WorkoutSet]
+    ) -> (before: WorkoutSession, after: WorkoutSession, entryID: UUID) {
+        let sessionID = UUID()
+        let entryBefore = anyEntry(id: entryID, exerciseID: exerciseID, sets: sets, createdAt: date, order: beforeOrder)
+        let entryAfter = anyEntry(id: entryID, exerciseID: exerciseID, sets: sets, createdAt: date, order: afterOrder)
         return (anySession(id: sessionID, entries: [entryBefore]), anySession(id: sessionID, entries: [entryAfter]), entryID)
     }
     
@@ -778,6 +817,8 @@ struct WorkoutDayViewModelTests {
                     return firstID == secondID
                 case let (.deleteSet(firstSet), .deleteSet(secondSet)):
                     return firstSet == secondSet
+                case let (.updateEntry(firstEntry), .updateEntry(secondEntry)):
+                    return firstEntry == secondEntry
                 default:
                     return false
                 }
@@ -871,8 +912,14 @@ struct WorkoutDayViewModelTests {
             
         }
         
+        func stubUpdateEntryError(_ error: Error) {
+            updateEntryError = error
+        }
+        
+        private var updateEntryError: Error?
         func updateEntry(_ entry: WorkoutEntry, within session: WorkoutSession) async throws {
             receivedMessages.append(.updateEntry(entry))
+            if let error = updateEntryError { throw error }
         }
     }
 }
