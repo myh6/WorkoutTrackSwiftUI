@@ -733,6 +733,29 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func addSet_throwsErrorWhenServiceFinishesAddingWithFailure() async throws {
+        let calendar = makeCalendar()
+        let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
+        let exerciseID = UUID()
+        let entry = anyEntry(id: UUID(), exerciseID: exerciseID, sets: [anySet()])
+        let session = anySession(entries: [entry])
+        let addingError = NSError(domain: "Addition Failure", code: 0)
+        spy.enqueueSession([[session]])
+        spy.stubAddingError(addingError)
+        
+        await sut.load()
+        
+        do {
+            try await sut.addSet(weight: 20, reps: 10, to: entry.id)
+            #expect(Bool(false), "Expect deleteSet to throw")
+        } catch {
+            #expect((error as NSError) == addingError)
+        }
+        #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((20, 10, entry, session.id))])
+    }
+    
+    @MainActor
+    @Test
     func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
@@ -1008,10 +1031,15 @@ struct WorkoutDayViewModelTests {
             if let error = deleteError { throw error }
         }
         
+        private var addingError: Error?
+        func stubAddingError(_ error: Error) {
+            addingError = error
+        }
         func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within session: UUID) async throws {
             for set in sets {
                 receivedMessages.append(.addSet((set.weight, set.reps, entry, session)))
             }
+            if let error = addingError { throw error }
         }
         
         func stubUpdateEntryError(_ error: Error) {
