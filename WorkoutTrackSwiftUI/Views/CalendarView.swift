@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct CalendarView: View {
     let accentColor: Color
     let hasDataForDate: (Date) -> Bool
