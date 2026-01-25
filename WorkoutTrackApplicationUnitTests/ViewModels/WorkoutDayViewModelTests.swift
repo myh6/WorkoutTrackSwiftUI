@@ -361,7 +361,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func toggleSetFinished_doesNotCallServiceToUpdateWhenNoMatchingSet() async throws {
+    func toggleSetFinished_doesNotCallServiceToUpdateWhenNoMatchingSet() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let entryID = UUID(), setID = UUID(), exerciseID = UUID()
@@ -370,18 +370,18 @@ struct WorkoutDayViewModelTests {
         ]])
         
         await sut.load()
-        try await sut.toggleSetFinished(entryID: entryID, setID: UUID())
+        await sut.toggleSetFinished(entryID: entryID, setID: UUID())
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
         
-        try await sut.toggleSetFinished(entryID: UUID(), setID: setID)
+        await sut.toggleSetFinished(entryID: UUID(), setID: setID)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
     
     @MainActor
     @Test
-    func toggleSetFinished_throwsErrorOnServiceUpdateFailure() async throws {
+    func toggleSetFinished_setsStateToFailedOnServiceUpdateFailure() async throws {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let updateError = anyError("Update failure")
@@ -395,11 +395,12 @@ struct WorkoutDayViewModelTests {
         
         spy.stubUpdateError(updateError)
         
-        do {
-            try await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
+        await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
+        
+        if case .failed(let message) = sut.state {
+            #expect(message.contains("Update failure"))
+        } else {
             #expect(Bool(false))
-        } catch {
-            #expect((error as NSError) == updateError)
         }
         
         #expect(spy.receivedMessages == [
@@ -417,7 +418,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func toggleSetFinished_doesCallServiceToUpdateSetAndReloadSessions() async throws {
+    func toggleSetFinished_doesCallServiceToUpdateSetAndReloadSessions() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let set = anySet(),
@@ -427,7 +428,7 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[session]])
         
         await sut.load()
-        try await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
+        await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
         
         #expect(spy.receivedMessages == [
             .retrieve,
@@ -452,7 +453,7 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[sessionBefore], [sessionAfter]])
         
         await sut.load()
-        try await sut.toggleSetFinished(entryID: entryID, setID: setID)
+        await sut.toggleSetFinished(entryID: entryID, setID: setID)
         
         let row = try #require(sut.sections.first?.sets.first)
         #expect(row.isFinished)
@@ -469,7 +470,7 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[session]])
         
         try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
-            try await sut.toggleSetFinished(entryID: entryID, setID: setID)
+            await sut.toggleSetFinished(entryID: entryID, setID: setID)
         }
     }
     

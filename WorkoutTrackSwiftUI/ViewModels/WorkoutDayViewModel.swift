@@ -48,8 +48,12 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
-    func toggleSetFinished(entryID: UUID, setID: UUID) async throws {
-        try await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
+    func toggleSetFinished(entryID: UUID, setID: UUID) async {
+        do {
+            try await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
     func updateSetReps(entryID: UUID, setID: UUID, reps: Int) async throws {
