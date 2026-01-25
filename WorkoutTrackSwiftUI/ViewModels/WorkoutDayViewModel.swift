@@ -49,57 +49,65 @@ class WorkoutDayViewModel: ObservableObject {
     }
     
     func toggleSetFinished(entryID: UUID, setID: UUID) async {
-        do {
-            try await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
-        } catch {
-            state = .failed(String(describing: error))
-        }
+        await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
     }
     
-    func updateSetReps(entryID: UUID, setID: UUID, reps: Int) async throws {
-        try await mutateSet(entryID: entryID, setID: setID) { oldSet in
+    func updateSetReps(entryID: UUID, setID: UUID, reps: Int) async {
+        await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.reps != reps else { return nil }
             return oldSet.updating(reps: reps)
         }
     }
     
-    func updateSetWeight(entryID: UUID, setID: UUID, weight: Double) async throws {
-        try await mutateSet(entryID: entryID, setID: setID) { oldSet in
+    func updateSetWeight(entryID: UUID, setID: UUID, weight: Double) async {
+        await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.weight != weight else { return nil }
             return oldSet.updating(weight: weight)
         }
     }
     
-    func updateSetOrder(entryID: UUID, setID: UUID, order: Int) async throws {
-        try await mutateSet(entryID: entryID, setID: setID) { oldSet in
+    func updateSetOrder(entryID: UUID, setID: UUID, order: Int) async {
+        await mutateSet(entryID: entryID, setID: setID) { oldSet in
             guard oldSet.order != order else { return nil }
             return oldSet.updating(order: order)
         }
     }
     
-    func deleteSet(entryID: UUID, setID: UUID) async throws {
+    func deleteSet(entryID: UUID, setID: UUID) async {
         guard state != .loading else { return }
         guard let ctx = resolveContext(entryID, setID) else { return }
-        try await service.deleteSet(ctx.set)
-        await load()
+        do {
+            try await service.deleteSet(ctx.set)
+            await load()
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
-    func updateEntryOrder(_ entryID: UUID, to order: Int) async throws {
+    func updateEntryOrder(_ entryID: UUID, to order: Int) async {
         guard state != .loading else { return }
         guard let (session, entry) = resolveEntryContext(entryID) else { return }
         guard entry.order != order else { return }
         let newEntry = entry.updating(order: order)
-        try await service.updateEntry(newEntry, within: session)
-        await load()
+        do {
+            try await service.updateEntry(newEntry, within: session)
+            await load()
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
-    func addSet(weight: Double, reps: Int, to entry: UUID) async throws {
+    func addSet(weight: Double, reps: Int, to entry: UUID) async {
         guard state != .loading else { return }
         guard let ctx = resolveEntryContext(entry) else { return }
-        try await service.addSets([
-            createSet(weight: weight, reps: reps)
-        ], to: ctx.entry, within: ctx.session.id)
-        await load()
+        do {
+            try await service.addSets([
+                createSet(weight: weight, reps: reps)
+            ], to: ctx.entry, within: ctx.session.id)
+            await load()
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
     func selectDate(_ newDate: Date) async {
@@ -146,13 +154,17 @@ extension WorkoutDayViewModel {
     /// Used to update set's property
     /// - Parameters:
     ///   - transform: If no change need to be made, return nil to stop the update call
-    private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet?) async throws {
+    private func mutateSet(entryID: UUID, setID: UUID, transform: (WorkoutSet) -> WorkoutSet?) async {
         guard state != .loading else { return }
         guard let ctx = resolveContext(entryID, setID) else { return }
         guard let updatedSet = transform(ctx.set) else { return }
         
-        try await service.updateSet(updatedSet, within: ctx.entry, and: ctx.session.id)
-        await load()
+        do {
+            try await service.updateSet(updatedSet, within: ctx.entry, and: ctx.session.id)
+            await load()
+        } catch {
+            state = .failed(String(describing: error))
+        }
     }
     
     private func createSet(weight: Double, reps: Int) -> WorkoutSet {

@@ -214,12 +214,13 @@ struct WorkoutDayViewModelTests {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: selected)
-        spy.stubRetrievalError(anyError("testing crashes"))
+        let loadFailure = anyError("testing crashes")
+        spy.stubRetrievalError(loadFailure)
         
         await sut.load()
         
         if case .failed(let message) = sut.state {
-            #expect(message.contains("testing crashes"))
+            #expect(message.contains(loadFailure.domain))
         } else {
             #expect(Bool(false))
         }
@@ -398,7 +399,7 @@ struct WorkoutDayViewModelTests {
         await sut.toggleSetFinished(entryID: entry.id, setID: set.id)
         
         if case .failed(let message) = sut.state {
-            #expect(message.contains("Update failure"))
+            #expect(message.contains(updateError.domain))
         } else {
             #expect(Bool(false))
         }
@@ -490,7 +491,7 @@ struct WorkoutDayViewModelTests {
 
         let row = try #require(sut.sections.first?.sets.first)
         #expect(row.reps == 10)
-        try await sut.updateSetReps(entryID: entryID, setID: setID, reps: repsVal)
+        await sut.updateSetReps(entryID: entryID, setID: setID, reps: repsVal)
 
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -512,7 +513,7 @@ struct WorkoutDayViewModelTests {
         
         let oldRow = try #require(sut.sections.first?.sets.first)
         #expect(oldRow.reps == 10)
-        try await sut.updateSetReps(entryID: entryID, setID: setID, reps: 15)
+        await sut.updateSetReps(entryID: entryID, setID: setID, reps: 15)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateSet((sessionAfter.id, entryID, setAfter)), .retrieve])
         let newRow = try #require(sut.sections.first?.sets.first)
@@ -535,7 +536,7 @@ struct WorkoutDayViewModelTests {
 
         let row = try #require(sut.sections.first?.sets.first)
         #expect(row.weight == 10)
-        try await sut.updateSetWeight(entryID: entryID, setID: setID, weight: weightVal)
+        await sut.updateSetWeight(entryID: entryID, setID: setID, weight: weightVal)
 
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -557,7 +558,7 @@ struct WorkoutDayViewModelTests {
         
         let oldRow = try #require(sut.sections.first?.sets.first)
         #expect(oldRow.weight == 10)
-        try await sut.updateSetWeight(entryID: entryID, setID: setID, weight: 15)
+        await sut.updateSetWeight(entryID: entryID, setID: setID, weight: 15)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateSet((sessionAfter.id, entryID, setAfter)), .retrieve])
         let newRow = try #require(sut.sections.first?.sets.first)
@@ -580,7 +581,7 @@ struct WorkoutDayViewModelTests {
 
         let row = try #require(sut.sections.first?.sets.first)
         #expect(row.order == order)
-        try await sut.updateSetOrder(entryID: entryID, setID: setID, order: order)
+        await sut.updateSetOrder(entryID: entryID, setID: setID, order: order)
 
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -602,7 +603,7 @@ struct WorkoutDayViewModelTests {
         
         let oldRow = try #require(sut.sections.first?.sets.first)
         #expect(oldRow.order == 0)
-        try await sut.updateSetOrder(entryID: entryID, setID: setID, order: 2)
+        await sut.updateSetOrder(entryID: entryID, setID: setID, order: 2)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateSet((sessionAfter.id, entryID, setAfter)), .retrieve])
         let newRow = try #require(sut.sections.first?.sets.first)
@@ -611,7 +612,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func deleteSet_doesNotCallServiceWhenNoMatchingSet() async throws {
+    func deleteSet_doesNotCallServiceWhenNoMatchingSet() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let entryID = UUID(), setID = UUID(), exerciseID = UUID()
@@ -621,11 +622,11 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
                         
-        try await sut.deleteSet(entryID: entryID, setID: UUID())
+        await sut.deleteSet(entryID: entryID, setID: UUID())
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
         
-        try await sut.deleteSet(entryID: UUID(), setID: setID)
+        await sut.deleteSet(entryID: UUID(), setID: setID)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -644,18 +645,19 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        do {
-            try await sut.deleteSet(entryID: entryID, setID: setID)
-            #expect(Bool(false), "Expect deleteSet to throw")
-        } catch {
-            #expect((error as NSError) == deletionError)
+        
+        await sut.deleteSet(entryID: entryID, setID: setID)
+        if case .failed(let message) = sut.state {
+            #expect(message.contains(deletionError.domain))
+        } else {
+            #expect(Bool(false))
         }
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set)])
     }
     
     @MainActor
     @Test
-    func deleteSet_callsServiceToDeleteAndReloadSessions() async throws {
+    func deleteSet_callsServiceToDeleteAndReloadSessions() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let entryID = UUID(), setID = UUID(), exerciseID = UUID()
@@ -666,7 +668,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        try await sut.deleteSet(entryID: entryID, setID: setID)
+        await sut.deleteSet(entryID: entryID, setID: setID)
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .deleteSet(set), .retrieve])
         #expect(sut.state == .empty)
     }
@@ -681,13 +683,13 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[session]])
         
         try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
-            try await sut.deleteSet(entryID: entryID, setID: setID)
+            await sut.deleteSet(entryID: entryID, setID: setID)
         }
     }
     
     @MainActor
     @Test
-    func addSet_doesNotCallServiceWhenNoMatchingEntry() async throws {
+    func addSet_doesNotCallServiceWhenNoMatchingEntry() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let exerciseID = UUID()
@@ -695,7 +697,7 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[session]])
         
         await sut.load()
-        try await sut.addSet(weight: 20, reps: 10, to: UUID())
+        await sut.addSet(weight: 20, reps: 10, to: UUID())
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -711,13 +713,13 @@ struct WorkoutDayViewModelTests {
         spy.stubName(for: exerciseID, name: "Random Exercise")
         
         try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
-            try await sut.addSet(weight: 10, reps: 10, to: entryID)
+            await sut.addSet(weight: 10, reps: 10, to: entryID)
         }
     }
     
     @MainActor
     @Test
-    func addSet_callsServiceToAddThenReload() async throws {
+    func addSet_callsServiceToAddThenReload() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let exerciseID = UUID()
@@ -727,14 +729,14 @@ struct WorkoutDayViewModelTests {
         spy.enqueueSession([[session]])
         
         await sut.load()
-        try await sut.addSet(weight: weightVal, reps: repsVal, to: entry.id)
+        await sut.addSet(weight: weightVal, reps: repsVal, to: entry.id)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((weightVal, repsVal, entry, session.id)), .retrieve])
     }
     
     @MainActor
     @Test
-    func addSet_throwsErrorWhenServiceFinishesAddingWithFailure() async throws {
+    func addSet_throwsErrorWhenServiceFinishesAddingWithFailure() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let exerciseID = UUID()
@@ -746,25 +748,25 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        do {
-            try await sut.addSet(weight: 20, reps: 10, to: entry.id)
-            #expect(Bool(false), "Expect deleteSet to throw")
-        } catch {
-            #expect((error as NSError) == addingError)
+        await sut.addSet(weight: 20, reps: 10, to: entry.id)
+        if case .failed(let message) = sut.state {
+            #expect(message.contains(addingError.domain))
+        } else {
+            #expect(Bool(false))
         }
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .addSet((20, 10, entry, session.id))])
     }
     
     @MainActor
     @Test
-    func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async throws {
+    func updateEntryOrder_doesNotCallServiceWhenNoMatchingEntry() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         spy.enqueueSession([[anySession()]])
         
         await sut.load()
         
-        try await sut.updateEntryOrder(UUID(), to: 2)
+        await sut.updateEntryOrder(UUID(), to: 2)
         
         #expect(spy.receivedMessages == [.retrieve])
     }
@@ -781,14 +783,13 @@ struct WorkoutDayViewModelTests {
         spy.stubUpdateEntryError(updateFailure)
         
         await sut.load()
+        await sut.updateEntryOrder(entryID, to: 2)
         
-        do {
-            try await sut.updateEntryOrder(entryID, to: 2)
-            #expect(Bool(false), "Expect updateEntryOrder to throw error")
-        } catch {
-            #expect((error as NSError) == updateFailure)
+        if case .failed(let message) = sut.state {
+            #expect(message.contains(updateFailure.domain))
+        } else {
+            #expect(Bool(false))
         }
-        
         let entry = try #require(sessionAfter.entries.first)
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateEntry(entry)])
     }
@@ -805,7 +806,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        try await sut.updateEntryOrder(entryID, to: 2)
+        await sut.updateEntryOrder(entryID, to: 2)
         
         let entry = try #require(sessionAfter.entries.first)
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .updateEntry(entry), .retrieve])
@@ -813,7 +814,7 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
-    func updateEntryOrder_doesNotCallServiceWhenOrderIsNotChanged() async throws {
+    func updateEntryOrder_doesNotCallServiceWhenOrderIsNotChanged() async {
         let calendar = makeCalendar()
         let (sut, spy) = makeSUT(calendar: calendar, selectedDate: getDecember15th(calendar))
         let exerciseID = UUID()
@@ -823,7 +824,7 @@ struct WorkoutDayViewModelTests {
         
         await sut.load()
         
-        try await sut.updateEntryOrder(entryID, to: 0)
+        await sut.updateEntryOrder(entryID, to: 0)
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID)])
     }
@@ -839,7 +840,7 @@ struct WorkoutDayViewModelTests {
         spy.stubName(for: exerciseID, name: "Random Exercise")
         
         try await assertOperationsGotIgnoredUnderSuspension(sut, spy, exerciseID: exerciseID) {
-            try await sut.updateEntryOrder(entryID, to: 2)
+            await sut.updateEntryOrder(entryID, to: 2)
         }
     }
     
