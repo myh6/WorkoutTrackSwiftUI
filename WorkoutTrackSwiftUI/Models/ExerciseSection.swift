@@ -8,14 +8,14 @@
 import Foundation
 import WorkoutTrack
 
-struct ExerciseSection: Equatable {
+struct ExerciseSection: Equatable, Identifiable {
     let id: UUID
     let title: String
     let sets: [SetRow]
     let isExpanded: Bool
 }
 
-struct SetRow: Equatable {
+struct SetRow: Equatable, Identifiable {
     let id: UUID
     let reps: Int
     let weight: Double

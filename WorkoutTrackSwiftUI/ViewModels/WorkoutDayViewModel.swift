@@ -206,3 +206,137 @@ extension WorkoutEntry {
         WorkoutEntry(id: id, exerciseID: exerciseID, sets: sets, createdAt: createdAt, order: order)
     }
 }
+
+final class PreviewService: WorkoutDayServicing {
+    private var sessions = [WorkoutSession]()
+    private var exerciseDict: [UUID: String] = [:]
+    
+    init(sessions: [WorkoutSession] = [WorkoutSession](), exerciseDict: [UUID : String]) {
+        self.sessions = sessions
+        self.exerciseDict = exerciseDict
+    }
+    
+    static func makeSample(selectedDate: Date, calendar: Calendar = .current) -> PreviewService {
+        let exerciseA = UUID()
+        let exerciseB = UUID()
+        
+        let entryA = WorkoutEntry(
+            id: UUID(),
+            exerciseID: exerciseA,
+            sets: [
+                WorkoutSet(id: UUID(), reps: 8, weight: 50, isFinished: false, order: 0),
+                WorkoutSet(id: UUID(), reps: 6, weight: 55, isFinished: true, order: 1)
+            ],
+            createdAt: selectedDate,
+            order: 0
+        )
+        
+        let entryB = WorkoutEntry(
+            id: UUID(),
+            exerciseID: exerciseB,
+            sets: [
+                WorkoutSet(id: UUID(), reps: 12, weight: 20, isFinished: false, order: 0)
+            ],
+            createdAt: selectedDate,
+            order: 1
+        )
+        
+        let session = WorkoutSession(
+            id: UUID(),
+            date: selectedDate,
+            entries: [entryA, entryB]
+        )
+        
+        return PreviewService(
+            sessions: [session],
+            exerciseDict: [
+                exerciseA: "Bench Press",
+                exerciseB: "Lat Pulldown"
+            ]
+        )
+    }
+    
+    func retrieveSessions(by query: SessionQueryDescriptor?) async throws -> [WorkoutSession] {
+        return sessions
+    }
+    
+    func getExerciseName(from id: UUID) async throws -> String? {
+        exerciseDict[id] ?? "Exercise \(id.uuidString.prefix(3))"
+    }
+    
+    func deleteSet(_ set: WorkoutSet) async throws {
+        sessions = sessions.map { session in
+            let updatedEntries = session.entries.map { entry in
+                let newSets = entry.sets.filter { $0.id != set.id }
+                return WorkoutEntry(
+                    id: entry.id,
+                    exerciseID: entry.exerciseID,
+                    sets: newSets,
+                    createdAt: entry.createdAt,
+                    order: entry.order
+                )
+            }
+
+            return WorkoutSession(
+                id: session.id,
+                date: session.date,
+                entries: updatedEntries
+            )
+        }
+    }
+    
+    func updateSet(_ set: WorkoutSet, within entry: WorkoutEntry, and session: UUID) async throws {
+        sessions = sessions.map { s in
+            guard s.id == session else { return s }
+            
+            let updatedEntries = s.entries.map { e in
+                guard e.id == entry.id else { return e }
+                let updatedSet = e.sets.map {
+                    $0.id == set.id ? set : $0
+                }
+                
+                return WorkoutEntry(id: e.id, exerciseID: e.exerciseID, sets: updatedSet, createdAt: e.createdAt, order: e.order)
+            }
+            
+            return WorkoutSession(id: s.id, date: s.date, entries: updatedEntries)
+        }
+    }
+    
+    func updateEntry(_ entry: WorkoutEntry, within session: WorkoutSession) async throws {
+    }
+    
+    func addSets(_ sets: [WorkoutSet], to entry: WorkoutEntry, within sessionID: UUID) async throws {
+        sessions = sessions.map { session in
+            guard session.id == sessionID else { return session }
+
+            let updatedEntries = session.entries.map { e in
+                guard e.id == entry.id else { return e }
+
+                let nextOrder = (e.sets.map(\.order).max() ?? -1) + 1
+                let appended = sets.enumerated().map { offset, s in
+                    WorkoutSet(
+                        id: s.id,
+                        reps: s.reps,
+                        weight: s.weight,
+                        isFinished: s.isFinished,
+                        order: nextOrder + offset
+                    )
+                }
+
+                return WorkoutEntry(
+                    id: e.id,
+                    exerciseID: e.exerciseID,
+                    sets: e.sets + appended,
+                    createdAt: e.createdAt,
+                    order: e.order
+                )
+            }
+
+            return WorkoutSession(
+                id: session.id,
+                date: session.date,
+                entries: updatedEntries
+            )
+        }
+    }
+}
