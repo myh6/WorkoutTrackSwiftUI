@@ -22,3 +22,13 @@ struct SetRow: Equatable, Identifiable {
     let isFinished: Bool
     let order: Int
 }
+
+extension SetRow {
+    init() {
+        id = UUID()
+        reps = 0
+        weight = 0.0
+        isFinished = false
+        order = 0
+    }
+}
