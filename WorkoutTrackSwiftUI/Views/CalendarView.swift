@@ -103,7 +103,6 @@ struct CalendarView: View {
         let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
         return VStack(spacing: 8) {
-            weekdayHeader
 
             LazyVGrid(columns: columns, spacing: 8) {
                 // leading blanks
@@ -118,19 +117,6 @@ struct CalendarView: View {
                 }
             }
             .animation(.spring(response: 0.35, dampingFraction: 0.85), value: viewModel.selectedDate)
-        }
-    }
-
-    private var weekdayHeader: some View {
-        let symbols = viewModel.weekdaySymbols
-
-        return HStack {
-            ForEach(symbols, id: \.self) { s in
-                Text(s.uppercased())
-                    .font(.caption2.weight(.medium))
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-            }
         }
     }
 }

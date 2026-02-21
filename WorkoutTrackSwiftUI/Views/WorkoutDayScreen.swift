@@ -28,7 +28,11 @@ struct WorkoutDayScreen: View {
     
     private var header: some View {
         HStack {
-            Text(vm.selectedDate.formatted(date: .abbreviated, time: .omitted))
+            CalendarView(
+                accentColor: .primary,
+                hasDataForDate: { _ in true },
+                viewModel: CalendarViewModel(calendar: .current, mode: .weekly, anchorDate: vm.selectedDate, selectedDate: vm.selectedDate)
+            )
             Spacer()
         }
         .padding()
