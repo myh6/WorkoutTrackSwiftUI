@@ -48,6 +48,10 @@ class WorkoutDayViewModel: ObservableObject {
         }
     }
     
+    func hasData(_ date: Date) -> Bool {
+        return false
+    }
+    
     func toggleSetFinished(entryID: UUID, setID: UUID) async {
         await mutateSet(entryID: entryID, setID: setID) { $0.updating(isFinished: !$0.isFinished) }
     }

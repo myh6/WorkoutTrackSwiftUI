@@ -114,6 +114,14 @@ struct WorkoutDayViewModelTests {
     
     @MainActor
     @Test
+    func hasData_returnsFalse_whenNoDataWithinInputDate() async {
+        let (sut, _) = makeSUT(calendar: makeCalendar(), selectedDate: Date())
+        
+        #expect(sut.hasData(Date()) == false)
+    }
+    
+    @MainActor
+    @Test
     func toggleExpanded_remapsSections() async {
         let calendar = makeCalendar()
         let selected = getDecember15th(calendar)
