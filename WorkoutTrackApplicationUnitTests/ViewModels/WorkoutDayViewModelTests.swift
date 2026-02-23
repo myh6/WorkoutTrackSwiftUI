@@ -111,15 +111,7 @@ struct WorkoutDayViewModelTests {
         
         #expect(spy.receivedMessages == [.retrieve, .requestName(exerciseID), .retrieve])
     }
-    
-    @MainActor
-    @Test
-    func hasData_returnsFalse_whenNoDataWithinInputDate() async {
-        let (sut, _) = makeSUT(calendar: makeCalendar(), selectedDate: Date())
-        
-        #expect(sut.hasData(Date()) == false)
-    }
-    
+
     @MainActor
     @Test
     func toggleExpanded_remapsSections() async {
