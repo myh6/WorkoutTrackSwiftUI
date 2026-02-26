@@ -24,6 +24,7 @@ final class WorkoutCalendarDataIndexViewModel {
     }
     
     func prefetch(in range: ClosedRange<Date>) async {
+        daysWithData.removeAll()
         let query = QueryBuilder()
             .filterDateRange(range)
             .build()

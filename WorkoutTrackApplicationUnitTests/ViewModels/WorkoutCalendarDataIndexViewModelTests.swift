@@ -49,6 +49,24 @@ class WorkoutCalendarDataIndexViewModelTests {
         #expect(sut.hasData(date(calendar, year: 2026, month: 1, day:1)) == false)
     }
     
+    @Test
+    func prefetch_updatesDatesThatHaveDataWhenRetrievalResultsChange() async {
+        let (sut, spy, calendar) = makeSUT()
+        
+        let date1 = date(calendar, year: 2026, month: 2, day: 20)
+        let date2 = date(calendar, year: 2026, month: 2, day: 25)
+        spy.enqueueSession([[anySession(date: date1)], []])
+        let range = date1...date2
+        
+        await sut.prefetch(in: range)
+        
+        #expect(sut.hasData(date1))
+        
+        await sut.prefetch(in: range)
+        
+        #expect(sut.hasData(date1) == false)
+    }
+    
     //MARK: - Helpers
     private func makeSUT() -> (sut: WorkoutCalendarDataIndexViewModel, spy: WorkoutServiceSpy, calendar: Calendar) {
         let spy = WorkoutServiceSpy()
