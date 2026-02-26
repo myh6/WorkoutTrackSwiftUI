@@ -15,10 +15,10 @@ func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale =
     return calendar
 }
 
-func getDecember15th(_ calendar: Calendar) -> Date {
-    calendar.date(from: DateComponents(year: 2025, month: 12, day: 15))!
+func date(_ calendar: Calendar = .current, year: Int, month: Int, day: Int) -> Date {
+    return calendar.date(from: DateComponents(year: year, month: month, day: day))!
 }
 
-func date(_ calendar: Calendar = .init(identifier: .gregorian), _ year: Int, _ month: Int, _ day: Int) -> Date {
-    return calendar.date(from: DateComponents(year: year, month: month, day: day))!
+func getDecember15th(_ calendar: Calendar) -> Date {
+    date(calendar, year: 2025, month: 12, day: 15)
 }

@@ -853,11 +853,11 @@ struct WorkoutDayViewModelTests {
     }
     
     private func getDecember28th(_ calendar: Calendar) -> Date {
-        calendar.date(from: DateComponents(year: 2025, month: 12, day: 28))!
+        date(calendar, year: 2025, month: 12, day: 28)
     }
     
     private func getDecember30th(_ calendar: Calendar) -> Date {
-        calendar.date(from: DateComponents(year: 2025, month: 12, day: 30))!
+        date(calendar, year: 2025, month: 12, day: 30)
     }
     
     /// Suspend the current task until condition is met

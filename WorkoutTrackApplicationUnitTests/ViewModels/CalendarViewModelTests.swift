@@ -206,15 +206,7 @@ struct CalendarViewModelTests {
     }
     
     //MARK: - Helpers
-    private func makeCalendar(identifier: Calendar.Identifier = .gregorian, locale: Locale = Locale(identifier: "en_US_POSIX"), timeZone: TimeZone = TimeZone(secondsFromGMT: 0)!, firstWeekday: Int = 1) -> Calendar {
-        var calendar = Calendar(identifier: identifier)
-        calendar.locale = locale
-        calendar.timeZone = timeZone
-        calendar.firstWeekday = firstWeekday
-        return calendar
-    }
-    
     private func getDecember10th(_ calendar: Calendar) -> Date {
-        calendar.date(from: DateComponents(year: 2025, month: 12, day: 10))!
+        date(calendar, year: 2025, month: 12, day: 10)
     }
 }
