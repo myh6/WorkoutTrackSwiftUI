@@ -33,15 +33,13 @@ class WorkoutCalendarDataIndexViewModelTests {
     
     @Test
     func hasData_returnsFalse_beforePrefetch() {
-        let spy = WorkoutServiceSpy()
-        let sut = WorkoutCalendarDataIndexViewModel(service: spy)
+        let (sut, _) = makeSUT()
         #expect(sut.hasData(Date()) == false)
     }
     
     @Test
     func prefetch_requestsSessionsFilteredByRange() async {
-        let spy = WorkoutServiceSpy()
-        let sut = WorkoutCalendarDataIndexViewModel(service: spy)
+        let (sut, spy) = makeSUT()
         
         let start = date(year: 2026, month: 2, day: 1)
         let end = date(year: 2026, month: 2, day: 7)
@@ -50,6 +48,13 @@ class WorkoutCalendarDataIndexViewModelTests {
         
         let receivedQueryRange = retrieveRange(from: spy.receivedQuery.first)
         #expect(receivedQueryRange == range)
+    }
+    
+    //MARK: - Helpers
+    private func makeSUT() -> (sut: WorkoutCalendarDataIndexViewModel, spy: WorkoutServiceSpy) {
+        let spy = WorkoutServiceSpy()
+        let sut = WorkoutCalendarDataIndexViewModel(service: spy)
+        return (sut, spy)
     }
     
     private func retrieveRange(from query: SessionQueryDescriptor?) -> ClosedRange<Date>? {
